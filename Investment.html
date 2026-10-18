@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.17.02">
+<meta name="investment-release-version" content="2026.10.18.01">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -424,7 +424,7 @@ function balanceCalculator(){
   }catch(e){status.textContent=e.message;}
  }
  choice.onchange=()=>{const b=choice.value;[bankOpening,deposit,transfer,withdraw,netBank].forEach(input=>delete input.dataset.testManual);if(b){const x=bankDrafts[b]||{};bankOpening.value=inputMoney(x.opening||0);deposit.value=inputMoney(x.deposit||0);transfer.value=inputMoney(x.fundTransfer||0);withdraw.value=inputMoney(x.chequeWithdrawal||0);}netBank.closest('.field').querySelector('label').textContent=b?'Net '+b+' Balance':'Net Bank Balance';paint();};
- form.addEventListener('input',paint);
+ form.addEventListener('input',event=>{if(event.target===choice||event.target===date)return;paint();});
  async function source(){
   window.stopCalculatorWithdrawalSync?.();withdrawalRows=[];
   if(!date.value){++sourceEpoch;loading=false;loaded=false;save.disabled=true;refresh.disabled=false;status.textContent='প্রথমে তারিখ নির্বাচন করুন।';return;}
