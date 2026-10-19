@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.19.01">
+<meta name="investment-release-version" content="2026.10.19.02">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -193,7 +193,7 @@ form button.save{width:180px;min-height:40px!important;padding:9px 16px!importan
 @media(min-width:1400px){.scroll .capital-report-table{min-width:100%;}.capital-report-table th,.capital-report-table td{padding:7px 6px;font-size:11px}}
 @media(max-width:800px){.scroll .capital-report-table{min-width:930px}.capital-report-table th,.capital-report-table td{padding:5px 4px;font-size:10px}.capital-report-table thead tr:nth-child(2) th{font-size:9.5px}}
 @media print{.scroll .capital-report-table{min-width:0!important;width:100%!important}.capital-report-table th,.capital-report-table td{padding:5px 4px!important;font-size:9px!important}}
-</style></head><body><script>
+</style><style>.submission-date-picker{position:relative;width:100%}.submission-date-trigger{width:100%;min-height:39px!important;margin:0!important;padding:8px 11px!important;background:#fff!important;color:#164f43!important;border:1px solid #afcec3!important;border-radius:8px!important;font:inherit!important;text-align:left;box-shadow:none!important}.submission-date-trigger::after{content:'▦';float:right;color:#26836c}.submission-calendar{position:absolute;top:calc(100% + 6px);left:0;z-index:200;width:min(290px,calc(100vw - 55px));padding:12px;background:#fff;border:1px solid #bdd8cc;border-radius:12px;box-shadow:0 10px 30px #173f3528}.submission-calendar[hidden]{display:none}.submission-calendar-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.submission-calendar-heading button{padding:3px 10px!important;margin:0!important;min-height:30px!important}.submission-calendar-heading strong{font-size:13px}.submission-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}.submission-calendar-grid span{font-size:11px;color:#55766b;padding:5px 0}.submission-calendar-grid button{min-height:30px!important;margin:0!important;padding:5px 0!important;font-size:12px!important;border-radius:6px!important;background:#edf7f2!important;color:#185745!important;box-shadow:none!important}.submission-calendar-grid button:disabled{background:#f0f1f2!important;color:#b0b4b7!important;text-decoration:line-through;cursor:not-allowed;opacity:1}.submission-calendar-grid button.selected{background:#16795e!important;color:white!important}.submission-calendar small{display:block;margin-top:9px;font-size:10px;line-height:1.5;color:#667b72}</style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');input.value=formatted;let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
  <details id="navWorkingCapital" class="module-dropdown"><summary>💼 Working Capital <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Working Capital submenu"><button type="button" id="showWorkingCapital">Daily Working Capital</button><button type="button" id="showWorkingCapitalReport">Working Capital Report</button><button type="button" id="showBalanceCalculator">MA &amp; Bank Balance Calculator</button></div></details>
@@ -286,7 +286,7 @@ function show(key){window.stopCalculatorWithdrawalSync?.();if(content.querySelec
  if(preview){items={};render();return;}
  if(!stream){
   stream=database.ref('investmentEntries');
-  handler=snap=>{if(String(bridge.getUser())!==owner)return;items=snap.val()||{};dataReady=true;if(page==='declaration')window.syncPettyDeclaration?.();if(page==='capital'){window.investmentSyncOpening?.();window.investmentSyncCapitalState?.();window.investmentSyncCalculatorClosing?.();}render();};
+  handler=snap=>{if(String(bridge.getUser())!==owner)return;items=snap.val()||{};dataReady=true;document.querySelectorAll('[data-submission-date]').forEach(input=>input.dispatchEvent(new Event('submission-records-updated')));if(page==='declaration')window.syncPettyDeclaration?.();if(page==='capital'){window.investmentSyncOpening?.();window.investmentSyncCapitalState?.();window.investmentSyncCalculatorClosing?.();}render();};
   stream.on('value',handler,err=>{const box=document.getElementById('investList');if(box)box.textContent='ডাটা লোড হয়নি: '+err.message;});
  }else{if(page==='capital'){window.investmentSyncOpening?.();window.investmentSyncCapitalState?.();window.investmentSyncCalculatorClosing?.();}render();}
 }
@@ -295,9 +295,27 @@ function listBox(){const list=node('div');list.id='investList';list.className='c
 function submitTools(form,card){const save=node('button','Submit');save.className='save';save.type='submit';
  if(preview){save.disabled=true;save.title='Collection Portal-এ Admin login করে Investment menu খুললে Submit চালু হবে।';}
  form.append(save);card.append(form);const status=node('p');status.id='investMessage';card.append(status);return {save,status};}
+function hasSubmittedInvestmentDate(records,type,date){return !!date&&Object.values(records||{}).some(row=>row?.scope==='company'&&row.type===type&&row.date===date);}
+function installSubmissionDatePicker(input,type){
+ input.hidden=true;input.required=false;input.dataset.submissionDate=type;
+ const wrap=node('div');wrap.className='submission-date-picker';const trigger=node('button');trigger.type='button';trigger.className='submission-date-trigger';trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');
+ const panel=node('div');panel.className='submission-calendar';panel.hidden=true;panel.setAttribute('role','dialog');panel.setAttribute('aria-label','তারিখ নির্বাচন');wrap.append(trigger,panel);input.after(wrap);
+ let month=(input.value||today()).slice(0,7);
+ const selected=()=>{trigger.textContent=input.value||'তারিখ নির্বাচন করুন';trigger.disabled=input.disabled;};
+ function draw(){panel.replaceChildren();const [year,m]=month.split('-').map(Number),header=node('div');header.className='submission-calendar-heading';const previous=node('button','‹'),next=node('button','›');previous.type=next.type='button';previous.setAttribute('aria-label','আগের মাস');next.setAttribute('aria-label','পরের মাস');const label=node('strong',new Intl.DateTimeFormat('en-GB',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(year,m-1,1))));
+ const move=n=>{const d=new Date(Date.UTC(year,m-1+n,1));month=d.toISOString().slice(0,7);draw();};previous.onclick=()=>move(-1);next.onclick=()=>move(1);header.append(previous,label,next);panel.append(header);
+ const grid=node('div');grid.className='submission-calendar-grid';for(const day of ['Su','Mo','Tu','We','Th','Fr','Sa'])grid.append(node('span',day));const first=new Date(Date.UTC(year,m-1,1)).getUTCDay(),days=new Date(Date.UTC(year,m,0)).getUTCDate();for(let n=0;n<first;n++)grid.append(node('span'));
+ for(let n=1;n<=days;n++){const value=month+'-'+String(n).padStart(2,'0'),button=node('button',String(n));button.type='button';button.disabled=!dataReady||hasSubmittedInvestmentDate(items,type,value);button.className=value===input.value?'selected':'';button.setAttribute('aria-label',value+(button.disabled?' — জমা হয়েছে অথবা তথ্য লোড হচ্ছে':''));button.title=button.disabled?'এই তারিখের রিপোর্ট জমা হয়েছে অথবা তথ্য লোড হচ্ছে':value;button.onclick=()=>{if(input.disabled||!dataReady||hasSubmittedInvestmentDate(items,type,value))return;input.value=value;selected();panel.hidden=true;trigger.setAttribute('aria-expanded','false');input.dispatchEvent(new Event('change',{bubbles:true}));};grid.append(button);}panel.append(grid,node('small',dataReady?'জমা দেওয়া তারিখ নির্বাচন করা যাবে না।':'তারিখের তথ্য লোড হচ্ছে…'));}
+ trigger.onclick=()=>{if(input.disabled)return;panel.hidden=!panel.hidden;trigger.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){month=(input.value||today()).slice(0,7);draw();}};
+ wrap.addEventListener('keydown',event=>{if(event.key==='Escape'){panel.hidden=true;trigger.setAttribute('aria-expanded','false');trigger.focus();}});
+ wrap.addEventListener('focusout',()=>setTimeout(()=>{if(!wrap.contains(document.activeElement)){panel.hidden=true;trigger.setAttribute('aria-expanded','false');}},0));
+ input.addEventListener('change',()=>{if(hasSubmittedInvestmentDate(items,type,input.value)){input.value='';setTimeout(()=>{const status=document.getElementById('investMessage');if(status)status.textContent='এই তারিখের রিপোর্ট আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';},0);}selected();},true);
+ input.addEventListener('submission-records-updated',()=>{selected();if(!panel.hidden)draw();});selected();return wrap;
+}
+
 function capitalForm(){
  const box=card('Daily Working Capital'),form=node('form');form.id='capitalForm';
- const dateArea=section(form,'Date'),selectedDate=field(dateArea,'Date','capital_date','date',true);selectedDate.value='';dateArea.classList.add('compact-capital-date');
+ const dateArea=section(form,'Date'),selectedDate=field(dateArea,'Date','capital_date','date',true);selectedDate.value='';dateArea.classList.add('compact-capital-date');installSubmissionDatePicker(selectedDate,'capital');
  const openingLevel=node('fieldset');openingLevel.className='working-level opening-level';openingLevel.append(node('legend','Opening Balance'));form.append(openingLevel);
  let grid=node('div');grid.className='fields';openingLevel.append(grid);field(grid,'MA Wallet','opening_wallet');field(grid,'Cash In Hand','opening_cashHand');field(grid,'Cash In Shivalaya Office','opening_cashOffice').closest('.field').hidden=true;
  bankFields(openingLevel,'openingBank','Bank');
@@ -335,7 +353,7 @@ function capitalForm(){
  const applyCalculator=()=>{
   if(!form.isConnected)return;
   const draft=items[selectedDate.value+'_calculator'];if(!draft||form.dataset.calculatorRevision===String(draft.updatedAt||draft.createdAt))return;
-  if(items[selectedDate.value+'_company']&&!editing)edit.click();
+  if(items[selectedDate.value+'_company']&&!editing)return;
   setAmount('closing_wallet',draft.netMA);
   if(draft.cashCalculation){setAmount('closing_cashHand',draft.cashCalculation.netCash??draft.cashCalculation.cashInHand);setAmount('closing_cashOffice',0);}
   form.dataset.closingSource='calculator';delete closingSum.dataset.testManual;
@@ -395,7 +413,7 @@ function selectedDateBankCashReceived(entries,date){const accepted=reason=>['for
 function bankCalculationTotals(drafts){const totals={opening:0,deposit:0,fundTransfer:0,chequeWithdrawal:0};for(const value of Object.values(drafts||{}))for(const key of Object.keys(totals))totals[key]+=Math.round((Number(value?.[key])||0)*100);for(const key of Object.keys(totals))totals[key]/=100;totals.net=Math.round((totals.opening+totals.deposit-totals.fundTransfer-totals.chequeWithdrawal)*100)/100;return totals;}
 function balanceCalculator(){
  const box=card('MA | Cash | Bank Balance Calculator'),form=node('form');form.id='balanceCalculatorForm';
- const top=section(form,'Date'),date=field(top,'Date','calc_date','date',true);date.readOnly=false;date.value='';top.classList.add('compact-capital-date');
+ const top=section(form,'Date'),date=field(top,'Date','calc_date','date',true);date.readOnly=false;date.value='';top.classList.add('compact-capital-date');installSubmissionDatePicker(date,'calculator');
  const maArea=section(form,'MA Balance Calculation');
  const maOpening=field(maArea,'MA Opening Balance','calc_ma_opening'),lifting=field(maArea,'Lifting','calc_lifting'),maRefund=field(maArea,'Refund','calc_refund'),receive=field(maArea,'B2B Receive','calc_receive'),send=field(maArea,'B2B Send','calc_send'),netMA=field(maArea,'Net MA Balance','calc_net_ma');
  [maOpening,receive,send,netMA].forEach(x=>x.readOnly=true);
@@ -443,6 +461,7 @@ function balanceCalculator(){
  async function source(){
   window.stopCalculatorWithdrawalSync?.();withdrawalRows=[];
   if(!date.value){++sourceEpoch;loading=false;loaded=false;save.disabled=true;refresh.disabled=false;status.textContent='প্রথমে তারিখ নির্বাচন করুন।';return;}
+  if(hasSubmittedInvestmentDate(items,'calculator',date.value)){date.value='';date.dispatchEvent(new Event('submission-records-updated'));loading=false;loaded=false;save.disabled=true;refresh.disabled=false;status.textContent='এই তারিখের Calculator আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';return;}
   if(preview){loading=false;status.textContent='Admin হিসেবে Collection Portal-এর Investment menu থেকে খুলুন।';paint();return;}
   const selectedDate=date.value,epoch=++sourceEpoch;
   loading=true;loaded=false;save.disabled=true;refresh.disabled=true;status.textContent='Opening এবং দিনের হিসাব লোড হচ্ছে…';
@@ -450,7 +469,7 @@ function balanceCalculator(){
   try{
    const snapshots=await Promise.race([Promise.all([database.ref('investmentEntries').once('value'),database.ref('collections').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankSlipRequests').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('ledgerAccounts').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate).once('value')]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),12000);})]);
    if(!form.isConnected||String(bridge.getUser())!==owner||epoch!==sourceEpoch||selectedDate!==date.value)return;
-   items=snapshots[0].val()||{};withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
+   items=snapshots[0].val()||{};if(hasSubmittedInvestmentDate(items,'calculator',selectedDate)){date.value='';date.dispatchEvent(new Event('submission-records-updated'));loading=false;loaded=false;save.disabled=true;status.textContent='এই তারিখের Calculator আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';return;}withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
    approved=totals.bankDeposits;
    const saved=items[date.value+'_calculator'];bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved?.bankCalculations?.[bank]||{})}]));
@@ -471,7 +490,8 @@ function balanceCalculator(){
    if(!window.INVESTMENT_MANUAL_TEST&&(net<0||Object.values(bankDrafts).some(x=>x.net<0)))throw Error('Net balance ঋণাত্মক। অঙ্কগুলো যাচাই করুন।');
    busy=true;date.disabled=true;paint();status.textContent='Saving…';
    const record={type:'calculator',scope:'company',date:date.value,...ma,netMA:net,cashCalculation:{openingCash:numeric(cashOpening),cashReceivedFromBank:numeric(cashBankReceived),cashIssueDso:numeric(cashIssue),cashDepositLifting:numeric(cashLifting),cashInHand:numeric(cashHand),marketCash:{total:numeric(marketTeam)},netCash:numeric(netCash)},totalClosing:numeric(totalClosing),bankCalculations:bankDrafts,updatedAt:bridge.serverTimestamp,updatedBy:owner};
-   await database.ref('investmentEntries/'+date.value+'_calculator').set(record);
+   const savedResult=await database.ref('investmentEntries/'+date.value+'_calculator').transaction(existing=>existing===null?record:undefined,undefined,false);
+   if(!savedResult.committed)throw Error('এই তারিখের Calculator আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।');
    const submittedDate=record.date;items[submittedDate+'_calculator']={...record,updatedAt:Date.now()};show('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
   }catch(e){status.textContent='Submit হয়নি: '+e.message;}finally{busy=false;date.disabled=false;paint();}
  };
