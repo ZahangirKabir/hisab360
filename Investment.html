@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.19.05">
+<meta name="investment-release-version" content="2026.10.19.06">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -614,10 +614,10 @@ const choices=[['','—'],...banks.map(b=>[b,b])];
 function number(s){if(!/^\d{1,15}$/.test(s))throw Error('Cheque number শুধু সংখ্যা হবে (সর্বোচ্চ ১৫ অঙ্ক)।');const n=Number(s);if(!Number.isSafeInteger(n)||n<1)throw Error('Cheque number সঠিক নয়।');return n;}
 function plan(data,entry){const rows=Object.values(data||{}).filter(x=>x?.bankName===entry.bankName);if(entry.type==='range'){const a=number(entry.chequeFrom),b=number(entry.chequeTo);if(b<a)throw Error('From-এর চেয়ে To ছোট হতে পারবে না।');if(rows.some(r=>r.type==='range'&&a<=number(r.chequeTo)&&b>=number(r.chequeFrom)))throw Error('এই bank-এর cheque range আগে যোগ হয়েছে বা overlap করছে।');return [];}
 if(entry.type!=='withdrawal'||entry.withdrawBy!=='Cheque')return [];
-const n=number(entry.chequeNumber),ranges=rows.filter(r=>r.type==='range').sort((a,b)=>number(a.chequeFrom)-number(b.chequeFrom));if(!ranges.some(r=>n>=number(r.chequeFrom)&&n<=number(r.chequeTo)))throw Error('এই cheque number নিবন্ধিত range-এর বাইরে।');
+const n=number(entry.chequeNumber),ranges=rows.filter(r=>r.type==='range').sort((a,b)=>number(a.chequeFrom)-number(b.chequeFrom));const selectedRange=ranges.find(r=>n>=number(r.chequeFrom)&&n<=number(r.chequeTo));if(!selectedRange)throw Error('এই cheque number নিবন্ধিত range-এর বাইরে।');
 const used=new Set();for(const r of rows){if(r.type==='cheque'||r.type==='withdrawal'&&r.withdrawBy==='Cheque'){if(/^\d+$/.test(r.chequeNumber||''))used.add(Number(r.chequeNumber));for(const skip of r.missingCheques||[])used.add(Number(skip.number));}}
 if(used.has(n))throw Error('এই cheque আগে ব্যবহার হয়েছে বা missing হিসেবে কারণ জমা আছে।');
-const missing=[];for(const range of ranges){const end=Math.min(n-1,number(range.chequeTo));for(let k=number(range.chequeFrom);k<=end;k++){if(!used.has(k)){missing.push(String(k).padStart(range.chequeFrom.length,'0'));if(missing.length>200)throw Error('২০০টির বেশি cheque বাদ পড়েছে। আগে ছোট cheque number থেকে হিসাব সম্পূর্ণ করুন।');}}}return missing;
+const missing=[];for(const range of [selectedRange]){const end=Math.min(n-1,number(range.chequeTo));for(let k=number(range.chequeFrom);k<=end;k++){if(!used.has(k)){missing.push(String(k).padStart(range.chequeFrom.length,'0'));if(missing.length>200)throw Error('২০০টির বেশি cheque বাদ পড়েছে। আগে ছোট cheque number থেকে হিসাব সম্পূর্ণ করুন।');}}}return missing;
 }
 window.investmentChequePlan=plan;
 function ask(bank,numbers){return new Promise(resolve=>{const overlay=el('div');overlay.className='cheque-modal';const card=el('div');card.className='cheque-dialog';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.append(el('h3',bank+' — Missing Cheque'),el('p','বাদ পড়া cheque: '+numbers.join(', ')));const f=el('form');const reason=input(f,'কারণ','reason','text',true,[['','—'],['Wrong amount','Wrong amount'],['Writing mistake','Writing mistake'],['Bank Balance problem','Bank Balance problem']]);const yes=el('button','কারণ দিয়ে Submit'),no=el('button','বাতিল');yes.type='submit';no.type='button';no.onclick=()=>finish(null);f.onsubmit=e=>{e.preventDefault();if(f.reportValidity())finish(numbers.map(number=>({number,reason:reason.value})));};function finish(v){overlay.remove();resolve(v);}f.append(yes,no);card.append(f);overlay.append(card);document.body.append(overlay);reason.focus();});}
