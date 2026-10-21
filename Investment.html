@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.21.12">
+<meta name="investment-release-version" content="2026.10.21.13">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -233,12 +233,29 @@ const database=bridge.database,menu=document.getElementById('menu'),content=docu
 document.getElementById('access').hidden=true;document.getElementById('app').hidden=false;
 const banks=['Islami','Pubali','City','DBBL','Agroni','UCB','Sonali'];
 const pages=[['capital','Daily Working Capital'],['capitalReport','Working Capital Report'],['declaration','Petty Cash Declaration'],['petty','Daily Expense'],['pettyReport','Petty Cash Report'],['pettyTypeReport','Expense Type Report'],['total','Total Investment']];
-const formDrafts=new Map();let page='capital',items={},stream=null,handler=null,dataReady=false;
+const formDrafts=new Map();let page='capital',items={},stream=null,handler=null,dataReady=false,dataLoadError='',dataLoadTimer=null,dataLoadEpoch=0;
 const node=(tag,label)=>{const x=document.createElement(tag);if(label!==undefined)x.textContent=String(label);return x;};
 const money=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
 const inputMoney=n=>Number(n||0)===0?'':money(n);
 function today(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const part=key=>parts.find(x=>x.type===key).value;return `${part('year')}-${part('month')}-${part('day')}`;}
-function stop(){if(stream){stream.off('value',handler);stream=null;handler=null;}}
+function stop(){++dataLoadEpoch;clearTimeout(dataLoadTimer);if(stream){stream.off('value',handler);stream=null;handler=null;}}
+function notifyInvestmentState(){
+ document.querySelectorAll('[data-submission-date]').forEach(input=>input.dispatchEvent(new Event('submission-records-updated')));
+ if(page==='declaration')window.syncPettyDeclaration?.();
+ if(page==='capital'){window.investmentSyncOpening?.();window.investmentSyncCapitalState?.();window.investmentSyncCalculatorClosing?.();}
+ render();
+}
+function ensureInvestmentStream(force=false){
+ if(preview){dataLoadError='Collection Portal-এ Admin login করে Investment খুলুন।';return;}
+ if(String(bridge.getUser())!==owner)return;
+ if(stream&&!force&&!dataLoadError)return;
+ stop();dataLoadError='';const epoch=dataLoadEpoch,ref=database.ref('investmentEntries');stream=ref;
+ const failed=error=>{if(epoch!==dataLoadEpoch||stream!==ref)return;clearTimeout(dataLoadTimer);dataLoadError=/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))?'Investment পড়ার অনুমতি পাওয়া যায়নি। Admin login/session যাচাই করে আবার চেষ্টা করুন।':'Investment-এর তথ্য লোড হয়নি। আবার চেষ্টা করুন।';notifyInvestmentState();};
+ handler=snap=>{if(epoch!==dataLoadEpoch||stream!==ref||String(bridge.getUser())!==owner)return;clearTimeout(dataLoadTimer);items=snap.val()||{};dataReady=true;dataLoadError='';notifyInvestmentState();};
+ dataLoadTimer=setTimeout(()=>{if(epoch!==dataLoadEpoch||dataReady)return;dataLoadError='Investment-এর তথ্য পেতে সময় লাগছে। আবার চেষ্টা করুন।';notifyInvestmentState();},12000);
+ try{ref.on('value',handler,failed);}catch(error){failed(error);}
+}
+window.retryInvestmentData=()=>{ensureInvestmentStream(true);notifyInvestmentState();};
 function field(area,label,name,type='number',required=false){
  const box=node('div');box.className='field';box.append(node('label',label));const input=window.prepareInvestmentTestInput(node('input'));input.name=name;input.type=type==='number'?'text':type;input.required=required;
  if(type==='number'){input.inputMode='decimal';input.addEventListener('blur',()=>{if(input.value.trim()){try{input.value=inputMoney(amount(input.value));}catch{input.setCustomValidity('সঠিক টাকার অঙ্ক লিখুন।');input.reportValidity();}}});input.addEventListener('input',()=>{window.formatInvestmentAmount(input);input.setCustomValidity('');});}
@@ -277,7 +294,7 @@ function cashBalances(date){let deposits=0,spentBefore=0,spentToday=0;
  });
  return {opening:Math.round((deposits-spentBefore)*100)/100,available:Math.round((deposits-spentBefore-spentToday)*100)/100};
 }
-function show(key){if(page===key&&content.querySelector('form')){content.querySelector('form').dispatchEvent(new Event('investment-draft-resume'));return;}window.stopCalculatorWithdrawalSync?.();if(content.querySelector('form')&&page!==key)formDrafts.set(page,[...content.childNodes]);page=key;menu.replaceChildren();content.replaceChildren();
+function show(key){ensureInvestmentStream();if(page===key&&content.querySelector('form')){content.querySelector('form').dispatchEvent(new Event('investment-draft-resume'));notifyInvestmentState();return;}window.stopCalculatorWithdrawalSync?.();if(content.querySelector('form')&&page!==key)formDrafts.set(page,[...content.childNodes]);page=key;menu.replaceChildren();content.replaceChildren();
  const children=key==='capital'||key==='capitalReport'?
   [['capital','Daily Working Capital'],['capitalReport','Working Capital Report']]:
   key==='declaration'||key==='petty'||key==='pettyReport'||key==='pettyTypeReport'?
@@ -287,14 +304,10 @@ function show(key){if(page===key&&content.querySelector('form')){content.querySe
   const button=node('button',label);button.type='button';button.classList.toggle('active',name===key);
   button.onclick=()=>show(name);menu.append(button);
  });
- if(formDrafts.has(key)){content.append(...formDrafts.get(key));content.querySelector('form')?.dispatchEvent(new Event('investment-draft-resume'));render();return;}
+ if(formDrafts.has(key)){content.append(...formDrafts.get(key));content.querySelector('form')?.dispatchEvent(new Event('investment-draft-resume'));notifyInvestmentState();return;}
  if(key==='capital')capitalForm();else if(key==='calculator')balanceCalculator();else if(key==='declaration')pettyDeclaration();else if(key==='petty')pettyForm();else if(key==='pettyReport'||key==='pettyTypeReport')expenseReportPage(key);else report(key);
  if(preview){items={};render();return;}
- if(!stream){
-  stream=database.ref('investmentEntries');
-  handler=snap=>{if(String(bridge.getUser())!==owner)return;items=snap.val()||{};dataReady=true;document.querySelectorAll('[data-submission-date]').forEach(input=>input.dispatchEvent(new Event('submission-records-updated')));if(page==='declaration')window.syncPettyDeclaration?.();if(page==='capital'){window.investmentSyncOpening?.();window.investmentSyncCapitalState?.();window.investmentSyncCalculatorClosing?.();}render();};
-  stream.on('value',handler,err=>{const box=document.getElementById('investList');if(box)box.textContent='ডাটা লোড হয়নি: '+err.message;});
- }else{if(page==='capital'){window.investmentSyncOpening?.();window.investmentSyncCapitalState?.();window.investmentSyncCalculatorClosing?.();}render();}
+ notifyInvestmentState();
 }
 function card(title){const div=node('div');div.className='card';div.append(node('h2',title));content.append(div);return div;}
 function listBox(){const list=node('div');list.id='investList';list.className='card scroll';content.append(list);return list;}
@@ -311,7 +324,7 @@ function installSubmissionDatePicker(input,type){
  function draw(){panel.replaceChildren();const [year,m]=month.split('-').map(Number),header=node('div');header.className='submission-calendar-heading';const previous=node('button','‹'),next=node('button','›');previous.type=next.type='button';previous.setAttribute('aria-label','আগের মাস');next.setAttribute('aria-label','পরের মাস');const label=node('strong',new Intl.DateTimeFormat('en-GB',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(year,m-1,1))));
  const move=n=>{const d=new Date(Date.UTC(year,m-1+n,1));month=d.toISOString().slice(0,7);draw();};previous.onclick=()=>move(-1);next.onclick=()=>move(1);header.append(previous,label,next);panel.append(header);
  const grid=node('div');grid.className='submission-calendar-grid';for(const day of ['Su','Mo','Tu','We','Th','Fr','Sa'])grid.append(node('span',day));const first=new Date(Date.UTC(year,m-1,1)).getUTCDay(),days=new Date(Date.UTC(year,m,0)).getUTCDate();for(let n=0;n<first;n++)grid.append(node('span'));
- for(let n=1;n<=days;n++){const value=month+'-'+String(n).padStart(2,'0'),button=node('button',String(n));button.type='button';button.disabled=!dataReady||hasSubmittedInvestmentDate(items,type,value);button.className=value===input.value?'selected':'';button.setAttribute('aria-label',value+(button.disabled?' — জমা হয়েছে অথবা তথ্য লোড হচ্ছে':''));button.title=button.disabled?'এই তারিখের রিপোর্ট জমা হয়েছে অথবা তথ্য লোড হচ্ছে':value;button.onclick=()=>{if(input.disabled||!dataReady||hasSubmittedInvestmentDate(items,type,value))return;input.value=value;selected();panel.hidden=true;trigger.setAttribute('aria-expanded','false');input.dispatchEvent(new Event('change',{bubbles:true}));};grid.append(button);}panel.append(grid,node('small',dataReady?'জমা দেওয়া তারিখ নির্বাচন করা যাবে না।':'তারিখের তথ্য লোড হচ্ছে…'));}
+ for(let n=1;n<=days;n++){const value=month+'-'+String(n).padStart(2,'0'),button=node('button',String(n));button.type='button';button.disabled=!dataReady||hasSubmittedInvestmentDate(items,type,value);button.className=value===input.value?'selected':'';button.setAttribute('aria-label',value+(!dataReady?' — তথ্য যাচাই বাকি':hasSubmittedInvestmentDate(items,type,value)?' — রিপোর্ট জমা হয়েছে':''));button.title=!dataReady?'তারিখের তথ্য যাচাই শেষ হয়নি':hasSubmittedInvestmentDate(items,type,value)?'এই তারিখের রিপোর্ট আগে জমা হয়েছে':value;button.onclick=()=>{if(input.disabled||!dataReady||hasSubmittedInvestmentDate(items,type,value))return;input.value=value;selected();panel.hidden=true;trigger.setAttribute('aria-expanded','false');input.dispatchEvent(new Event('change',{bubbles:true}));};grid.append(button);}const note=node('small',dataLoadError||(dataReady?'জমা দেওয়া তারিখ নির্বাচন করা যাবে না।':'তারিখের তথ্য লোড হচ্ছে…'));note.setAttribute('role',dataLoadError?'alert':'status');panel.append(grid,note);if(dataLoadError&&!preview){const retry=node('button','↻ আবার চেষ্টা করুন');retry.type='button';retry.className='add-row';retry.onclick=()=>window.retryInvestmentData();panel.append(retry);}}
  trigger.onclick=()=>{if(input.disabled)return;panel.hidden=!panel.hidden;trigger.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){month=(input.value||today()).slice(0,7);draw();}};
  wrap.addEventListener('keydown',event=>{if(event.key==='Escape'){panel.hidden=true;trigger.setAttribute('aria-expanded','false');trigger.focus();}});
  wrap.addEventListener('focusout',()=>setTimeout(()=>{if(!wrap.contains(document.activeElement)){panel.hidden=true;trigger.setAttribute('aria-expanded','false');}},0));
@@ -514,7 +527,7 @@ function balanceCalculator(){
   loading=true;loaded=false;save.disabled=true;refresh.disabled=true;status.textContent='Opening এবং দিনের হিসাব লোড হচ্ছে…';
   let timer;
   try{
-   const snapshots=await Promise.race([Promise.all([database.ref('investmentEntries').once('value'),database.ref('collections').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankSlipRequests').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('ledgerAccounts').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate).once('value')]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),12000);})]);
+   const snapshots=await Promise.race([Promise.all([dataReady?Promise.resolve({val:()=>items}):database.ref('investmentEntries').once('value'),database.ref('collections').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankSlipRequests').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('ledgerAccounts').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate).once('value')]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),12000);})]);
    if(epoch!==sourceEpoch||selectedDate!==date.value)return;if(!form.isConnected||String(bridge.getUser())!==owner){loading=false;loaded=false;return;}
    items=snapshots[0].val()||{};if(hasSubmittedInvestmentDate(items,'calculator',selectedDate)){date.value='';date.dispatchEvent(new Event('submission-records-updated'));loading=false;loaded=false;save.disabled=true;status.textContent='এই তারিখের Calculator আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';return;}withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
@@ -641,7 +654,11 @@ function render(){if(['declaration','petty','pettyReport','pettyTypeReport'].inc
  `Commission ${money(Array.isArray(x.commission)?x.commission.reduce((s,v)=>s+(Number(v.amount)||0),0):x.commission?.amount)}; Head Office Received ${money(Array.isArray(x.headOfficeReceive)?x.headOfficeReceive.reduce((s,v)=>s+(Number(v.amount)||0),0):x.headOfficeReceive?.amount)}; Head Office Transfer ${money(Array.isArray(x.headOfficeTransfer)?x.headOfficeTransfer.reduce((s,v)=>s+(Number(v.amount)||0),0):x.headOfficeTransfer?.amount)}; Salary ${money(x.transfers?.salary)}; Route Convence ${money(x.transfers?.routeConvence)}`:x.note||'—';
  [x.date,x.type==='capital'?'Working Capital':'Petty Cash',`${money(x.type==='capital'?x.openingTotal:x.openingBalance)}`,`${money(x.type==='capital'?x.closingTotal:x.closingBalance)}`,`${money(x.type==='capital'?x.transfers?.petty:x.amount)}`,details].forEach(value=>tr.append(node('td',value)));body.append(tr);});table.append(body);list.append(table);
 }
-window.addEventListener('pagehide',stop);show('capital');
+window.addEventListener('pagehide',stop);
+window.addEventListener('pageshow',()=>{ensureInvestmentStream();notifyInvestmentState();});
+window.addEventListener('online',()=>{ensureInvestmentStream(!!dataLoadError);notifyInvestmentState();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){ensureInvestmentStream();notifyInvestmentState();}});
+show('capital');
 window.investmentNavigate=show;
 })();
 </script><script>
