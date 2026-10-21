@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.21.01">
+<meta name="investment-release-version" content="2026.10.21.02">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -416,6 +416,7 @@ function selectedDateDsoTotals(legacy,ledger,selectedDate){
 function selectedDateLiftingTotal(entries,date){return Object.values(entries||{}).filter(x=>x?.type==='withdrawal'&&x.scope==='company'&&x.date===date).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)?x.reasonAmounts.filter(r=>String(r.reason||'').trim().toLowerCase()==='for lifting').reduce((n,r)=>n+Math.round((Number(r.amount)||0)*100),0):String(x.purpose||'').trim().toLowerCase()==='for lifting'?Math.round((Number(x.amount)||0)*100):0),0)/100;}
 function selectedDateBankCashReceived(entries,date){const accepted=reason=>['for dso cash','for dso','dh volt','refund'].includes(String(reason||'').trim().toLowerCase().replace(/\s+/g,' '));return Object.values(entries||{}).filter(x=>x?.type==='withdrawal'&&x.scope==='company'&&x.date===date).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)?x.reasonAmounts.filter(r=>accepted(r.reason)).reduce((n,r)=>n+Math.round((Number(r.amount)||0)*100),0):accepted(x.purpose)?Math.round((Number(x.amount)||0)*100):0),0)/100;}
 function selectedDateBankRefundDeposit(entries,date,bank,matches){const refund=reason=>String(reason||'').trim().toLowerCase()==='refund';return Object.values(entries||{}).filter(row=>row?.type==='withdrawal'&&row.scope==='company'&&row.date===date&&matches(row.bankName,bank)).reduce((sum,row)=>sum+(Array.isArray(row.reasonAmounts)?row.reasonAmounts.filter(x=>refund(x.reason)).reduce((n,x)=>n+Math.round((Number(x.amount)||0)*100),0):refund(row.purpose)?Math.round((Number(row.amount)||0)*100):0),0)/100;}
+function selectedDateBankWithdrawalTotal(entries,date,bank,via,matches){const refund=reason=>String(reason||'').trim().toLowerCase()==='refund';return Object.values(entries||{}).filter(row=>row?.type==='withdrawal'&&row.scope==='company'&&row.date===date&&row.withdrawBy===via&&matches(row.bankName,bank)).reduce((sum,row)=>{if(via!=='APP')return sum+Math.round((Number(row.amount)||0)*100);if(Array.isArray(row.reasonAmounts)&&row.reasonAmounts.length)return sum+row.reasonAmounts.filter(x=>!refund(x.reason)).reduce((n,x)=>n+Math.round((Number(x.amount)||0)*100),0);return sum+(refund(row.purpose)?0:Math.round((Number(row.amount)||0)*100));},0)/100;}
 function bankCalculationTotals(drafts){const totals={opening:0,depositDso:0,depositRefund:0,fundTransfer:0,chequeWithdrawal:0};for(const value of Object.values(drafts||{})){const row={...value,depositDso:value?.depositDso??((Number(value?.deposit)||0)-(Number(value?.depositRefund)||0))};for(const key of Object.keys(totals))totals[key]+=Math.round((Number(row[key])||0)*100);}for(const key of Object.keys(totals))totals[key]/=100;totals.deposit=Math.round((totals.depositDso+totals.depositRefund)*100)/100;totals.net=Math.round((totals.opening+totals.deposit-totals.fundTransfer-totals.chequeWithdrawal)*100)/100;return totals;}
 function balanceCalculator(){
  const box=card('MA | Cash | Bank Balance Calculator'),form=node('form');form.id='balanceCalculatorForm';
@@ -444,7 +445,7 @@ function balanceCalculator(){
  const countDsoDeposit=bank=>Math.round(approved.filter(x=>matching(x.bankName,bank)).reduce((n,x)=>n+Number(x.amount||0),0)*100)/100;
  const countRefundDeposit=bank=>selectedDateBankRefundDeposit(withdrawalRows,date.value,bank,matching);
  const countBank=bank=>Math.round((countDsoDeposit(bank)+countRefundDeposit(bank))*100)/100;
- const withdrawalTotal=(bank,via)=>withdrawalRows.filter(x=>x?.type==='withdrawal'&&x.scope==='company'&&x.date===date.value&&x.withdrawBy===via&&matching(x.bankName,bank)).reduce((n,x)=>n+Math.round((Number(x.amount)||0)*100),0)/100;
+ const withdrawalTotal=(bank,via)=>selectedDateBankWithdrawalTotal(withdrawalRows,date.value,bank,via,matching);
  function syncWithdrawalDrafts(){Object.entries(bankDrafts).forEach(([b,x])=>{x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.fundTransfer=withdrawalTotal(b,'APP');x.chequeWithdrawal=withdrawalTotal(b,'Cheque');x.net=Math.round((Number(x.opening||0)+Number(x.deposit||0)-x.fundTransfer-x.chequeWithdrawal)*100)/100;});}
  function watchWithdrawals(selectedDate,epoch){
   window.stopCalculatorWithdrawalSync?.();const ref=database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate);
