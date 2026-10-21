@@ -1264,14 +1264,32 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     function recordServerClock(offset){if(typeof offset==='number'&&Number.isFinite(offset))sessionClock={server:Date.now()+offset,monotonic:performance.now()};}
     function sessionServerNow(){if(!sessionClock)throw Error('Server time যাচাই হয়নি। আবার Login করুন।');return sessionClock.server+(performance.now()-sessionClock.monotonic);}
     async function syncSessionClock(app){
-      try{
+      const sdkClock=(async()=>{
         await waitLoginDatabase(app,1500);
         const ref=app.database().ref('.info/serverTimeOffset');
         const snap=await loginReadDeadline(()=>ref.once('value'),1500);
         if(typeof snap.val()!=='number')throw Error('Server time পাওয়া যায়নি।');
         recordServerClock(snap.val());
         if(!sessionClockApps.has(app)){sessionClockApps.add(app);ref.on('value',s=>recordServerClock(s.val()));}
-      }catch(error){if(!sessionClock)throw error;}
+      })();
+      // A clock already confirmed by the server needs no blocking SDK wait.
+      if(sessionClock){sdkClock.catch(()=>{});return;}
+      return new Promise((resolve,reject)=>{
+        let done=false,failed=0,timer;
+        const finish=()=>{if(done)return;done=true;clearTimeout(timer);resolve();};
+        const fail=()=>{if(done)return;if(sessionClock){finish();return;}if(++failed===2){done=true;const error=Error('সার্ভারের সময় যাচাই করা যায়নি। আবার Login করুন।');error.code='portal/clock-connection';reject(error);}};
+        timer=setTimeout(async()=>{
+          try{
+            const user=app.auth().currentUser;if(!user)throw Error('Login session পাওয়া যায়নি।');
+            // Force a newly issued Firebase token: its signed iat is server time,
+            // unlike a cached token or the phone clock. No permission is skipped.
+            const token=await loginReadDeadline(()=>user.getIdTokenResult(true),10000);
+            const issued=Date.parse(token.issuedAtTime||'');if(!Number.isFinite(issued)||app.auth().currentUser?.uid!==user.uid)throw Error('Server time পাওয়া যায়নি।');
+            if(!done){if(!sessionClock)recordServerClock(issued-Date.now());finish();}
+          }catch(error){fail();}
+        },350);
+        sdkClock.then(finish,fail);
+      });
     }
     function accountEmail(id){return 'portal-'+String(id).toLowerCase()+'@collection-app-479e0.invalid';}
     async function getCredentialMeta(){
@@ -1414,7 +1432,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.22.01';
+    const APP_RELEASE_VERSION = '2026.10.22.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
