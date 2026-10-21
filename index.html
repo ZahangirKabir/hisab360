@@ -522,7 +522,7 @@
 
   <!-- LOGIN SECTION -->
   <div id="loginSection" class="login-box">
-    <img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-3d-purple-gold.png" alt="Hisab360"><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
+    <img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-3d-v1.png" alt="Hisab360"><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
     <input type="text" id="loginId" placeholder="User ID / DSO ID" autocomplete="username" autocapitalize="none" spellcheck="false">
     <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
     <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Login</button>
@@ -1403,7 +1403,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.13';
+    const APP_RELEASE_VERSION = '2026.10.21.14';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6191,3 +6191,4 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 </script>
 <script>document.getElementById("hisabHeaderLogo").src=document.getElementById("hisabLoginLogo").src;</script><script>window.addEventListener('beforeprint',()=>{document.querySelectorAll('.print-action-column').forEach(c=>c.classList.remove('print-action-column'));document.querySelectorAll('table').forEach(table=>{const hidden=new Set(),cells=[],grid=[];[...table.rows].forEach((row,r)=>{let col=0;for(const cell of row.cells){while(grid[r]?.[col])col++;const w=cell.colSpan||1,h=cell.rowSpan||1;cells.push({cell,col,w});if(cell.tagName==='TH'&&/^(edit|সম্পাদনা)$/i.test(cell.textContent.trim()))for(let c=col;c<col+w;c++)hidden.add(c);for(let rr=r;rr<r+h;rr++){grid[rr]||=[];for(let c=col;c<col+w;c++)grid[rr][c]=true;}col+=w;}});cells.forEach(({cell,col,w})=>{if([...Array(w)].every((_,i)=>hidden.has(col+i)))cell.classList.add('print-action-column');});});});</script></body>
 </html>
+
