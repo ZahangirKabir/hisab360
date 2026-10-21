@@ -12,6 +12,13 @@
   <style>
   .portal-session-restoring #loginSection{display:none!important}
   </style>
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://collection-app-479e0-default-rtdb.firebaseio.com" crossorigin>
+  <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
+  <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js">
+  <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js">
   <!-- Firebase SDKs -->
 
   <!-- Heavy libraries are lazy-loaded so Login opens faster. -->
@@ -1259,6 +1266,17 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const clear=()=>{if(devicePreparationTasks.get(key)===task)devicePreparationTasks.delete(key);};
       task.catch(clear);return task;
     }
+    function warmKnownDevice(id){
+      let known=false;try{known=!!localStorage.getItem('collectionDeviceUid:'+String(id).trim().toLowerCase());}catch(_){}
+      if(!known)return null;
+      const task=prepareDeviceApp(id);task.catch(()=>{});return task;
+    }
+    async function prepareLoginDevice(appTask){
+      const app=await appTask,uid=app.auth().currentUser?.uid;
+      if(!uid)throw Error('Device session পাওয়া যায়নি। আবার Login করুন।');
+      const [access]=await Promise.all([readDeviceApproval(app,uid),syncSessionClock(app).catch(()=>{})]);
+      return {app,approval:{uid,access}};
+    }
     function showPendingDevice(){
       document.getElementById('pendingDeviceModal')?.remove();
       const modal=document.createElement('div');modal.id='pendingDeviceModal';modal.style.cssText='position:fixed;inset:0;z-index:99998;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -1275,7 +1293,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(!credentialUid)throw Error('আবার Login করুন।');
       const uid=app.auth().currentUser.uid;
       portalFinancialApp=app;portalDeviceUid=uid;
-      const [access]=await Promise.all([timedLoginStep(prepared.trace,'ডিভাইসের অনুমতি',()=>readDeviceApproval(app,uid)),syncSessionClock(app).catch(()=>{})]);
+      const [access]=prepared.approval?.uid===uid?[prepared.approval.access]:await Promise.all([timedLoginStep(prepared.trace,'ডিভাইসের অনুমতি',()=>readDeviceApproval(app,uid)),syncSessionClock(app).catch(()=>{})]);
       if(access?.status==='blocked')throw Error('Admin এই device ব্লক করেছেন। Admin-কে জানান।');
       if(access&&access.status==='approved'&&(access.userId!==id||access.credentialUid!==credentialUid))throw Error('Device-এর অনুমোদন এই account-এর সঙ্গে মিলছে না। Admin-কে জানান।');
       if(access?.status!=='approved'||access.userId!==id||access.credentialUid!==credentialUid){
@@ -1283,6 +1301,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(!current)await writeLoginServer(credentialApp,'deviceRequests/'+uid,{userId:id,credentialUid,deviceUid:uid,name:(navigator.userAgent||'Browser').slice(0,160),requestedAt:firebase.database.ServerValue.TIMESTAMP});
         showPendingDevice();const error=new Error('আপনার ডিভাইসে লগইন করার জন্য অনুমতি প্রয়োজন');error.code='portal/device-permission-required';throw error;
       }
+      void portalLedger.enabled().catch(()=>{});
       if(!sessionClock)await syncSessionClock(app);
       await portalSessionCloseTask;
       await timedLoginStep(prepared.trace,'নিরাপদ সেশন',()=>writeLoginServer(credentialApp,'deviceSessions/'+uid,{active:true,credentialUid,expiresAt:Math.floor(sessionServerNow()+23*3600000)}));
@@ -1330,7 +1349,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.04';
+    const APP_RELEASE_VERSION = '2026.10.21.05';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -1735,8 +1754,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
 
-    async function openPortalForUser(id, {freshLogin=false,meta=null,app=null,trace=null,restoreEpoch=null} = {}) {
-      await registerAndCheckDevice(String(id||'').trim(),{meta,app,trace});
+    async function openPortalForUser(id, {freshLogin=false,meta=null,app=null,approval=null,trace=null,restoreEpoch=null} = {}) {
+      await registerAndCheckDevice(String(id||'').trim(),{meta,app,approval,trace});
       if(restoreEpoch!==null&&(restoreEpoch!==portalLoginInteractionEpoch||loginInProgress))return;
       currentUser = String(id || '').trim();
       if (!currentUser) return;
@@ -1847,6 +1866,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const trace=startLoginTiming();let devicePermissionPending=false;
       let devicePreparation=null;
       try {
+        const knownDevice=warmKnownDevice(id);
         const checks=await Promise.allSettled([
           trace.run('অ্যাপের আপডেট',()=>checkHostedRelease(false)),
           trace.run('পাসওয়ার্ড যাচাই',()=>signInForPortal(id,pass))
@@ -1854,13 +1874,13 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         for(const check of checks)if(check.status==='rejected')throw check.reason;
         if(!checks[0].value||firebaseReleaseMismatch)return;
         saveLoginAttempts(id,{count:0,until:0});
-        devicePreparation=trace.run('ডিভাইসের পরিচয়',()=>prepareDeviceApp(id));
+        devicePreparation=trace.run('ডিভাইসের পরিচয়',()=>prepareLoginDevice(knownDevice||prepareDeviceApp(id)));
         const preparation=await Promise.allSettled([trace.run('অ্যাকাউন্টের অনুমতি',()=>getCredentialMeta()),devicePreparation]);
         for(const task of preparation)if(task.status==='rejected')throw task.reason;
-        const meta=preparation[0].value,app=preparation[1].value;
+        const meta=preparation[0].value,{app,approval}=preparation[1].value;
         if(meta.userId!==id)throw Error('Login ID মেলেনি।');
         if(meta.forceChange){currentUser=id;showPasswordGate();return;}
-        await trace.run('পেজ খোলা',()=>openPortalForUser(id, {freshLogin:true,meta,app,trace}));await rememberPortalSession(id,pass);
+        await trace.run('পেজ খোলা',()=>openPortalForUser(id, {freshLogin:true,meta,app,approval,trace}));await rememberPortalSession(id,pass);
       } catch (e) {
         devicePermissionPending=e.code==='portal/device-permission-required';
         if(!devicePermissionPending){const wait=isWrongLogin(e)?recordWrongLogin(id):'';alert(wait||loginErrorMessage(e));}
