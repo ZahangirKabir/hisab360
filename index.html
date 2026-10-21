@@ -1213,6 +1213,20 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const meta=await readLoginServer(credentialApp,'accountMeta/'+user.uid);
       if(!meta?.enabled||!meta.userId)throw Error('এই ID অনুমোদিত তালিকায় নেই। Admin-কে জানান।');return meta;
     }
+    let deviceStorageProtectionTask=null;
+    function protectDeviceIdentityStorage(){
+      if(deviceStorageProtectionTask)return deviceStorageProtectionTask;
+      deviceStorageProtectionTask=(async()=>{
+        try{if(navigator.storage?.persisted&&navigator.storage?.persist){if(!await navigator.storage.persisted())await navigator.storage.persist();}}catch(_){}
+      })();return deviceStorageProtectionTask;
+    }
+    async function readDeviceApproval(app,uid){
+      const path='deviceAccess/'+uid;
+      const value=await readLoginServer(app,path);
+      // A cached empty SDK result is not proof that Admin never approved it.
+      // Recheck absence on the server before creating/showing a new request.
+      return value==null?readLoginREST(app,path):value;
+    }
     function prepareDeviceApp(id){
       const key=String(id).trim().toLowerCase();
       if(devicePreparationTasks.has(key))return devicePreparationTasks.get(key).then(app=>{if(app.auth().currentUser?.isAnonymous)return app;devicePreparationTasks.delete(key);return prepareDeviceApp(id);});
@@ -1220,6 +1234,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const name='portal-device-'+key;
         let app=firebase.apps.find(a=>a.name===name);if(!app)app=firebase.initializeApp(firebaseConfig,name);
         const auth=app.auth();
+        await authReady(auth);
         if(!devicePersistenceReady.has(auth)){
           const ready=auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(error=>{devicePersistenceReady.delete(auth);throw error;});
           devicePersistenceReady.set(auth,ready);
@@ -1234,6 +1249,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(!auth.currentUser)await auth.signInAnonymously();
         if(!auth.currentUser?.isAnonymous)throw Error('Device identity সঠিক নয়। অন্য browser profile ব্যবহার করুন।');
         try{localStorage.setItem('collectionDeviceUid:'+key,auth.currentUser.uid);}catch{}
+        // Keep the stable named app and its Firebase LOCAL identity across releases.
+        // The permission/session checks still run on the server for every login.
+        void protectDeviceIdentityStorage();
         return app;
       };
       const task=navigator.locks?.request?navigator.locks.request('collection-device-'+key,{ifAvailable:true},lock=>{if(!lock){const error=Error('অন্য tab-এ Login চলছে। সেটি শেষ হলে আবার চেষ্টা করুন।');error.code='portal/device-busy';throw error;}return work();}):work();
@@ -1257,7 +1275,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(!credentialUid)throw Error('আবার Login করুন।');
       const uid=app.auth().currentUser.uid;
       portalFinancialApp=app;portalDeviceUid=uid;
-      const [access]=await Promise.all([timedLoginStep(prepared.trace,'ডিভাইসের অনুমতি',()=>readLoginServer(app,'deviceAccess/'+uid)),syncSessionClock(app).catch(()=>{})]);
+      const [access]=await Promise.all([timedLoginStep(prepared.trace,'ডিভাইসের অনুমতি',()=>readDeviceApproval(app,uid)),syncSessionClock(app).catch(()=>{})]);
       if(access?.status==='blocked')throw Error('Admin এই device ব্লক করেছেন। Admin-কে জানান।');
       if(access&&access.status==='approved'&&(access.userId!==id||access.credentialUid!==credentialUid))throw Error('Device-এর অনুমোদন এই account-এর সঙ্গে মিলছে না। Admin-কে জানান।');
       if(access?.status!=='approved'||access.userId!==id||access.credentialUid!==credentialUid){
@@ -1312,7 +1330,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.03';
+    const APP_RELEASE_VERSION = '2026.10.21.04';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
