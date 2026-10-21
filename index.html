@@ -953,7 +953,7 @@ html body select[multiple],html body select[size]:not([size="1"]){background-ima
 #adminFilterPanel .dso-multiselect.open #dsoMultiSelectToggle::after{transform:translateY(-50%) rotate(180deg)}
 </style>
 <style id="slip-approval-filter-design">
-#adminPageSlipApproval .slip-approval-filters{display:flex;align-items:end;flex-wrap:wrap;gap:12px;width:fit-content;max-width:100%;padding:11px 13px;margin:0 0 14px;border:1px solid #e0eae4;border-radius:12px;background:linear-gradient(120deg,#f3f8f5,#fbfdfb);box-shadow:0 2px 5px #214b3510}
+#adminPageSlipApproval .slip-approval-filters{display:flex;align-items:end;flex-wrap:wrap;gap:12px;width:fit-content;max-width:100%;padding:0;margin:0 0 14px;border:0;border-radius:0;background:transparent;box-shadow:none;outline:none}
 #adminPageSlipApproval .slip-filter-field{display:flex;flex-direction:column;gap:6px;margin:0;min-width:160px;flex:1 1 160px}
 #adminPageSlipApproval .slip-filter-field:last-child{min-width:210px;flex-basis:210px}
 #adminPageSlipApproval .slip-filter-label{display:flex;align-items:center;gap:6px;font-size:11.5px;line-height:1.3;font-weight:600;color:#517163;letter-spacing:.12px;padding-left:2px}
@@ -961,7 +961,7 @@ html body select[multiple],html body select[size]:not([size="1"]){background-ima
 html body #adminPageSlipApproval .slip-filter-field select{display:block;width:100%;min-width:0;box-sizing:border-box;height:38px!important;min-height:38px!important;padding:8px 32px 8px 11px!important;border:1px solid #c5d9cd!important;border-radius:8px!important;background-color:#fff!important;color:#224c3b;font-family:inherit;font-size:13px;line-height:1.4;font-weight:500;box-shadow:0 1px 2px #1d4b3210;transition:border-color .15s,box-shadow .15s;cursor:pointer}
 html body #adminPageSlipApproval .slip-filter-field select:hover{border-color:#75aa8e!important}
 html body #adminPageSlipApproval .slip-filter-field select:focus{outline:0;border-color:#16825e!important;box-shadow:0 0 0 3px #16825e15}
-@media(max-width:520px){#adminPageSlipApproval .slip-approval-filters{width:100%;gap:10px;padding:10px}#adminPageSlipApproval .slip-filter-field,#adminPageSlipApproval .slip-filter-field:last-child{min-width:0;flex:1 1 0}html body #adminPageSlipApproval .slip-filter-field select{font-size:13px}}
+@media(max-width:520px){#adminPageSlipApproval .slip-approval-filters{width:100%;gap:10px;padding:0}#adminPageSlipApproval .slip-filter-field,#adminPageSlipApproval .slip-filter-field:last-child{min-width:0;flex:1 1 0}html body #adminPageSlipApproval .slip-filter-field select{font-size:13px}}
 @media(max-width:320px){#adminPageSlipApproval .slip-approval-filters{flex-direction:column;align-items:stretch}#adminPageSlipApproval .slip-filter-field,#adminPageSlipApproval .slip-filter-field:last-child{flex:auto}}
 </style>
   <!-- EDIT MODAL FOR ADMIN -->
@@ -1403,7 +1403,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.10';
+    const APP_RELEASE_VERSION = '2026.10.21.11';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
