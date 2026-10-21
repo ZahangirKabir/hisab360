@@ -1194,20 +1194,30 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       finally{clearTimeout(timer);}
     }
     function loginServerXHR(url){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('GET',url,true);xhr.timeout=12000;xhr.withCredentials=false;xhr.onload=()=>{if(xhr.status<200||xhr.status>=300){const error=Error('Server response HTTP '+xhr.status);error.httpStatus=xhr.status;reject(error);return;}try{const serverDate=Date.parse(xhr.getResponseHeader('Date')||'');if(Number.isFinite(serverDate))recordServerClock(serverDate-Date.now());resolve(JSON.parse(xhr.responseText));}catch{reject(Error('Server response JSON সঠিক নয়।'));}};xhr.onerror=()=>reject(Error('Firebase request blocked or unreachable'));xhr.ontimeout=()=>reject(Error('Firebase request timeout'));xhr.send();});}
-    async function readLoginREST(app,path,query=null){
-      const user=app.auth().currentUser;if(!user)throw Error('Login session পাওয়া যায়নি। আবার Login করুন।');
-      const stage=path.startsWith('accountMeta/')?'Account':path.startsWith('deviceAccess/')?'Device':'Request';let last;
-      for(let attempt=0;attempt<2;attempt++){
-        const controller=new AbortController();let timer;
-        try{
-          const token=await loginReadDeadline(()=>user.getIdToken(attempt>0));const url=new URL(path+'.json',firebaseConfig.databaseURL+'/');url.searchParams.set('auth',token);if(query)for(const [key,value]of Object.entries(query))url.searchParams.set(key,JSON.stringify(value));
-          if(attempt===1)return await loginServerXHR(url.href);
-          timer=setTimeout(()=>controller.abort(),10000);const response=await fetch(url.href,{cache:'no-store',credentials:'omit',signal:controller.signal});
-          if(!response.ok){const error=Error('Server response HTTP '+response.status);error.httpStatus=response.status;throw error;}const serverDate=Date.parse(response.headers.get('Date')||'');if(Number.isFinite(serverDate))recordServerClock(serverDate-Date.now());return await response.json();
-        }catch(error){last=error;if(error.httpStatus===403)break;if(error.code==='portal/server-timeout')break;}
-        finally{clearTimeout(timer);}
-      }
-      const status=last?.httpStatus;const error=Error(status===401||status===403?'Firebase permission পাওয়া যায়নি ('+stage+' / HTTP '+status+')। Admin-কে জানান।':status?'Firebase server-এর উত্তর সঠিক নয় ('+stage+' / HTTP '+status+')।':last?.code==='portal/server-timeout'?'Login token যাচাইয়ে সময় লাগছে ('+stage+')। আবার চেষ্টা করুন।':'এই app-এর Firebase সংযোগ সম্পন্ন হয়নি ('+stage+' / CONNECTION)। অন্য app চললেও এই server-এ সংযোগ ব্যর্থ হতে পারে।');error.code='portal/login-connection';error.httpStatus=status;throw error;
+    const portalRestReads=new WeakMap();
+    function readLoginREST(app,path,query=null){
+      const user=app.auth().currentUser;if(!user)return Promise.reject(Error('Login session পাওয়া যায়নি। আবার Login করুন।'));
+      let reads=portalRestReads.get(app);if(!reads){reads=new Map();portalRestReads.set(app,reads);}
+      const key=JSON.stringify([user.uid,path,query]);if(reads.has(key))return reads.get(key);
+      const task=(async()=>{
+        const stage=path.startsWith('accountMeta/')?'Account':path.startsWith('deviceAccess/')?'Device':'Request';let last;
+        for(let attempt=0;attempt<2;attempt++){
+          try{
+            const token=await loginReadDeadline(()=>user.getIdToken(attempt>0));
+            if(app.auth().currentUser?.uid!==user.uid)throw Error('Login session পরিবর্তিত হয়েছে। আবার Login করুন।');
+            const url=new URL(path+'.json',firebaseConfig.databaseURL+'/');url.searchParams.set('auth',token);if(query)for(const [name,value]of Object.entries(query))url.searchParams.set(name,JSON.stringify(value));
+            return await new Promise((resolve,reject)=>{
+              let settled=false,failures=0,xhrStarted=false,timer;const controller=new AbortController();
+              const finish=(error,value)=>{if(settled)return;settled=true;clearTimeout(timer);controller.abort();error?reject(error):resolve(value);};
+              const fail=error=>{if(settled)return;if(error.httpStatus===401||error.httpStatus===403){finish(error);return;}last=error;if(++failures>=2)finish(error);else startXHR();};
+              const startXHR=()=>{if(settled||xhrStarted)return;xhrStarted=true;loginServerXHR(url.href).then(value=>finish(null,value),fail);};
+              timer=setTimeout(startXHR,700);
+              (async()=>{const timeout=setTimeout(()=>controller.abort(),10000);try{const response=await fetch(url.href,{cache:'no-store',credentials:'omit',signal:controller.signal});if(!response.ok){const error=Error('Server response HTTP '+response.status);error.httpStatus=response.status;throw error;}const serverDate=Date.parse(response.headers.get('Date')||'');if(Number.isFinite(serverDate))recordServerClock(serverDate-Date.now());return await response.json();}finally{clearTimeout(timeout);}})().then(value=>finish(null,value),fail);
+            });
+          }catch(error){last=error;if(error.httpStatus!==401||attempt>0)break;}
+        }
+        const status=last?.httpStatus;const error=Error(status===401||status===403?'Firebase permission পাওয়া যায়নি ('+stage+' / HTTP '+status+')। আবার Login করুন।':status?'Firebase server-এর উত্তর সঠিক নয় ('+stage+' / HTTP '+status+')।':'Firebase থেকে উত্তর পাওয়া যায়নি। সংযোগ ফিরলে আবার চেষ্টা করুন।');error.code='portal/login-connection';error.httpStatus=status;throw error;
+      })();reads.set(key,task);const clear=()=>{if(reads.get(key)===task)reads.delete(key);};task.then(clear,clear);return task;
     }
     let loginLongPollingSelected=false;
     async function retryLoginPolling(app){
@@ -1323,7 +1333,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     async function prepareLoginDevice(appTask){
       const app=await appTask,uid=app.auth().currentUser?.uid;
       if(!uid)throw Error('Device session পাওয়া যায়নি। আবার Login করুন।');
-      const [access]=await Promise.all([readDeviceApproval(app,uid),syncSessionClock(app).catch(()=>{})]);
+      const clock=syncSessionClock(app);clock.catch(()=>{});const access=await readDeviceApproval(app,uid);if(!sessionClock)await clock;
       return {app,approval:{uid,access}};
     }
     function showPendingDevice(){
@@ -1404,7 +1414,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.16';
+    const APP_RELEASE_VERSION = '2026.10.22.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
