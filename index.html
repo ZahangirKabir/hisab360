@@ -583,12 +583,12 @@
         </div>
         
         <div class="filter-group dso-filter" style="flex: 2; min-width: 220px;">
-          <label>Select Specific DSO(s)</label>
+          <label id="dsoPickerLabel">Select Specific DSO(s)</label>
           <div class="dso-multiselect" id="dsoMultiSelect">
-            <button type="button" class="dso-multiselect-toggle" id="dsoMultiSelectToggle" onclick="toggleDsoDropdown(event)">
+            <button type="button" class="dso-multiselect-toggle" id="dsoMultiSelectToggle" aria-haspopup="dialog" aria-expanded="false" aria-controls="filterDsoCheckboxContainer" aria-labelledby="dsoPickerLabel dsoMultiSelectToggle" onclick="toggleDsoDropdown(event)">
               All DSO(s)
             </button>
-            <div class="dso-checkbox-container" id="filterDsoCheckboxContainer"></div>
+            <div class="dso-checkbox-container" id="filterDsoCheckboxContainer" role="dialog" aria-label="DSO নির্বাচন"></div>
           </div>
         </div>
 
@@ -915,6 +915,31 @@
 .admin-dso-row .form-group{margin:0}.admin-dso-row button{height:38px;border:0;border-radius:8px;background:#ffebee;color:#b71c1c;cursor:pointer}
 .admin-breakdown-add{border:1px solid #bad5d0;border-radius:8px;padding:7px 12px;background:#fff;color:#00695c;cursor:pointer}
 @media(max-width:440px){.admin-edit-grid{grid-template-columns:1fr}.admin-dso-row{gap:5px}}
+</style>
+<style>
+#adminFilterPanel #dsoMultiSelectToggle{display:flex;align-items:center;gap:5px;padding-right:30px!important;border-radius:9px!important;font-weight:500;transition:border-color .15s,box-shadow .15s}
+#adminFilterPanel #dsoMultiSelect.open #dsoMultiSelectToggle{border-color:#008577!important;box-shadow:0 0 0 3px #00857714}
+#adminFilterPanel .dso-multiselect-toggle::after{content:'⌄';font-size:18px;color:#287669;right:10px}
+#adminFilterPanel .dso-multiselect.open .dso-multiselect-toggle::after{content:'⌃'}
+#adminFilterPanel .dso-summary-chip{display:inline-block;padding:2px 7px;border-radius:5px;background:#e6f4ee;color:#17634e;font-size:11px;line-height:18px}
+#adminFilterPanel .dso-summary-count{margin-left:auto;padding:2px 7px;border-radius:12px;background:#087866;color:white;font-size:10px;line-height:17px}
+#adminFilterPanel #filterDsoCheckboxContainer{width:100%;min-width:220px;max-width:calc(100vw - 42px);top:calc(100% + 7px);max-height:none;padding:0;border:1px solid #d5e5df;border-radius:12px;box-shadow:0 14px 38px #133e3626;overflow:hidden;z-index:600}
+#adminFilterPanel .dso-picker-header{padding:11px 11px 9px;background:linear-gradient(135deg,#f0f8f4,#fff);border-bottom:1px solid #e6eeea}
+#adminFilterPanel .dso-picker-title{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:#205d4d;margin-bottom:8px}
+#adminFilterPanel .dso-picker-title output{font-size:10px;color:#648077;font-weight:400}
+#adminFilterPanel #dsoPickerSearch{height:32px!important;min-height:32px!important;border:1px solid #d5e4de!important;border-radius:7px!important;background:white!important;font-size:12px!important;box-shadow:none!important}
+#adminFilterPanel .dso-picker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px;max-height:230px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#adminFilterPanel .dso-checkbox-item{display:flex;align-items:center;justify-content:flex-start;gap:7px;margin:0;min-height:36px;padding:7px 8px;border:1px solid #e0e9e4;border-radius:7px;color:#455f55;background:#fff;font-size:12px;letter-spacing:0;transition:background .12s,border-color .12s}
+#adminFilterPanel .dso-checkbox-item::after{content:none!important}
+#adminFilterPanel .dso-checkbox-item:hover{border-color:#80b7a5;background:#f4faf6}
+#adminFilterPanel .dso-checkbox-item.is-selected{background:#e8f6ef;border-color:#63aa8d;color:#075d43;font-weight:600}
+#adminFilterPanel #filterDsoCheckboxContainer input.dso-chk{width:15px!important;height:15px!important;min-height:15px!important;flex:0 0 15px;margin:0!important;padding:0!important;box-shadow:none!important;accent-color:#087866;cursor:pointer}
+#adminFilterPanel .dso-checkbox-item[hidden]{display:none!important}
+#adminFilterPanel .dso-picker-empty{grid-column:1/-1;text-align:center;padding:16px 4px;font-size:12px;color:#789085}
+#adminFilterPanel .dso-dropdown-actions{position:static;gap:7px;padding:9px 10px;background:#f8fbf9;border-top:1px solid #e2ece6}
+#adminFilterPanel .dso-dropdown-actions button{border-radius:6px;padding:7px 8px;min-height:30px;font-size:11px;font-weight:500}
+#adminFilterPanel .dso-select-all-btn{background:#087866}#adminFilterPanel .dso-clear-all-btn{background:#edf2ef;color:#496258;border:1px solid #d9e4dd}
+@media(max-width:480px){#adminFilterPanel #filterDsoCheckboxContainer{max-width:100%;min-width:0}#adminFilterPanel .dso-picker-grid{max-height:205px}}
 </style>
   <!-- EDIT MODAL FOR ADMIN -->
   <div id="editModal" class="modal-overlay">
@@ -1349,7 +1374,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.05';
+    const APP_RELEASE_VERSION = '2026.10.21.06';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -4735,7 +4760,15 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let currentlyChecked = getSelectedDsoValues();
       let selectedUserVal = targetUserSelect.value;
 
-      checkboxContainer.innerHTML = '';
+      const searchValue=document.getElementById('dsoPickerSearch')?.value||'';
+      checkboxContainer.replaceChildren();
+      const header=document.createElement('div');header.className='dso-picker-header';
+      const heading=document.createElement('div');heading.className='dso-picker-title';
+      const caption=document.createElement('span');caption.textContent='DSO নির্বাচন';
+      const count=document.createElement('output');count.id='dsoPickerCount';count.setAttribute('aria-live','polite');heading.append(caption,count);
+      const search=document.createElement('input');search.type='search';search.id='dsoPickerSearch';search.placeholder='DSO ID খুঁজুন…';search.setAttribute('aria-label','DSO ID খুঁজুন');search.autocomplete='off';search.value=searchValue;search.oninput=filterDsoPickerOptions;
+      header.append(heading,search);checkboxContainer.append(header);
+      const grid=document.createElement('div');grid.className='dso-picker-grid';grid.id='dsoPickerGrid';checkboxContainer.append(grid);
       targetUserSelect.innerHTML = '<option value="">-- Select User --</option>';
       if(currentUser === 'admin') {
         Object.keys(SUB_ADMIN_GROUPS).forEach(id=>{
@@ -4768,7 +4801,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           <input type="checkbox" class="dso-chk" value="${dso}" ${isChecked ? 'checked' : ''} onchange="handleDsoCheckboxChange()">
           ${dso}
         `;
-        checkboxContainer.appendChild(label);
+        grid.appendChild(label);
 
         let opt = document.createElement("option"); opt.value = dso; opt.textContent = `DSO ${dso}`;
         targetUserSelect.appendChild(opt);
@@ -4780,10 +4813,11 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         <button type="button" class="dso-select-all-btn" onclick="selectAllDsos(event)">Select All</button>
         <button type="button" class="dso-clear-all-btn" onclick="clearDsoSelection(event)">Clear All</button>
       `;
+      const empty=document.createElement('div');empty.id='dsoPickerEmpty';empty.className='dso-picker-empty';empty.textContent='এই DSO পাওয়া যায়নি।';empty.hidden=true;grid.append(empty);
       checkboxContainer.appendChild(actionBox);
 
       targetUserSelect.value = selectedUserVal;
-      updateDsoDropdownText();
+      filterDsoPickerOptions();updateDsoDropdownText();
     }
 
     function populateAdminFilter() {
@@ -4812,31 +4846,28 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       return Array.from(document.querySelectorAll(".dso-chk:checked")).map(chk => chk.value);
     }
 
+    function filterDsoPickerOptions(){
+      const term=String(document.getElementById('dsoPickerSearch')?.value||'').trim().replace(/[০-৯]/g,c=>'০১২৩৪৫৬৭৮৯'.indexOf(c));let visible=0;
+      document.querySelectorAll('#dsoPickerGrid .dso-checkbox-item').forEach(row=>{row.hidden=!row.querySelector('.dso-chk').value.includes(term);if(!row.hidden)visible++;});
+      const empty=document.getElementById('dsoPickerEmpty');if(empty)empty.hidden=visible>0;
+    }
     function updateDsoDropdownText() {
-      const toggle = document.getElementById("dsoMultiSelectToggle");
-      if (!toggle) return;
-      const selected = getSelectedDsoValues();
-      if (selected.length === 0) {
-        toggle.textContent = isGroupAdmin(currentUser) ? "All Assigned DSO(s)" : "All DSO(s)";
-      } else if (selected.length === 1) {
-        toggle.textContent = "DSO " + selected[0];
-      } else if (selected.length <= 4) {
-        toggle.textContent = selected.map(id => "DSO " + id).join(", ");
-      } else {
-        toggle.textContent = selected.length + " DSO(s) Selected";
-      }
+      const toggle=document.getElementById('dsoMultiSelectToggle');if(!toggle)return;
+      const selected=getSelectedDsoValues(),total=document.querySelectorAll('.dso-chk').length;toggle.replaceChildren();
+      if(!selected.length){const label=document.createElement('span');label.textContent=isGroupAdmin(currentUser)?'All Assigned DSO(s)':'All DSO(s)';toggle.append(label);}
+      else{selected.slice(0,3).forEach(id=>{const chip=document.createElement('span');chip.className='dso-summary-chip';chip.textContent=id;toggle.append(chip);});const count=document.createElement('span');count.className='dso-summary-count';count.textContent=selected.length>3?'+'+(selected.length-3):selected.length+' DSO';toggle.append(count);}
+      toggle.title=selected.length?selected.map(id=>'DSO '+id).join(', '):'সকল DSO';
+      document.querySelectorAll('.dso-checkbox-item').forEach(row=>row.classList.toggle('is-selected',row.querySelector('.dso-chk')?.checked===true));
+      const count=document.getElementById('dsoPickerCount');if(count)count.textContent=selected.length+' / '+total+' নির্বাচিত';
     }
-
     function toggleDsoDropdown(event) {
-      if (event) event.stopPropagation();
-      const dropdown = document.getElementById("dsoMultiSelect");
-      if (dropdown) dropdown.classList.toggle("open");
+      if(event)event.stopPropagation();const dropdown=document.getElementById('dsoMultiSelect'),toggle=document.getElementById('dsoMultiSelectToggle');
+      if(!dropdown)return;const open=dropdown.classList.toggle('open');toggle?.setAttribute('aria-expanded',String(open));if(open)document.getElementById('dsoPickerSearch')?.focus();
     }
-
     function closeDsoDropdown() {
-      const dropdown = document.getElementById("dsoMultiSelect");
-      if (dropdown) dropdown.classList.remove("open");
+      document.getElementById('dsoMultiSelect')?.classList.remove('open');document.getElementById('dsoMultiSelectToggle')?.setAttribute('aria-expanded','false');
     }
+    document.getElementById('dsoMultiSelect')?.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeDsoDropdown();document.getElementById('dsoMultiSelectToggle')?.focus();}});
 
     function handleDsoCheckboxChange() {
       updateDsoDropdownText();
