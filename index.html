@@ -541,7 +541,7 @@
 
       <!-- ADMIN PANEL NAVIGATION -->
       <div id="adminTabNav" class="tab-nav" style="display:none;">
-        <button class="tab-btn active" id="tabAdminReportBtn" onclick="switchAdminTab('report')">📊 DSO দের দিনের হিসাব</button>
+        <button class="tab-btn active" id="tabAdminReportBtn" onclick="switchAdminTab('report')">📊 DSO Daily Hisab</button>
         <button class="tab-btn" id="tabAdminBankBtn" onclick="switchAdminTab('bank')">🏦 Bank Details</button>
         <button class="tab-btn" id="tabAdminSlipApprovalBtn" onclick="switchAdminTab('slipApproval')">🧾 Bank Slip Approval</button>
         <button class="tab-btn" id="tabAdminNotesBtn" onclick="switchAdminTab('notes')">💵 Note Summary</button>
@@ -633,7 +633,7 @@
                 <th colspan="2" class="th-info sticky-col-1" style="left:0; z-index:20;">Basic Info</th>
                 <th colspan="3" class="th-received">RECEIVED SECTION</th>
                 <th colspan="4" class="th-return">RETURN SECTION</th>
-                <th colspan="3" class="th-dso">DSO BREAKDOWN & DIFF</th>
+                <th colspan="3" class="th-dso dso-breakdown-hidden">DSO BREAKDOWN & DIFF</th>
                 <th colspan="3" class="th-diff">CALCULATION & DIFF</th>
                 <th class="th-info">Slips Details</th>
                 <th class="th-info">Status</th>
@@ -651,9 +651,9 @@
                 <th class="th-return">Bank Dep</th>
                 <th class="th-return">DSO Trans Breakdown</th>
 
-                <th class="th-dso">DSO Rec Amt</th>
-                <th class="th-dso">DSO Trans Amt</th>
-                <th class="th-dso">DSO Diff</th>
+                <th class="th-dso dso-breakdown-hidden">DSO Rec Amt</th>
+                <th class="th-dso dso-breakdown-hidden">DSO Trans Amt</th>
+                <th class="th-dso dso-breakdown-hidden">DSO Diff</th>
 
                 <th class="th-diff">মোট রিসিভড</th>
                 <th class="th-diff">মোট রিটার্ন</th>
@@ -940,6 +940,17 @@
 #adminFilterPanel .dso-dropdown-actions button{border-radius:6px;padding:7px 8px;min-height:30px;font-size:11px;font-weight:500}
 #adminFilterPanel .dso-select-all-btn{background:#087866}#adminFilterPanel .dso-clear-all-btn{background:#edf2ef;color:#496258;border:1px solid #d9e4dd}
 @media(max-width:480px){#adminFilterPanel #filterDsoCheckboxContainer{max-width:100%;min-width:0}#adminFilterPanel .dso-picker-grid{max-height:205px}}
+</style>
+<style>
+html body select,html body #adminFilterPanel .filter-group select,html body .filter-panel .filter-group select,html body #app select,html body #bankApp select{
+-webkit-appearance:none!important;appearance:none!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%234b7065' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 10px center!important;background-size:12px 12px!important;padding-right:30px!important;cursor:pointer}
+html body select[multiple],html body select[size]:not([size="1"]){background-image:none!important;padding-right:10px!important;cursor:default}
+@media(forced-colors:active){html body select,html body #adminFilterPanel .filter-group select,html body .filter-panel .filter-group select,html body #app select,html body #bankApp select{appearance:auto!important;background-image:none!important}}
+</style>
+<style>
+#dataTable .dso-breakdown-hidden{display:none!important}
+#adminFilterPanel #dsoMultiSelectToggle::after{content:''!important;width:12px;height:12px;right:10px;top:50%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%234b7065' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:12px 12px;transform:translateY(-50%)}
+#adminFilterPanel .dso-multiselect.open #dsoMultiSelectToggle::after{transform:translateY(-50%) rotate(180deg)}
 </style>
   <!-- EDIT MODAL FOR ADMIN -->
   <div id="editModal" class="modal-overlay">
@@ -1346,11 +1357,11 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
     function installFirebaseDeviceMenu(){
       if(currentUser!=='admin'||document.getElementById('deviceAdminButton'))return;
-      const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.textContent='ডিভাইস অনুমোদন';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
+      const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.textContent='Device Permision';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
     }
     async function openFirebaseDeviceAdmin(){
       if(currentUser!=='admin')return;
-      let modal=document.getElementById('deviceAdminModal');if(!modal){modal=document.createElement('div');modal.id='deviceAdminModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:#0008;display:flex;align-items:center;justify-content:center;padding:12px';const card=document.createElement('div');card.className='device-admin-card';card.style.cssText='width:min(1100px,100%);max-height:90vh;overflow:auto;background:white;color:#173b45;border-radius:16px;padding:20px';const title=document.createElement('h3');title.textContent='ডিভাইস অনুমোদন';const header=document.createElement('div');header.className='device-admin-header';header.appendChild(title);card.appendChild(header);const close=document.createElement('button');close.textContent='বন্ধ করুন';close.className='device-close';close.onclick=()=>modal.remove();header.appendChild(close);const refresh=document.createElement('button');refresh.textContent='↻ তালিকা আপডেট';refresh.className='device-refresh';refresh.onclick=openFirebaseDeviceAdmin;card.appendChild(refresh);const status=document.createElement('p');status.id='deviceAdminStatus';card.appendChild(status);const content=document.createElement('div');content.id='deviceAdminContent';content.style.overflowX='auto';card.appendChild(content);modal.appendChild(card);document.body.appendChild(modal);}
+      let modal=document.getElementById('deviceAdminModal');if(!modal){modal=document.createElement('div');modal.id='deviceAdminModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:#0008;display:flex;align-items:center;justify-content:center;padding:12px';const card=document.createElement('div');card.className='device-admin-card';card.style.cssText='width:min(1100px,100%);max-height:90vh;overflow:auto;background:white;color:#173b45;border-radius:16px;padding:20px';const title=document.createElement('h3');title.textContent='Device Permision';const header=document.createElement('div');header.className='device-admin-header';header.appendChild(title);card.appendChild(header);const close=document.createElement('button');close.textContent='বন্ধ করুন';close.className='device-close';close.onclick=()=>modal.remove();header.appendChild(close);const refresh=document.createElement('button');refresh.textContent='↻ তালিকা আপডেট';refresh.className='device-refresh';refresh.onclick=openFirebaseDeviceAdmin;card.appendChild(refresh);const status=document.createElement('p');status.id='deviceAdminStatus';card.appendChild(status);const content=document.createElement('div');content.id='deviceAdminContent';content.style.overflowX='auto';card.appendChild(content);modal.appendChild(card);document.body.appendChild(modal);}
       const status=document.getElementById('deviceAdminStatus');status.textContent='তালিকা আসছে…';
       try{
         const db=portalFinancialApp.database(),[requests,access]=await Promise.all([db.ref('deviceRequests').once('value'),db.ref('deviceAccess').once('value')]);
@@ -1374,7 +1385,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.06';
+    const APP_RELEASE_VERSION = '2026.10.21.07';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -4595,7 +4606,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       // Show a lightweight loading state immediately; do not freeze the page.
       if (activeAdminTab === 'report') {
         const tbody = document.getElementById('adminTableBody');
-        if (tbody) tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:18px;font-weight:bold;color:#00695c;">⏳ ডাটা লোড হচ্ছে...</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:18px;font-weight:bold;color:#00695c;">⏳ ডাটা লোড হচ্ছে...</td></tr>`;
       }
 
       // Keep one live listener for the selected scope. This makes delete/edit/approval
@@ -4615,7 +4626,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if (!globalAllData) globalAllData = {};
         if (activeAdminTab === 'report') {
           const tbody = document.getElementById('adminTableBody');
-          if (tbody) tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:18px;font-weight:bold;color:#c62828;">❌ ডাটা লোড করতে সমস্যা হয়েছে। ${escapeHtml(err.message || 'Unknown error')}</td></tr>`;
+          if (tbody) tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:18px;font-weight:bold;color:#c62828;">❌ ডাটা লোড করতে সমস্যা হয়েছে। ${escapeHtml(err.message || 'Unknown error')}</td></tr>`;
         }
         console.error('Master Admin data load failed:', err);
       };
@@ -5095,7 +5106,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let sumEmRec = 0, sumCashRec = 0, sumEmRet = 0, sumCashDep = 0;
 
       if (!data || Object.keys(data).length === 0) {
-        tbody.innerHTML = `<tr><td colspan="18" style="text-align:center; font-weight:bold; padding:20px; color:#c62828;">আজকের দিনে এখনো কোনো ডাটা জমা হয়নি। নতুন ডাটা না আসা পর্যন্ত টেবিল ব্লাঙ্ক থাকবে।</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; font-weight:bold; padding:20px; color:#c62828;">আজকের দিনে এখনো কোনো ডাটা জমা হয়নি। নতুন ডাটা না আসা পর্যন্ত টেবিল ব্লাঙ্ক থাকবে।</td></tr>`;
         updateSummaryCards(0, 0, 0, 0, 0, 0, 0, 0, 0);
         return;
       }
@@ -5191,9 +5202,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           <td> ${formatBD(bankDep)}</td>
           <td style="text-align: left;">${dsoTransText || '-'}</td>
 
-          <td> ${formatBD(dsoRecSum)}</td>
-          <td> ${formatBD(dsoTransSum)}</td>
-          <td class="bg-dso-diff"> ${formatBD(dsoDiff)}</td>
+          <td class="dso-breakdown-hidden"> ${formatBD(dsoRecSum)}</td>
+          <td class="dso-breakdown-hidden"> ${formatBD(dsoTransSum)}</td>
+          <td class="bg-dso-diff dso-breakdown-hidden"> ${formatBD(dsoDiff)}</td>
 
           <td class="bg-received"> ${formatBD(totalRec)}</td>
           <td class="bg-return"> ${formatBD(totalRet)}</td>
@@ -5219,9 +5230,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         <td> ${formatBD(sumCashDep)}</td>
         <td> ${formatBD(totalBankDepSum)}</td>
         <td style="color:#6a1b9a;"> ${formatBD(totalDsoTransSum)}</td>
-        <td style="color:#00838f;"> ${formatBD(totalDsoRecSum)}</td>
-        <td style="color:#6a1b9a;"> ${formatBD(totalDsoTransSum)}</td>
-        <td class="bg-dso-diff"> ${formatBD(totalDsoDiffSum)}</td>
+        <td class="dso-breakdown-hidden" style="color:#00838f;"> ${formatBD(totalDsoRecSum)}</td>
+        <td class="dso-breakdown-hidden" style="color:#6a1b9a;"> ${formatBD(totalDsoTransSum)}</td>
+        <td class="bg-dso-diff dso-breakdown-hidden"> ${formatBD(totalDsoDiffSum)}</td>
         <td class="bg-received"> ${formatBD(totalRecSum)}</td>
         <td class="bg-return"> ${formatBD(totalRetSum)}</td>
         <td class="bg-diff"> ${formatBD(totalDiffSum)}</td>
@@ -6061,7 +6072,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const wb = XLSX.utils.book_new();
         const sheetName =
           tabName === "bank" ? "Bank Details" :
-          tabName === "notes" ? "Note Summary" : "Main Report";
+          tabName === "notes" ? "Note Summary" : "DSO Daily Hisab";
 
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
