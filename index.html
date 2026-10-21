@@ -685,8 +685,8 @@
       <div id="adminPageSlipApproval" style="display:none;">
         <h3 style="color:#00695c;margin-bottom:12px">🧾 Bank Slip Approval</h3>
         <div class="report-filter" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:end">
-          <label>Status <select id="slipApprovalStatus" onchange="renderSlipApprovalFilters()"><option value="">সব Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
-          <label>Bank Name <select id="slipApprovalBank" onchange="renderBankSlipStatus('admin')"><option value="">সব Bank</option></select></label>
+          <label>Status <select id="slipApprovalStatus" onchange="renderSlipApprovalFilters()"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
+          <label>Bank Name <select id="slipApprovalBank" onchange="renderBankSlipStatus('admin')"><option value="">All Bank</option></select></label>
         </div>
         <div class="table-container"><table id="adminSlipApprovalTable"><thead><tr><th>তারিখ</th><th>Upload Time</th><th>DSO</th><th>Bank Name / Account</th><th>Transaction / Ref / Tracking</th><th>Amount</th><th>Status</th><th>কারণ</th><th>Bank Slip</th><th>Approval / Reject</th></tr></thead><tbody id="adminBankSlipStatusBody"></tbody></table></div>
         <div style="text-align:center;margin:12px"><button type="button" id="loadMoreBankSlipsBtn" class="btn-add" style="display:none" onclick="loadMoreBankSlips()">আরও Bank Slip দেখুন</button></div>
@@ -1391,7 +1391,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.21.08';
+    const APP_RELEASE_VERSION = '2026.10.21.09';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2356,7 +2356,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     function renderSlipApprovalFilters(){if(currentUser==='admin')listenBankSlipStatuses();renderBankSlipStatus('admin');}
     function renderBankSlipStatus(user){const body=document.getElementById(user==='admin'?'adminBankSlipStatusBody':'dsoBankSlipStatusBody');if(!body)return;
       const displayed=user==='admin'?{...slipPagedItems,...slipStatusItems}:slipStatusItems;
-      if(user==='admin'){const select=document.getElementById('slipApprovalBank');if(select){const chosen=select.value;const names=[...new Set(Object.values(displayed).flatMap(r=>(r.slips||[]).map(s=>String(s.bankName||'').trim())).filter(Boolean))].sort();select.replaceChildren(new Option('সব Bank',''),...names.map(n=>new Option(n,n)));select.value=names.includes(chosen)?chosen:'';}}
+      if(user==='admin'){const select=document.getElementById('slipApprovalBank');if(select){const chosen=select.value;const names=[...new Set(Object.values(displayed).flatMap(r=>(r.slips||[]).map(s=>String(s.bankName||'').trim())).filter(Boolean))].sort();select.replaceChildren(new Option('All Bank',''),...names.map(n=>new Option(n,n)));select.value=names.includes(chosen)?chosen:'';}}
       const today=getLocalDateString();
       if(user!=='admin')document.getElementById('dsoSlipStatusDate').textContent=today;
       const visible=user==='admin'?Object.entries(displayed):Object.entries(displayed).filter(([_,item])=>item?.date===today&&String(item.userId)===String(currentUser));
@@ -5266,7 +5266,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(Number(item.bankDeposit)>0 && !requests.length){alert('❌ Bank Deposit আছে, কিন্তু কোনো Bank Slip জমা নেই।');return;}
         if(requests.some(([_,r])=>r.status==='pending'||r.status==='approving'||r.status==='rejecting')){alert('❌ Pending Bank Slip নিষ্পত্তির পর দিনের রিপোর্ট Approve করুন।');return;}
         const credited=Object.keys(item.submittedSlipRequests||{});
-        if(credited.some(k=>!requests.some(([id,r])=>id===k && r.status==='approved'))){alert('❌ রিপোর্টের সব Bank Slip Approve হয়নি।');return;}
+        if(credited.some(k=>!requests.some(([id,r])=>id===k && r.status==='approved'))){alert('❌ রিপোর্টের All Bank Slip Approve হয়নি।');return;}
         if(requests.length && !moneyMatches(requests.filter(([_,r])=>r.status==='approved').reduce((a,[_,r])=>a+(Number(r.amount)||0),0),Number(item.bankDeposit)||0)){alert('❌ Approved Slip Amount এবং Bank Deposit Amount মিলছে না।');return;}
       }catch(err){alert('Bank Slip Approval যাচাই করা যায়নি: '+err.message);return;}
       const previous = verifiedRecord;
