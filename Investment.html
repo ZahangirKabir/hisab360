@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.21.13">
+<meta name="investment-release-version" content="2026.10.21.14">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -209,6 +209,34 @@ window.formatInvestmentAmount=function(input){const old=input.value,pos=input.se
  <button type="button" id="clearInvestmentData" class="clear-investment-data" hidden>🗑 Investment-এর সব পরীক্ষার ডাটা মুছুন</button>
 </nav><main id="app" hidden><nav id="menu" class="menu" aria-label="Investment submenu"></nav><section id="content"></section></main><p id="bankAccess" hidden></p><main id="bankApp" hidden><nav id="bankMenu" class="menu"></nav><section id="bankContent"></section></main><footer id="investmentCopyright" class="investment-footer" hidden>Copyright © 2026 <strong>Zahangir Kabir</strong>. All rights reserved.</footer>
 <script>
+// Keep the authenticated SDK stream; use HTTP only if that connection stalls.
+window.investmentWatchData=function(bridge,root,onValue,onError,date=''){
+ const query=()=>{const ref=bridge.database.ref(root);return date?ref.orderByChild('date').equalTo(date):ref;};
+ const ref=query(),connection=bridge.database.ref('.info/connected');let active=true,connected=false,reliable=false,denied=false,version=0,timer=null,pending=false;
+ const permission=e=>/permission.denied/i.test(String(e?.code||'')+' '+String(e?.message||''))||e?.httpStatus===401||e?.httpStatus===403;
+ const schedule=(ms=10000)=>{clearTimeout(timer);if(active&&!reliable&&!denied&&typeof bridge.readInvestmentData==='function')timer=setTimeout(read,ms);};
+ async function read(){
+  if(!active||reliable||denied||pending)return;
+  pending=true;const revision=version;
+  try{const value=await bridge.readInvestmentData(root,date);if(active&&!denied&&version===revision&&!reliable)onValue({val:()=>value});}
+  catch(error){if(active&&version===revision&&!reliable){if(permission(error))denied=true;onError(error);}}
+  finally{pending=false;schedule();}
+ }
+ const changed=snap=>{if(!active||denied)return;version++;reliable=connected;if(reliable){clearTimeout(timer);onValue(snap);}else schedule(1200);};
+ const failed=error=>{if(!active)return;version++;reliable=false;if(permission(error)){denied=true;clearTimeout(timer);onError(error);}else{onError(error);schedule(0);}};
+ const connectionChanged=snap=>{if(!active)return;connected=snap.val()===true;if(!connected){reliable=false;schedule(1200);}else if(!reliable&&typeof ref.get==='function'){const revision=version;ref.get().then(value=>{if(active&&connected&&version===revision)changed(value);},failed);}};
+ schedule(1200);ref.on('value',changed,failed);connection.on('value',connectionChanged);
+ const visible=()=>{if(!document.hidden&&!reliable)schedule(0);};document.addEventListener('visibilitychange',visible);window.addEventListener('online',visible);
+ return ()=>{active=false;clearTimeout(timer);ref.off('value',changed);connection.off('value',connectionChanged);document.removeEventListener('visibilitychange',visible);window.removeEventListener('online',visible);};
+};
+window.investmentReadSnapshot=function(bridge,root,date=''){
+ return new Promise((resolve,reject)=>{let stop=null,done=false;const timer=setTimeout(()=>finish(Error('Source data load timeout. আবার চেষ্টা করুন।')),20000);
+ const finish=(error,snap)=>{if(done)return;done=true;clearTimeout(timer);stop?.();error?reject(error):resolve(snap);};
+ stop=window.investmentWatchData(bridge,root,snap=>finish(null,snap),error=>{if(/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))||error?.httpStatus===401||error?.httpStatus===403)finish(error);},date);if(done)stop();
+ });
+};
+</script>
+<script>
 // Temporary manual testing mode. Disable/remove this module for the final release.
 window.INVESTMENT_MANUAL_TEST=true;
 window.prepareInvestmentTestInput=function(input){
@@ -238,7 +266,7 @@ const node=(tag,label)=>{const x=document.createElement(tag);if(label!==undefine
 const money=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
 const inputMoney=n=>Number(n||0)===0?'':money(n);
 function today(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const part=key=>parts.find(x=>x.type===key).value;return `${part('year')}-${part('month')}-${part('day')}`;}
-function stop(){++dataLoadEpoch;clearTimeout(dataLoadTimer);if(stream){stream.off('value',handler);stream=null;handler=null;}}
+function stop(){++dataLoadEpoch;clearTimeout(dataLoadTimer);if(stream){stream.cancelInvestmentRead?.();stream.off('value',handler);stream=null;handler=null;}}
 function notifyInvestmentState(){
  document.querySelectorAll('[data-submission-date]').forEach(input=>input.dispatchEvent(new Event('submission-records-updated')));
  if(page==='declaration')window.syncPettyDeclaration?.();
@@ -250,10 +278,10 @@ function ensureInvestmentStream(force=false){
  if(String(bridge.getUser())!==owner)return;
  if(stream&&!force&&!dataLoadError)return;
  stop();dataLoadError='';const epoch=dataLoadEpoch,ref=database.ref('investmentEntries');stream=ref;
- const failed=error=>{if(epoch!==dataLoadEpoch||stream!==ref)return;clearTimeout(dataLoadTimer);dataLoadError=/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))?'Investment পড়ার অনুমতি পাওয়া যায়নি। Admin login/session যাচাই করে আবার চেষ্টা করুন।':'Investment-এর তথ্য লোড হয়নি। আবার চেষ্টা করুন।';notifyInvestmentState();};
+ const failed=error=>{if(epoch!==dataLoadEpoch||stream!==ref)return;clearTimeout(dataLoadTimer);if(/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))||error?.httpStatus===401||error?.httpStatus===403){dataReady=false;items={};}dataLoadError=/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))?'Investment পড়ার অনুমতি পাওয়া যায়নি। Admin login/session যাচাই করে আবার চেষ্টা করুন।':'Investment-এর তথ্য লোড হয়নি। আবার চেষ্টা করুন।';notifyInvestmentState();};
  handler=snap=>{if(epoch!==dataLoadEpoch||stream!==ref||String(bridge.getUser())!==owner)return;clearTimeout(dataLoadTimer);items=snap.val()||{};dataReady=true;dataLoadError='';notifyInvestmentState();};
  dataLoadTimer=setTimeout(()=>{if(epoch!==dataLoadEpoch||dataReady)return;dataLoadError='Investment-এর তথ্য পেতে সময় লাগছে। আবার চেষ্টা করুন।';notifyInvestmentState();},12000);
- try{ref.on('value',handler,failed);}catch(error){failed(error);}
+ try{ref.cancelInvestmentRead=window.investmentWatchData(bridge,'investmentEntries',handler,failed);}catch(error){failed(error);}
 }
 window.retryInvestmentData=()=>{ensureInvestmentStream(true);notifyInvestmentState();};
 function field(area,label,name,type='number',required=false){
@@ -498,8 +526,8 @@ function balanceCalculator(){
  function watchWithdrawals(selectedDate,epoch){
   window.stopCalculatorWithdrawalSync?.();const ref=database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate);
   const handler=snap=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}withdrawalRows=Object.values(snap.val()||{});delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));if(!liftingManual){lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));delete netMA.dataset.testManual;}if(!refundManual)maRefund.value=inputMoney(refundTotal());syncWithdrawalDrafts();choice.onchange();};
-  const stop=()=>{ref.off('value',handler);if(window.stopCalculatorWithdrawalSync===stop)window.stopCalculatorWithdrawalSync=null;};
-  window.stopCalculatorWithdrawalSync=stop;ref.on('value',handler,e=>{if(!form.isConnected||epoch!==sourceEpoch)return;loaded=false;status.textContent='Withdrawal হিসাব লোড হয়নি: '+e.message;paint();});
+  let cancel=()=>{};const stop=()=>{cancel();if(window.stopCalculatorWithdrawalSync===stop)window.stopCalculatorWithdrawalSync=null;};
+  window.stopCalculatorWithdrawalSync=stop;cancel=window.investmentWatchData(bridge,'bankTrackerEntries',handler,e=>{if(!form.isConnected||epoch!==sourceEpoch)return;loaded=false;status.textContent='Withdrawal হিসাব লোড হয়নি: '+e.message;paint();},selectedDate);
  }
  function paint(throwOnError=false){
   save.disabled=preview||loading||busy||!loaded;
@@ -527,7 +555,7 @@ function balanceCalculator(){
   loading=true;loaded=false;save.disabled=true;refresh.disabled=true;status.textContent='Opening এবং দিনের হিসাব লোড হচ্ছে…';
   let timer;
   try{
-   const snapshots=await Promise.race([Promise.all([dataReady?Promise.resolve({val:()=>items}):database.ref('investmentEntries').once('value'),database.ref('collections').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankSlipRequests').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('ledgerAccounts').orderByChild('date').equalTo(selectedDate).once('value'),database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate).once('value')]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),12000);})]);
+   const snapshots=await Promise.race([Promise.all([dataReady?Promise.resolve({val:()=>items}):database.ref('investmentEntries').once('value'),Promise.resolve({val:()=>({})}),Promise.resolve({val:()=>({})}),window.investmentReadSnapshot(bridge,'ledgerAccounts',selectedDate),window.investmentReadSnapshot(bridge,'bankTrackerEntries',selectedDate)]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),22000);})]);
    if(epoch!==sourceEpoch||selectedDate!==date.value)return;if(!form.isConnected||String(bridge.getUser())!==owner){loading=false;loaded=false;return;}
    items=snapshots[0].val()||{};if(hasSubmittedInvestmentDate(items,'calculator',selectedDate)){date.value='';date.dispatchEvent(new Event('submission-records-updated'));loading=false;loaded=false;save.disabled=true;status.textContent='এই তারিখের Calculator আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';return;}withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
@@ -710,7 +738,7 @@ entry.createdBy='admin';entry.createdAt=bridge.serverTimestamp;const key=ref.pus
 const filters=el('div');filters.className='bank-filters';const fd=input(filters,'Date','filterDate','date',false);fd.type='month';fd.value=dateNow().slice(0,7);const fb=input(filters,'Bank Name','filterBank','text',false,[['','All Banks'],...banks.map(b=>[b,b])]);const all=el('button','Current month');all.type='button';all.onclick=()=>{fd.value=dateNow().slice(0,7);render();};filters.append(all);fd.onchange=fb.onchange=render;card.append(filters);const summary=el('p');summary.id='bankSummary';card.append(summary);const list=el('div');list.id='bankList';list.className='scroll';card.append(list);if(type==='cheque'){const actions=el('div');actions.className='report-export-actions';for(const [kind,label]of [['print','Print'],['excel','Download']]){const button=el('button',label);button.type='button';button.className=kind==='print'?'report-print':'report-download';button.onclick=()=>window.exportWorkingCapital(kind,button,list,'Bank Cheque Tracker');actions.append(button);}card.insertBefore(actions,filters);}render();
 }
 function render(){const list=document.getElementById('bankList');if(!list)return;list.replaceChildren();if(!ready){list.append(el('p','ডাটা আসছে…'));return;}const d=document.getElementById('bank_filterDate').value,b=document.getElementById('bank_filterBank').value;const rows=Object.values(items).filter(x=>x?.scope==='company'&&(mode==='range'?x.type==='range':mode==='debit'?x.type==='debit':['withdrawal','cheque'].includes(x.type))&&(!d||String(x.date).startsWith(d))&&(!b||x.bankName===b)).sort((a,b)=>String(b.date).localeCompare(String(a.date))||(b.createdAt||0)-(a.createdAt||0));document.getElementById('bankSummary').textContent=rows.length+' entries · Total '+fmt(rows.reduce((sum,x)=>sum+(Number(x.amount)||0),0));if(!rows.length){list.append(el('p','নির্বাচিত তারিখ বা ব্যাংকে কোনো তথ্য নেই।'));return;}const table=el('table'),head=el('thead'),tr=el('tr');const labels=mode==='range'?['Date','Bank','Cheque From','Cheque To']:['Date','Bank','Withdraw By','Cheque','Amount','Withdrawer','Reason / Details','Missing Cheques'];if(mode==='cheque')labels.push('Edit');labels.forEach(x=>tr.append(el('th',x)));head.append(tr);table.append(head);const body=el('tbody');for(const x of rows){const row=el('tr');const values=mode==='range'?[x.date,x.bankName,x.chequeFrom,x.chequeTo]:[x.date,x.bankName,x.withdrawBy||(x.type==='cheque'?'Cheque':'—'),x.chequeNumber||'—',''+fmt(x.amount),x.withdrawerName||'—',[Array.isArray(x.reasonAmounts)?x.reasonAmounts.map(r=>r.reason+': '+fmt(r.amount)).join(' + '):x.purpose,x.note].filter(Boolean).join(' · ')||'—',(x.missingCheques||[]).map(k=>k.number+': '+k.reason).join('; ')||'—'];values.forEach(v=>row.append(el('td',v)));if(mode==='cheque'){const cell=el('td'),edit=el('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('bankTrackerEntries',x);cell.append(edit);row.append(cell);}body.append(row);}table.append(body);list.append(table);}
-if(!preview){stream=db.ref('bankTrackerEntries');stream.on('value',s=>{if(bridge.getUser()!=='admin')return;items=s.val()||{};ready=true;render();},e=>{ready=false;const list=document.getElementById('bankList');if(list)list.textContent='ডাটা পড়া যায়নি: '+e.message;});window.addEventListener('pagehide',()=>stream.off());}
+if(!preview){const start=()=>{if(stream)return;stream=window.investmentWatchData(bridge,'bankTrackerEntries',s=>{if(bridge.getUser()!=='admin')return;items=s.val()||{};ready=true;render();},e=>{ready=false;const list=document.getElementById('bankList');if(list)list.textContent='ডাটা পড়া যায়নি: '+e.message;});};start();window.addEventListener('pagehide',()=>{stream?.();stream=null;});window.addEventListener('pageshow',start);}
 window.bankNavigate=show;show('range');
 })();
 </script><script>
