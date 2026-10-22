@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.22.02">
+<meta name="investment-release-version" content="2026.10.22.03">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -659,7 +659,6 @@ window.headOfficeReportRows=function(entries){
    const type=row.balanceType||(row.via==='bank'?'bank':'cash');if(!['cash','bank'].includes(type)||!['received','transfer'].includes(direction))return;
    result.push({key:key+':'+direction+':'+index,date:record.date,direction,type,bankName:type==='bank'?String(row.bankName||''):'',personName:type==='cash'?String(row.personName||''):'',amount:Math.round(amount*100)/100,details:String(row.note||row.details||''),source,sourceRecord:record});};
   if(record.type==='calculator')list(record.cashCalculation?.headOfficeMovements).forEach((row,i)=>add(row,row.direction,'Working Balance Calculator',i));
-  if(record.type==='capital'){list(record.headOfficeReceive).forEach((row,i)=>add(row,'received','Daily Working Capital',i));list(record.headOfficeTransfer).forEach((row,i)=>add(row,'transfer','Daily Working Capital',i));}
  }
  return result.sort((a,b)=>b.date.localeCompare(a.date)||a.key.localeCompare(b.key));
 };
