@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://collection-app-479e0-default-rtdb.firebaseio.com" crossorigin>
-  <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js">
-  <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js">
-  <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js">
+  <link rel="preload" as="script" href="assets/vendor/firebase-app-8.10.1.js">
+  <link rel="preload" as="script" href="assets/vendor/firebase-auth-8.10.1.js">
+  <link rel="preload" as="script" href="assets/vendor/firebase-database-8.10.1.js">
   <!-- Firebase SDKs -->
 
   <!-- Heavy libraries are lazy-loaded so Login opens faster. -->
@@ -523,7 +523,7 @@
 
   <!-- LOGIN SECTION -->
   <div id="loginSection" class="login-box">
-    <img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-ledger-v1.png" alt="Hisab360"><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
+    <img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-ledger-v2.png" alt="Hisab360"><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
     <input type="text" id="loginId" placeholder="User ID / DSO ID" autocomplete="username" autocapitalize="none" spellcheck="false">
     <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
     <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Login</button>
@@ -1432,7 +1432,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.22.02';
+    const APP_RELEASE_VERSION = '2026.10.22.03';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6198,24 +6198,44 @@ global.PortalLedger={create,sync,balance,same,snapshot};
   </script>
 <script>
 (function(){
- var loading=false,started=false;
+ var loading=false,started=false,injected=false,noticeTimer=null;
  function notice(message){
   var box=document.getElementById('portalBootStatus');
   if(!box){box=document.createElement('div');box.id='portalBootStatus';box.setAttribute('role','status');box.style.cssText='padding:12px;margin:12px auto;max-width:460px;background:#fff8e1;color:#654400;border:1px solid #ffe082;border-radius:8px;text-align:center';document.getElementById('loginSection').appendChild(box);}
   box.textContent=message;
-  var button=document.createElement('button');button.type='button';button.textContent='আবার চেষ্টা করুন';button.style.cssText='display:block;margin:8px auto;padding:8px 14px';button.onclick=function(){if(started)location.reload();else boot();};box.appendChild(button);
+  var button=document.createElement('button');button.type='button';button.textContent='আবার চেষ্টা করুন';button.style.cssText='display:block;margin:8px auto;padding:8px 14px';button.onclick=function(){if(loading||injected)location.reload();else boot();};box.appendChild(button);
  }
  window.portalBootNotice=notice;
- function load(url){return new Promise(function(resolve,reject){var script=document.createElement('script'),finished=false;var timer=setTimeout(function(){finish(new Error('SDK load timeout'));},12000);function finish(error){if(finished)return;finished=true;clearTimeout(timer);script.onload=null;script.onerror=null;if(error){script.remove();reject(error);}else resolve();}script.src=url;script.onload=function(){finish();};script.onerror=function(){finish(new Error('SDK unavailable'));};document.head.appendChild(script);});}
- async function ensure(file,test){if(test())return;try{await load('https://www.gstatic.com/firebasejs/8.10.1/'+file);}catch(e){await load('https://cdn.jsdelivr.net/npm/firebase@8.10.1/'+file);}if(!test())throw Error('Firebase load failed');}
- async function boot(){if(loading||started)return;loading=true;var button=document.getElementById('loginBtn');button.disabled=true;if(!document.documentElement.classList.contains('portal-session-restoring'))notice('অ্যাপ প্রস্তুত হচ্ছে…');
-  try{await ensure('firebase-app.js',function(){return !!window.firebase;});await Promise.all([ensure('firebase-auth.js',function(){return !!(window.firebase&&firebase.auth);}),ensure('firebase-database.js',function(){return !!(window.firebase&&firebase.database);})]);
-   var code=document.createElement('script');code.textContent=document.getElementById('portalApplicationCode').textContent;document.body.appendChild(code);if(typeof handleLogin!=='function')throw Error('Application initialization failed');started=true;var status=document.getElementById('portalBootStatus');if(status)status.remove();
-  }catch(error){document.documentElement.classList.remove('portal-session-restoring');notice('অ্যাপের প্রয়োজনীয় ফাইল লোড হয়নি। ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন।');}
-  finally{loading=false;if(started&&typeof updateReleaseGate==='function')updateReleaseGate();}
+ function load(url,timeout){return new Promise(function(resolve,reject){var script=document.createElement('script'),finished=false;var timer=setTimeout(function(){finish(new Error('SDK load timeout'));},timeout);function finish(error){if(finished)return;finished=true;clearTimeout(timer);script.onload=null;script.onerror=null;if(error){script.remove();reject(error);}else resolve();}script.src=url;script.onload=function(){finish();};script.onerror=function(){finish(new Error('SDK unavailable'));};document.head.appendChild(script);});}
+ async function ensure(file,test){
+  if(test())return;
+  var local='assets/vendor/'+file.replace('.js','-8.10.1.js');
+  var urls=[local,'https://www.gstatic.com/firebasejs/8.10.1/'+file,'https://cdn.jsdelivr.net/npm/firebase@8.10.1/'+file];
+  for(var i=0;i<urls.length;i++){if(test())return;try{await load(urls[i],i===0?5000:7000);if(test())return;}catch(error){if(test())return;}}
+  throw Error('Firebase load failed');
+ }
+ async function boot(){
+  if(loading||started)return;if(injected){location.reload();return;}
+  loading=true;var button=document.getElementById('loginBtn');button.disabled=true;
+  noticeTimer=setTimeout(function(){if(!started){document.documentElement.classList.remove('portal-session-restoring');notice('অ্যাপ চালু হতে সময় লাগছে…');}},1800);
+  try{
+   await ensure('firebase-app.js',function(){return !!window.firebase;});
+   await Promise.all([ensure('firebase-auth.js',function(){return !!(window.firebase&&firebase.auth);}),ensure('firebase-database.js',function(){return !!(window.firebase&&firebase.database);})]);
+   injected=true;
+   await new Promise(function(resolve,reject){
+    var finished=false,timer=setTimeout(function(){finish(new Error('Application initialization timeout'));},8000);
+    function finish(error){if(finished)return;finished=true;clearTimeout(timer);window.removeEventListener('error',failed);delete window.portalApplicationReady;error?reject(error):resolve();}
+    function failed(event){if(event.target===window)finish(new Error('Application initialization failed'));}
+    window.portalApplicationReady=function(){finish();};window.addEventListener('error',failed);
+    var code=document.createElement('script');code.textContent=document.getElementById('portalApplicationCode').textContent+'\n;window.portalApplicationReady();';document.body.appendChild(code);
+   });
+   if(typeof handleLogin!=='function')throw Error('Application initialization failed');
+   started=true;var status=document.getElementById('portalBootStatus');if(status)status.remove();
+  }catch(error){document.documentElement.classList.remove('portal-session-restoring');notice('অ্যাপ চালু হয়নি। আবার চেষ্টা করুন।');}
+  finally{clearTimeout(noticeTimer);loading=false;if(started&&typeof updateReleaseGate==='function')updateReleaseGate();}
  }
  window.addEventListener('error',function(event){if(!started&&event.target===window)notice('অ্যাপ চালু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');});
- window.addEventListener('online',function(){if(!started)boot();});boot();
+ window.addEventListener('online',function(){if(!started&&!injected)boot();});boot();
 })();
 </script>
 <script>document.getElementById("hisabHeaderLogo").src=document.getElementById("hisabLoginLogo").src;</script><script>window.addEventListener('beforeprint',()=>{document.querySelectorAll('.print-action-column').forEach(c=>c.classList.remove('print-action-column'));document.querySelectorAll('table').forEach(table=>{const hidden=new Set(),cells=[],grid=[];[...table.rows].forEach((row,r)=>{let col=0;for(const cell of row.cells){while(grid[r]?.[col])col++;const w=cell.colSpan||1,h=cell.rowSpan||1;cells.push({cell,col,w});if(cell.tagName==='TH'&&/^(edit|সম্পাদনা)$/i.test(cell.textContent.trim()))for(let c=col;c<col+w;c++)hidden.add(c);for(let rr=r;rr<r+h;rr++){grid[rr]||=[];for(let c=col;c<col+w;c++)grid[rr][c]=true;}col+=w;}});cells.forEach(({cell,col,w})=>{if([...Array(w)].every((_,i)=>hidden.has(col+i)))cell.classList.add('print-action-column');});});});</script></body>
