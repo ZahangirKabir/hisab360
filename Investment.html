@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.22.01">
+<meta name="investment-release-version" content="2026.10.22.02">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -220,11 +220,13 @@ html body select[multiple],html body select[size]:not([size="1"]){background-ima
 @media(prefers-reduced-motion:reduce){#moduleMenu .module-dropdown-panel{animation:none}#moduleMenu .module-dropdown summary,#moduleMenu .module-dropdown-panel button{transition:none}}
 </style>
 <link rel="apple-touch-icon" sizes="180x180" href="assets/hisab360-touch-v2.png">
+<style id="head-office-report-style">.ho-report-controls{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr)) auto;gap:10px;margin:16px 0}.ho-report-controls input,.ho-report-controls select{width:100%;min-width:0;height:40px;box-sizing:border-box;border:1px solid #ccddd7;border-radius:8px;background:#fff;padding:8px 10px;font:inherit;color:#173b35}.ho-report .report-export-actions{justify-content:flex-end}.ho-report-table{min-width:790px;width:100%;font-size:12px;border-collapse:collapse}.ho-report-table th,.ho-report-table td{padding:9px 10px;border-bottom:1px solid #e0eae6;text-align:left;vertical-align:middle}.ho-report-table thead th{background:#e8f3ee;color:#204d40;white-space:nowrap}.ho-report-table tbody tr:nth-child(even){background:#f7faf8}.ho-report-table .ho-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.ho-report-table .ho-received{color:#08784d;font-weight:600}.ho-report-table .ho-transfer{color:#a94628;font-weight:600}.ho-report-table tfoot th{background:#eaf3ef;font-weight:700}.ho-report .expense-report-title{display:none}@media(max-width:650px){.ho-report-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.ho-report-controls button{grid-column:1/-1}.ho-report-table{font-size:11px}.ho-report-table th,.ho-report-table td{padding:8px}.ho-report h2{font-size:17px}}@media print{.ho-report .expense-report-title{display:block}}</style>
 </head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
  <details id="navWorkingCapital" class="module-dropdown"><summary>💼 Working Capital <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Working Capital submenu"><button type="button" id="showWorkingCapital">Daily Working Capital</button><button type="button" id="showWorkingCapitalReport">Working Capital Report</button><button type="button" id="showBalanceCalculator">Working Balance Calculator</button></div></details>
  <details id="navPettyCash" class="module-dropdown"><summary>💵 Petty Cash <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Petty Cash submenu"><button type="button" id="showPettyDeclaration">Petty Cash Declaration</button><button type="button" id="showPettyCash">Daily Expense</button><button type="button" id="showPettyCashReport">Petty Cash Report</button><button type="button" id="showExpenseTypes">Expense Type Report</button></div></details>
+ <button type="button" id="showHeadOfficeReport">🏢 Head Office Received &amp; Transfer</button>
  <button type="button" id="showTotalInvestment">📊 Total Investment</button>
  <details id="navBank" class="module-dropdown"><summary>🏦 Bank <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Bank submenu"><button type="button" id="showChequeEntry">Cheque Number Entry</button><button type="button" id="showBankWithdraw"> Withdraw</button><button type="button" id="showBankCheque">Withdraw Report</button><button type="button" id="showBankDebit" hidden style="display:none">Bank Debit</button></div></details>
  <button type="button" id="clearInvestmentData" class="clear-investment-data" hidden>🗑 Investment-এর সব পরীক্ষার ডাটা মুছুন</button>
@@ -354,7 +356,7 @@ function show(key){ensureInvestmentStream();if(page===key&&content.querySelector
   button.onclick=()=>show(name);menu.append(button);
  });
  if(formDrafts.has(key)){content.append(...formDrafts.get(key));content.querySelector('form')?.dispatchEvent(new Event('investment-draft-resume'));notifyInvestmentState();return;}
- if(key==='capital')capitalForm();else if(key==='calculator')balanceCalculator();else if(key==='declaration')pettyDeclaration();else if(key==='petty')pettyForm();else if(key==='pettyReport'||key==='pettyTypeReport')expenseReportPage(key);else report(key);
+ if(key==='capital')capitalForm();else if(key==='calculator')balanceCalculator();else if(key==='declaration')pettyDeclaration();else if(key==='petty')pettyForm();else if(key==='headOfficeReport')headOfficeReportPage();else if(key==='pettyReport'||key==='pettyTypeReport')expenseReportPage(key);else report(key);
  if(preview){items={};render();return;}
  notifyInvestmentState();
 }
@@ -647,6 +649,49 @@ function pettyReportBalances(entries,through){const last=declarations(entries).f
 function renderPetty(){if(page==='petty')return;const list=document.getElementById('investList');if(!list)return;list.replaceChildren();if(!preview&&!dataReady){list.textContent='ডাটা আসছে…';return;}
  if(['petty','pettyReport','pettyTypeReport'].includes(page)){const month=document.getElementById('expenseReportMonth')?.value;if(!month)return;const selected=document.getElementById('expenseReportType')?.value||'',date=document.getElementById('expenseReportDate')?.value||'',rows=expenseRows(items,month,selected).filter(x=>!date||x.date===date);if(page==='pettyReport'){const end=(()=>{const [y,m]=month.split('-').map(Number);return month+'-'+new Date(Date.UTC(y,m,0)).getUTCDate();})();const through=date||(month===today().slice(0,7)?today():end);const balance=pettyReportBalances(items,through),cards=node('div');cards.className='petty-summary-cards';for(const [label,value]of [['Petty Cash Amount',balance.pettyCashAmount],['Till Date Expense',balance.expense],['Net Balance',balance.net]]){const card=node('section');card.className='petty-summary-card';card.append(node('span',label),node('strong',''+money(value)));cards.append(card);}list.append(cards);}const closing=items[month+'_pettyMonthClosing'];if(closing){const status=node('p','Month Closed · Expense '+money(closing.expenseTotal)+' · Closing Balance '+money(closing.closingBalance));status.className='balance';list.append(status);}expenseReportTable(list,rows,'Expense month of '+monthLabel(month)+(selected?' · '+selected:' · All Expense Types')+(date?' · '+date:''));return;}
  const filter=node('input');filter.type='month';filter.value=window.pettyDeclarationReportMonth||today().slice(0,7);filter.setAttribute('aria-label','Declaration report month');filter.onchange=()=>{window.pettyDeclarationReportMonth=filter.value;renderPetty();};const bar=node('div');bar.className='report-filter';bar.append(node('span','Report Month'),filter);list.append(bar);const block=node('section');reportActions(block,'Petty Cash Declaration · '+filter.value);const heading=node('h3','Petty Cash Declaration · '+filter.value);block.append(heading);const records=declarations(items).filter(x=>x.date.startsWith(filter.value)),table=node('table'),head=node('thead'),tr=node('tr');['Date','Opening Balance','Received Balance','Total Balance','Edit'].forEach(x=>tr.append(node('th',x)));head.append(tr);table.append(head);const body=node('tbody');for(const x of records){const row=node('tr');[x.date,''+money(x.openingBalance),''+money(x.receivedBalance),''+money(x.totalBalance)].forEach(value=>row.append(node('td',value)));const cell=node('td'),edit=node('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('investmentEntries',x);cell.append(edit);row.append(cell);body.append(row);}if(!records.length){const row=node('tr'),cell=node('td','এই মাসে Declaration নেই।');cell.colSpan=4;row.append(cell);body.append(row);}table.append(body);block.append(table);list.append(block);}
+
+window.headOfficeReportRows=function(entries){
+ const list=rows=>Array.isArray(rows)?rows:rows&&typeof rows==='object'?[rows]:[];
+ const result=[];
+ for(const [key,record]of Object.entries(entries||{})){
+  if(record?.scope!=='company'||!/^\d{4}-\d{2}-\d{2}$/.test(record.date||''))continue;
+  const add=(row,direction,source,index)=>{const amount=Number(String(row?.amount??'').replace(/,/g,''));if(!Number.isFinite(amount)||amount<=0)return;
+   const type=row.balanceType||(row.via==='bank'?'bank':'cash');if(!['cash','bank'].includes(type)||!['received','transfer'].includes(direction))return;
+   result.push({key:key+':'+direction+':'+index,date:record.date,direction,type,bankName:type==='bank'?String(row.bankName||''):'',personName:type==='cash'?String(row.personName||''):'',amount:Math.round(amount*100)/100,details:String(row.note||row.details||''),source,sourceRecord:record});};
+  if(record.type==='calculator')list(record.cashCalculation?.headOfficeMovements).forEach((row,i)=>add(row,row.direction,'Working Balance Calculator',i));
+  if(record.type==='capital'){list(record.headOfficeReceive).forEach((row,i)=>add(row,'received','Daily Working Capital',i));list(record.headOfficeTransfer).forEach((row,i)=>add(row,'transfer','Daily Working Capital',i));}
+ }
+ return result.sort((a,b)=>b.date.localeCompare(a.date)||a.key.localeCompare(b.key));
+};
+function headOfficeReportPage(){
+ const box=card('Head Office Received & Transfer');box.classList.add('ho-report');
+ reportActions(box,'Head Office Received & Transfer');
+ const controls=node('div');controls.className='ho-report-controls';
+ const month=node('input');month.type='month';month.id='hoReportMonth';month.value=today().slice(0,7);month.setAttribute('aria-label','Report month');
+ const date=node('input');date.type='date';date.id='hoReportDate';date.setAttribute('aria-label','Report date');
+ controls.append(month,date);
+ for(const [id,label,options]of [['hoReportDirection','Received / Transfer',[['','All Entries'],['received','Received'],['transfer','Transfer']]],['hoReportType','Cash / Bank',[['','Cash & Bank'],['cash','Cash'],['bank','Bank']]]]){const input=node('select');input.id=id;input.setAttribute('aria-label',label);for(const [value,text]of options){const option=node('option',text);option.value=value;input.append(option);}input.onchange=render;controls.append(input);}
+ const reset=node('button','Reset');reset.type='button';reset.className='add-row';reset.onclick=()=>{month.value=today().slice(0,7);date.value='';document.getElementById('hoReportDirection').value='';document.getElementById('hoReportType').value='';render();};controls.append(reset);
+ month.onchange=()=>{date.value='';render();};date.onchange=()=>{if(date.value)month.value=date.value.slice(0,7);render();};box.append(controls);
+ const summary=node('div');summary.id='hoReportSummary';summary.className='petty-summary-cards';box.append(summary);
+ const list=node('div');list.id='hoReportList';list.className='scroll';box.append(list);
+ // Export only this table and its selected-period heading.
+ box.querySelectorAll('.report-export-actions button').forEach(button=>button.onclick=()=>window.exportWorkingCapital(button.classList.contains('report-print')?'print':'excel',button,list,'Head Office Received & Transfer'));
+}
+function renderHeadOfficeReport(){
+ const list=document.getElementById('hoReportList'),summary=document.getElementById('hoReportSummary');if(!list)return;list.replaceChildren();summary.replaceChildren();
+ if(!dataReady){list.append(node('p',dataLoadError||'তথ্য লোড হচ্ছে…'));return;}
+ const month=document.getElementById('hoReportMonth').value,date=document.getElementById('hoReportDate').value,direction=document.getElementById('hoReportDirection').value,type=document.getElementById('hoReportType').value;
+ const rows=window.headOfficeReportRows(items).filter(row=>(date?row.date===date:!month||row.date.startsWith(month))&&(!direction||row.direction===direction)&&(!type||row.type===type));
+ const sum=kind=>rows.filter(row=>row.direction===kind).reduce((total,row)=>total+Math.round(row.amount*100),0)/100,received=sum('received'),transfer=sum('transfer');
+ for(const [label,value]of [['Total Received',received],['Total Transfer',transfer],['Net Received',Math.round((received-transfer)*100)/100]]){const tile=node('section');tile.className='petty-summary-card';tile.append(node('span',label),node('strong',money(value)));summary.append(tile);}
+ const heading=node('div');heading.className='expense-report-title';heading.append(node('h2','M/S. Mostafa'),node('p','Head Office Received & Transfer · '+(date||monthLabel(month)||'All Dates')+' · '+(direction?direction==='received'?'Received':'Transfer':'All Entries')+' · '+(type?type==='bank'?'Bank':'Cash':'Cash & Bank')));list.append(heading);
+ const table=node('table');table.className='ho-report-table';const head=node('thead'),hr=node('tr');['Date','Entry','Cash / Bank','Bank / Person Name','Received','Transfer','Details / Source','Edit'].forEach(text=>hr.append(node('th',text)));head.append(hr);table.append(head);
+ const body=node('tbody');for(const record of rows){const tr=node('tr');for(const text of [record.date,record.direction==='received'?'Received':'Transfer',record.type==='bank'?'Bank':'Cash',record.bankName||record.personName||'—',record.direction==='received'?money(record.amount):'—',record.direction==='transfer'?money(record.amount):'—',[record.details,record.source].filter(Boolean).join(' · ')])tr.append(node('td',text));tr.children[1].className='ho-'+record.direction;tr.children[4].className='ho-money ho-received';tr.children[5].className='ho-money ho-transfer';const cell=node('td'),edit=node('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('investmentEntries',record.sourceRecord);cell.append(edit);tr.append(cell);body.append(tr);}
+ if(!rows.length){const tr=node('tr'),cell=node('td','নির্বাচিত সময়ে Head Office-এর কোনো Received / Transfer নেই।');cell.colSpan=8;tr.append(cell);body.append(tr);}table.append(body);
+ const foot=node('tfoot'),total=node('tr'),label=node('th','Total');label.colSpan=4;total.append(label,node('th',money(received)),node('th',money(transfer)),node('th','Net Received: '+money(Math.round((received-transfer)*100)/100)),node('th',''));foot.append(total);table.append(foot);list.append(table);
+}
+
 function report(key){
  const box=card(pages.find(([k])=>k===key)[1]);
  if(key==='capitalReport'){const actions=node('div');actions.className='report-export-actions';const print=node('button','Print'),excel=node('button','Download');print.type=excel.type='button';print.onclick=()=>window.exportWorkingCapital('print');excel.onclick=()=>window.exportWorkingCapital('excel',excel);print.className='report-print';excel.className='report-download';print.setAttribute('aria-label','Print Working Capital Report');excel.setAttribute('aria-label','Download Excel Report');actions.append(print,excel);box.classList.add('capital-report-heading');box.append(actions);
@@ -680,7 +725,7 @@ function capitalReportTable(list,records){const table=node('table');table.classN
  const difference=Math.round(((Number(x.openingTotal)||0)-(Number(closing.maWallet)||0)-closeCash-bankTotal(closing))*100)/100;
  const values=[dateLabel(x.date),opening.maWallet,openCash,bankTotal(opening),totalRows(x.commission),totalRows(x.headOfficeReceive),x.openingTotal,closing.maWallet,closeCash,bankTotal(closing),totalRows(x.headOfficeTransfer),outflow,x.closingTotal,difference];
  values.forEach((value,index)=>{const td=node('td',index===0?value:`${money(value)}`);if(index===13&&difference!==0)td.className='report-difference';tr.append(td);});const detailCell=node('td'),button=node('button','Details দেখুন');button.type='button';button.className='report-detail-button';button.onclick=()=>showCapitalClosingDetails(x);detailCell.append(button);const edit=node('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('investmentEntries',x);detailCell.append(edit);const exported=node('div');exported.className='export-transfer-details';const lines=capitalTransferLines(x);exported.textContent=(x.closing?.cashBeforeTransfer!==undefined?'Cash In Hand: '+money(x.closing.cashBeforeTransfer)+'\n':'')+(lines.length?lines.map(line=>line.label+(line.details?' · '+line.details:'')+': '+money(line.amount)).join('\n'):'No Cash Transfer')+'\nClosing Cash: '+money(x.closing?.cashInHand);detailCell.append(exported);tr.append(detailCell);body.append(tr);});table.append(body);list.append(table);}
-function render(){if(['declaration','petty','pettyReport','pettyTypeReport'].includes(page)){renderPetty();return;}
+function render(){if(page==='headOfficeReport'){renderHeadOfficeReport();return;}if(['declaration','petty','pettyReport','pettyTypeReport'].includes(page)){renderPetty();return;}
  const list=document.getElementById('investList');if(!list)return;list.replaceChildren();const month=document.getElementById('investMonth')?.value||'';
  const capitalMode=document.querySelector('.report-filter')?.dataset.mode||'';
  const capitalDate=document.getElementById('capitalReportDate')?.value||'';
@@ -794,7 +839,7 @@ window.bankNavigate=show;show('range');
   };
 
  }
- const ids={capital:'showWorkingCapital',capitalReport:'showWorkingCapitalReport',calculator:'showBalanceCalculator',declaration:'showPettyDeclaration',petty:'showPettyCash',pettyReport:'showPettyCashReport',pettyTypeReport:'showExpenseTypes',total:'showTotalInvestment',bankRange:'showChequeEntry',bankWithdraw:'showBankWithdraw',bankCheque:'showBankCheque',bankDebit:'showBankDebit'};
+ const ids={headOfficeReport:'showHeadOfficeReport',capital:'showWorkingCapital',capitalReport:'showWorkingCapitalReport',calculator:'showBalanceCalculator',declaration:'showPettyDeclaration',petty:'showPettyCash',pettyReport:'showPettyCashReport',pettyTypeReport:'showExpenseTypes',total:'showTotalInvestment',bankRange:'showChequeEntry',bankWithdraw:'showBankWithdraw',bankCheque:'showBankCheque',bankDebit:'showBankDebit'};
  const groups=[...tabs.querySelectorAll('.module-dropdown')];
  const closeDropdowns=except=>groups.forEach(group=>{if(group!==except)group.open=false;});
  groups.forEach(group=>{
