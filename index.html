@@ -528,6 +528,19 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{border-color:#cbd5d
 input:hover,select:hover,textarea:hover{border-color:#91aab5}
 button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #0b8277!important;outline-offset:3px}
 @media print{.card,.login-box,.report-filter{box-shadow:none}}
+</style><style id="financial-protection-style">
+.image-zoom-overlay{backdrop-filter:blur(5px);background:#0c1c2ed9;padding:16px}
+.image-zoom-container{padding:14px;border-radius:18px;box-shadow:0 20px 80px #0005;background:#f8fafc}
+.zoom-controls{gap:8px;padding:0 46px 12px 0;background:transparent;min-height:48px}
+.zoom-controls button{display:grid;place-items:center;width:40px;height:40px;padding:9px;border:0;color:#1c625b;background:white;box-shadow:0 2px 8px #1c465410;border-radius:11px}
+.zoom-controls button:hover{background:#dff1ec}.zoom-controls svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.zoom-controls output{font-size:12px;font-variant-numeric:tabular-nums;min-width:48px;color:#4c6272}
+.slip-view-close{position:absolute;right:14px;top:14px;width:38px;height:38px;border:0;background:#eaf0f4;color:#4b6170;border-radius:50%;font-size:27px;line-height:1;z-index:20;cursor:pointer}
+.slip-zoom-viewport{background:#e7edf1;border-radius:12px;overscroll-behavior:contain}#zoomedImageSrc{box-shadow:0 3px 16px #263d4d18}
+.zoom-details-info{background:white;color:#425a69;border-radius:10px;font-size:12px;font-weight:500;padding:11px}
+.backup-overlay{position:fixed;inset:0;background:#102a405c;backdrop-filter:blur(4px);z-index:99999;display:grid;place-items:center;padding:16px}
+.backup-panel{background:white;border-radius:18px;padding:24px;width:min(100%,500px);max-height:90vh;overflow:auto;color:#234353;box-shadow:0 16px 60px #102a4026}.backup-panel h3{margin:0 0 10px}.backup-panel p{font-size:13px;line-height:1.7}.backup-panel input{width:100%;padding:12px;margin:6px 0;border:1px solid #d2dee4;box-sizing:border-box}.backup-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.backup-actions button{padding:10px 13px;border:0;background:#eaf3f1;color:#175b50;cursor:pointer}.backup-actions button:first-child{background:#087f6c;color:white}.backup-actions button:disabled{opacity:.6;cursor:wait}
+@media(max-width:600px){.image-zoom-overlay{padding:6px}.image-zoom-container{padding:10px;border-radius:13px;height:94dvh;max-height:96vh}.slip-view-close{right:10px;top:10px}.zoom-details-info{gap:7px;font-size:11px}.backup-panel{padding:18px}.backup-panel input{font-size:16px}}
 </style></head>
 <body>
 
@@ -1012,10 +1025,10 @@ html body #adminPageSlipApproval .slip-filter-field select:focus{outline:0;borde
   </div>
 
   <!-- ZOOM IMAGE MODAL POPUP -->
-  <div id="imageZoomModal" class="image-zoom-overlay" onclick="closeImageZoomModal()">
+  <div id="imageZoomModal" role="dialog" aria-modal="true" aria-label="Bank Slip" class="image-zoom-overlay" onclick="closeImageZoomModal()">
     <div class="image-zoom-container" onclick="event.stopPropagation();">
-      <button class="modal-close" style="position: absolute; top: 10px; right: 10px; z-index: 20;" onclick="closeImageZoomModal()">✖ Close</button>
-      <div class="zoom-controls"><button type="button" onclick="changeSlipZoom(-1)" aria-label="ছোট করুন">🔍− ছোট</button><button type="button" onclick="changeSlipZoom(0)" aria-label="স্বাভাবিক মাপে দেখুন">পুরো ছবি</button><output id="slipZoomPercent" aria-live="polite">100%</output><button type="button" onclick="changeSlipZoom(1)" aria-label="বড় করুন">🔍+ বড়</button></div>
+      <button class="slip-view-close" type="button" aria-label="স্লিপ বন্ধ করুন" title="Close" onclick="closeImageZoomModal()">×</button>
+      <div class="zoom-controls"><button type="button" onclick="changeSlipZoom(-1)" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 5 5M7 10h6"/></svg></button><button type="button" onclick="changeSlipZoom(0)" aria-label="Fit image" title="Fit image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg></button><output id="slipZoomPercent" aria-live="polite">100%</output><button type="button" onclick="changeSlipZoom(1)" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 5 5M7 10h6M10 7v6"/></svg></button></div>
       <div class="slip-zoom-viewport" id="slipZoomViewport"><img id="zoomedImageSrc" src="" alt="Bank Slip Image Preview"></div>
       <div class="zoom-details-info" id="zoomImageDetails"></div>
     </div>
@@ -1531,6 +1544,28 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       deviceSessionRef.on('value',deviceSessionHandler);
       devicePermissionRef.on('value',devicePermissionHandler,error=>{if(currentUser!==id)return;if(/permission.denied/i.test(String(error.code||'')+' '+String(error.message||''))){logout();alert('ডিভাইসের access বন্ধ হয়েছে। Admin-কে জানান।');}else verifyPermission();});
     }
+    function installFinancialBackupMenu(){
+      if(currentUser!=='admin'||document.getElementById('financialBackupButton'))return;
+      const button=document.createElement('button');button.id='financialBackupButton';button.type='button';button.className='device-approval-menu';button.textContent='Data Backup';button.onclick=openFinancialBackup;document.getElementById('adminTabNav').append(button);
+    }
+    async function backupKey(password,salt,usages){const raw=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},raw,{name:'AES-GCM',length:256},false,usages);}
+    function backupBase64(bytes){let out='';for(let i=0;i<bytes.length;i+=32768)out+=String.fromCharCode(...bytes.subarray(i,i+32768));return btoa(out);}
+    function backupBytes(text){return Uint8Array.from(atob(text),c=>c.charCodeAt(0));}
+    async function sealFinancialBackup(payload,password){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await backupKey(password,salt,['encrypt']),ciphertext=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(payload))));return {format:'Hisab360EncryptedBackup',version:1,kdf:'PBKDF2-SHA256',iterations:310000,compression:'none',salt:backupBase64(salt),iv:backupBase64(iv),ciphertext:backupBase64(ciphertext)};}
+    async function verifyFinancialBackup(file,password){if(file.format!=='Hisab360EncryptedBackup'||file.version!==1||file.kdf!=='PBKDF2-SHA256'||file.iterations!==310000)throw Error('Backup file সঠিক নয়।');const salt=backupBytes(file.salt),iv=backupBytes(file.iv);if(salt.length!==16||iv.length!==12)throw Error('Backup file সঠিক নয়।');const key=await backupKey(password,salt,['decrypt']);let bytes=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,backupBytes(file.ciphertext));if(file.compression==='gzip'){if(typeof DecompressionStream==='undefined')throw Error('এই Backup যাচাই করতে হালনাগাদ browser ব্যবহার করুন।');bytes=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();}else if(file.compression!=='none')throw Error('Backup format সঠিক নয়।');const payload=JSON.parse(new TextDecoder().decode(bytes));if(payload.format!=='Hisab360Backup'||payload.projectId!=='collection-app-479e0'||!payload.database||typeof payload.database!=='object')throw Error('এই app-এর Backup নয়।');return payload;}
+    function openFinancialBackup(){
+      if(currentUser!=='admin'||!portalFinancialApp)return;document.getElementById('financialBackupModal')?.remove();
+      const overlay=document.createElement('div');overlay.id='financialBackupModal';overlay.className='backup-overlay';const card=document.createElement('section');card.className='backup-panel';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Data Backup');const heading=document.createElement('h3');heading.textContent='Data Backup';const description=document.createElement('p');description.textContent='ব্যাকআপের password ও ফাইল আলাদা নিরাপদ জায়গায় রাখুন।';
+      const password=document.createElement('input');password.type='password';password.placeholder='Backup password (কমপক্ষে ১৬ অক্ষর)';password.setAttribute('aria-label','Backup password');password.autocomplete='new-password';const repeat=password.cloneNode();repeat.placeholder='Backup password আবার লিখুন';repeat.setAttribute('aria-label','Confirm backup password');
+      const download=document.createElement('button');download.type='button';download.textContent='Backup Download';const verify=document.createElement('button');verify.type='button';verify.textContent='Backup যাচাই';const file=document.createElement('input');file.type='file';file.accept='.hisabbackup,application/json';file.hidden=true;file.style.display='none';const close=document.createElement('button');close.type='button';close.textContent='বন্ধ করুন';const status=document.createElement('p');status.setAttribute('role','status');let controller=null,busy=false;
+      const setBusy=value=>{busy=value;download.disabled=verify.disabled=password.disabled=repeat.disabled=value;};
+      const checkPassword=()=>{if(password.value.length<16||password.value!==repeat.value)throw Error('কমপক্ষে ১৬ অক্ষরের একই Backup password দুটি ঘরে দিন।');};
+      close.onclick=()=>{controller?.abort();password.value=repeat.value='';overlay.remove();};verify.onclick=()=>{try{checkPassword();file.click();}catch(e){status.textContent=e.message;}};
+      file.onchange=async()=>{const selected=file.files[0];if(!selected||busy)return;setBusy(true);status.textContent='Backup যাচাই হচ্ছে…';try{if(selected.size>512*1024*1024)throw Error('এই file browser-এ যাচাই করার সীমার চেয়ে বড়।');const value=await verifyFinancialBackup(JSON.parse(await selected.text()),password.value);status.textContent='✓ Backup পড়া গেছে · '+new Date(value.createdAt).toLocaleString('bn-BD')+' · '+(value.scope==='full-rtdb'?'Full Database':'Financial Data');}catch(e){status.textContent='যাচাই হয়নি। Password ও Backup file পরীক্ষা করুন।';}finally{file.value='';setBusy(false);}};
+      download.onclick=async()=>{if(busy||currentUser!=='admin')return;try{checkPassword();}catch(e){status.textContent=e.message;return;}setBusy(true);controller=new AbortController();const app=portalFinancialApp,uid=app.auth().currentUser?.uid,startedAt=new Date().toISOString(),roots=['ledgerAccounts','collections','bankSlipRequests','investmentEntries','bankTrackerEntries','ledgerLocations','appConfig','notifications','slipImages'],databaseCopy={};try{if(!crypto?.subtle)throw Error('এই browser-এ নিরাপদ Backup সম্ভব হয়নি।');for(let i=0;i<roots.length;i++){if(currentUser!=='admin'||app.auth().currentUser?.uid!==uid)throw Error('আবার Admin Login করুন।');status.textContent='Backup প্রস্তুত হচ্ছে… '+(i+1)+'/'+roots.length;const token=await app.auth().currentUser.getIdToken(),url=new URL(roots[i]+'.json',firebaseConfig.databaseURL.replace(/\/?$/,'/'));url.searchParams.set('auth',token);url.searchParams.set('format','export');const timer=setTimeout(()=>controller.abort(),120000);try{const response=await fetch(url.href,{signal:controller.signal,cache:'no-store',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('Backup data পড়া যায়নি। আবার চেষ্টা করুন।');databaseCopy[roots[i]]=await response.json();}finally{clearTimeout(timer);}}if(!Object.values(databaseCopy).some(x=>x!==null))throw Error('কোনো data পাওয়া যায়নি; Backup তৈরি হয়নি।');status.textContent='Backup সুরক্ষিত ও যাচাই হচ্ছে…';const payload={format:'Hisab360Backup',version:1,projectId:'collection-app-479e0',scope:'financial-roots',startedAt,createdAt:new Date().toISOString(),includes:roots,excludes:['Firebase Authentication','Account/device security metadata','Daily submission indexes','Database Rules'],database:databaseCopy},encrypted=await sealFinancialBackup(payload,password.value);await verifyFinancialBackup(encrypted,password.value);if(currentUser!=='admin'||!overlay.isConnected||controller.signal.aborted)return;const blob=new Blob([JSON.stringify(encrypted)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Hisab360_FINANCIAL_'+new Date().toISOString().replace(/[:.]/g,'-')+'.hisabbackup';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='✓ Backup প্রস্তুত। Download ফাইলটি নিরাপদে সংরক্ষণ করুন।';}catch(e){status.textContent=e.name==='AbortError'?'Backup সম্পন্ন হয়নি। আবার চেষ্টা করুন।':e.message||'Backup হয়নি।';}finally{setBusy(false);}};
+      const actions=document.createElement('div');actions.className='backup-actions';actions.append(download,verify,close);card.append(heading,description,password,repeat,actions,file,status);overlay.append(card);document.body.append(overlay);password.focus();
+    }
+
     function installFirebaseDeviceMenu(){
       if(currentUser!=='admin'||document.getElementById('deviceAdminButton'))return;
       const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.textContent='Device Permision';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
@@ -1570,7 +1605,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.23.07';
+    const APP_RELEASE_VERSION = '2026.10.24.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -1980,7 +2015,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(restoreEpoch!==null&&(restoreEpoch!==portalLoginInteractionEpoch||loginInProgress))return;
       currentUser = String(id || '').trim();
       if (!currentUser) return;
-      installFirebaseDeviceMenu();installPortalDeviceRecovery();watchPortalRecoverySession(currentUser);watchDevicePermission(currentUser);
+      installFirebaseDeviceMenu();installFinancialBackupMenu();installPortalDeviceRecovery();watchPortalRecoverySession(currentUser);watchDevicePermission(currentUser);
       const rememberedPage=freshLogin?null:getRememberedPortalPage(currentUser);
       if(currentUser==='admin'&&freshLogin&&!hostedReleaseMismatch){database.ref('appConfig/releaseVersion').transaction(current=>{
         const previous=String(current||'');return !previous||APP_RELEASE_VERSION.localeCompare(previous,undefined,{numeric:true})>0?APP_RELEASE_VERSION:undefined;
@@ -2218,7 +2253,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function logout() {
-      clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();document.getElementById('deviceRecoveryButton')?.remove();deviceRecoveryBackup=null;stopPortalRecoveryWatcher();
+      clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();document.getElementById('deviceRecoveryButton')?.remove();document.getElementById('financialBackupButton')?.remove();document.getElementById('financialBackupModal')?.remove();deviceRecoveryBackup=null;stopPortalRecoveryWatcher();
       clearTimeout(deviceSessionExpiryTimer);portalLedger.reset();
       accountDeviceCleanup?.();accountDeviceCleanup=null;if(accountDeviceRef&&accountDeviceHandler)accountDeviceRef.off('value',accountDeviceHandler);accountDeviceRef=null;accountDeviceHandler=null;portalAccountDeviceEnforced=false;
       const closingEpoch=++credentialActionEpoch;
@@ -6002,7 +6037,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       document.getElementById("detailsModal").style.display = "none";
     }
 
-    let slipZoomLevel=1,slipFitWidth=0;
+    let slipZoomLevel=1,slipFitWidth=0,slipViewFocus=null;
+    document.addEventListener('keydown',event=>{if(document.getElementById('imageZoomModal').style.display!=='flex')return;if(event.key==='Escape'){event.preventDefault();closeImageZoomModal();}else if(['+','=','-','0'].includes(event.key)&&!['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)){event.preventDefault();changeSlipZoom(event.key==='0'?0:event.key==='-'?-1:1);}});
     function changeSlipZoom(direction){
       const img=document.getElementById('zoomedImageSrc'),viewport=document.getElementById('slipZoomViewport');
       if(!img.naturalWidth)return;
@@ -6025,7 +6061,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const img=document.getElementById('zoomedImageSrc');
       img.onload=()=>requestAnimationFrame(()=>changeSlipZoom(0));
       img.onerror=()=>{document.getElementById('zoomImageDetails').textContent='ছবি পড়া যাচ্ছে না; আসল স্লিপটি পুনরায় যাচাই করুন।';};
-      document.getElementById('imageZoomModal').style.display='flex';
+      slipViewFocus=document.activeElement;document.getElementById('imageZoomModal').style.display='flex';document.querySelector('.slip-view-close').focus();
       img.src = src;
       document.getElementById("zoomImageDetails").innerHTML = `
         <span>DSO: ${escapeHtml(dsoId)}</span>
@@ -6039,7 +6075,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     function closeImageZoomModal() {
       document.getElementById("imageZoomModal").style.display = "none";
       document.getElementById('zoomedImageSrc').removeAttribute('src');
-      document.getElementById('slipZoomViewport').scrollTo(0,0);
+      document.getElementById('slipZoomViewport').scrollTo(0,0);slipViewFocus?.focus?.();slipViewFocus=null;
     }
 
     async function exportToExcel() {

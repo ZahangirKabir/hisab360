@@ -1,0 +1,36 @@
+name: Hisab360 Financial Backup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 19 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: hisab360-financial-backup
+  cancel-in-progress: false
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Create and verify encrypted database backup
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          BACKUP_OUTPUT_DIR: ${{ runner.temp }}/hisab360-backup
+        run: node scripts/financial-backup.cjs
+      - name: Preserve encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hisab360-encrypted-backup-${{ github.run_id }}
+          path: ${{ runner.temp }}/hisab360-backup/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Backup result
+        run: echo 'Encrypted database and Rules backup verified and uploaded. Keep an additional private copy before artifact expiry.' >> "$GITHUB_STEP_SUMMARY"

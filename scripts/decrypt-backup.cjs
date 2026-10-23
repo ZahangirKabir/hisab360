@@ -1,0 +1,3 @@
+'use strict';
+const fs=require('node:fs'),{unseal}=require('./financial-backup.cjs');
+try{const [source,destination]=process.argv.slice(2);if(!source||!destination)throw Error();const payload=unseal(JSON.parse(fs.readFileSync(source,'utf8')),process.env.BACKUP_PASSPHRASE||'');if(payload.format!=='Hisab360Backup'||payload.projectId!=='collection-app-479e0')throw Error();fs.writeFileSync(destination,JSON.stringify(payload.database,null,2),{flag:'wx',mode:0o600});console.log('Database JSON recovered to a NEW local file. No Firebase data has been changed.');}catch{console.error('Recovery failed: check password, backup and unused output filename.');process.exitCode=1;}
