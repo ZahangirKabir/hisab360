@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.23.04">
+<meta name="investment-release-version" content="2026.10.23.05">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -236,6 +236,18 @@ tbody tr:nth-child(even){background:#f9fbfd}tbody tr:hover{background:#f0f8f7}
 #declarationForm{background:linear-gradient(130deg,#fff,#f5faf9);border-radius:14px;padding:16px}
 @media(max-width:600px){input,select,textarea{font-size:16px}.card,.bank-card{border-radius:12px}thead th,tbody td{padding:8px 6px}#declarationForm{padding:10px}}
 @media print{body{background:#fff}table{font-size:10px}tbody tr{break-inside:avoid}}
+</style><style id="quiet-surfaces">
+/* Quiet surfaces, clear controls, accessible keyboard focus. */
+.card,.login-box,.report-filter,.filter-panel,.filter-container,.nav-group,.finance-section,.balance,.report-detail-grid section,.petty-summary-card,.device-summary>div{border:0!important}
+.card,.login-box{box-shadow:0 4px 20px rgba(25,55,75,.055)}
+button:not(.clear-investment-data){border-color:transparent}
+input:not([type=checkbox]):not([type=radio]),select,textarea{border-color:#cbd5de}
+input:hover,select:hover,textarea:hover{border-color:#91aab5}
+button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #0b8277!important;outline-offset:3px}
+@media print{.card,.login-box,.report-filter{box-shadow:none}}
+#moduleMenu,#menu,.working-level,.opening-level,.closing-level,.capital-report-table,.bank-card{border:0!important}
+.opening-level{box-shadow:inset 3px 0 0 #2784ad}.closing-level{box-shadow:inset 3px 0 0 #c88c36}
+.opening-level>legend,.closing-level>legend{border:0}
 </style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
