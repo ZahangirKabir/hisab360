@@ -517,6 +517,7 @@
 </style><link rel="icon" type="image/png" sizes="64x64" href="assets/hisab360-favicon-v2.png">
 <link rel="shortcut icon" type="image/png" href="assets/hisab360-favicon-v2.png">
 <style>@media print{@page{size:A4 landscape;margin:12mm}body{background:white!important;color:#203c34!important;font-size:11px}button,nav,#loginSalam,#adminTabNav,#dsoTabNav,#adminFilterPanel{display:none!important}table{width:100%!important;border-collapse:collapse!important}thead{display:table-header-group}tr{break-inside:avoid}th,td{position:static!important;border:1px solid #ccdcd5!important;padding:6px!important}th{background:#e9f3ee!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-action-column{display:none!important}}</style><link rel="apple-touch-icon" sizes="180x180" href="assets/hisab360-touch-v2.png">
+<style>.device-restore-button{display:block;margin:12px auto 0;border:0;background:transparent;color:#08785c;font-size:12px;text-decoration:underline;cursor:pointer}.device-recovery-button{border:1px solid #c9ddd4;background:#eff7f3;color:#175b43;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer}</style>
 </head>
 <body>
 
@@ -527,6 +528,9 @@
     <input type="text" id="loginId" placeholder="User ID / DSO ID" autocomplete="username" autocapitalize="none" spellcheck="false">
     <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
     <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Login</button>
+    <button type="button" id="deviceRestoreButton" disabled class="device-restore-button" onclick="document.getElementById('deviceRestoreFile').click()">আগের ডিভাইস পুনরুদ্ধার</button>
+    <input id="deviceRestoreFile" type="file" accept=".json,application/json" hidden style="display:none" onchange="restorePortalDeviceFile(event)">
+    <p id="deviceRestoreStatus" role="status" style="font-size:12px;line-height:1.6;text-align:center"></p>
   </div>
 
   <!-- APP MAIN CONTAINER -->
@@ -1311,9 +1315,68 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       // Recheck absence on the server before creating/showing a new request.
       return value==null?readLoginREST(app,path):value;
     }
+    function portalRecoveryEmail(uid){return 'device-'+uid+'@collection-device.invalid';}
+    function isPortalDeviceIdentity(user){return !!user&&(user.isAnonymous===true||(user.email===portalRecoveryEmail(user.uid)&&(user.providerData||[]).some(provider=>provider.providerId==='password')));}
+    function portalRecoveryFile(data){
+      if(!data||data.format!=='Hisab360DeviceRecovery'||data.version!==1||typeof data.userId!=='string'||typeof data.deviceUid!=='string'||!/^[A-Za-z0-9_-]{20,128}$/.test(data.deviceUid)||typeof data.secret!=='string'||!/^[a-f0-9]{64}$/.test(data.secret))throw Error('Hisab360-এর সঠিক recovery file বাছুন।');
+      return {format:data.format,version:1,userId:normalizeLoginId(data.userId),deviceUid:data.deviceUid,secret:data.secret};
+    }
+    let deviceRecoveryBackup=null,deviceRecoveryBusy=false;
+    function downloadPortalRecovery(data){
+      const blob=new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Hisab360_Device_Recovery_'+data.userId+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
+    }
+    async function savePortalDeviceRecovery(){
+      if(deviceRecoveryBusy||!currentUser||!portalFinancialApp?.auth().currentUser)return;
+      const button=document.getElementById('deviceRecoveryButton');deviceRecoveryBusy=true;if(button)button.disabled=true;
+      try{
+        const user=portalFinancialApp.auth().currentUser;
+        // This read is permitted only after the recovery-compatible Rules publish.
+        try{await readLoginREST(portalFinancialApp,'deviceRecovery/'+user.uid);}catch(error){if(loginPermissionError(error))throw Error('Admin-কে নতুন Device Recovery Rules Publish করতে বলুন। এরপর ফাইল সংরক্ষণ করতে পারবেন।');throw error;}
+        if(deviceRecoveryBackup?.deviceUid===user.uid){downloadPortalRecovery(deviceRecoveryBackup);return;}
+        if(!user.isAnonymous)throw Error('এই ডিভাইসের recovery file আগে তৈরি হয়েছে। ডাউনলোড করা ফাইলটি নিরাপদে রাখুন।');
+        if(!confirm('একটি ব্যক্তিগত recovery file ডাউনলোড হবে। Browser data মুছলেও এটি দিয়ে আগের অনুমোদন ফেরত পাবেন। ফাইলটি অন্য কাউকে দেবেন না। সংরক্ষণ করবেন?'))return;
+        const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);const secret=Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('');
+        const backup={format:'Hisab360DeviceRecovery',version:1,userId:currentUser,deviceUid:user.uid,secret};
+        await user.linkWithCredential(firebase.auth.EmailAuthProvider.credential(portalRecoveryEmail(user.uid),secret));
+        deviceRecoveryBackup=backup;downloadPortalRecovery(backup);
+        await user.getIdToken(true);
+        alert('Recovery file সংরক্ষণ করুন। Browser data মুছলে Login পেজের আগের ডিভাইস পুনরুদ্ধার থেকে এই ফাইলটি বাছবেন।');
+      }catch(error){alert(error.code?.startsWith('auth/')?loginErrorMessage(error):error.message);}
+      finally{deviceRecoveryBusy=false;if(button)button.disabled=false;}
+    }
+    function installPortalDeviceRecovery(){
+      if(document.getElementById('deviceRecoveryButton'))return;
+      const button=document.createElement('button');button.id='deviceRecoveryButton';button.type='button';button.className='device-recovery-button';button.textContent='ডিভাইস সুরক্ষা';button.onclick=savePortalDeviceRecovery;document.querySelector('.header-bar')?.append(button);
+    }
+    async function restorePortalDeviceFile(event){
+      const input=event.target,file=input.files?.[0],status=document.getElementById('deviceRestoreStatus'),button=document.getElementById('deviceRestoreButton');if(!file)return;
+      if(loginInProgress||deviceRecoveryBusy){input.value='';return;}
+      const id=normalizeLoginId(document.getElementById('loginId').value),password=document.getElementById('loginPass').value;
+      if(!id||!password){status.textContent='আগে User ID ও Password লিখুন, তারপর recovery file বাছুন।';input.value='';return;}
+      let busy=false,accountVerified=false;
+      try{
+        if(file.size>8192)throw Error('সঠিক ছোট recovery file বাছুন।');
+        const fileText=typeof file.text==='function'?await file.text():await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('ফাইল পড়া যায়নি।'));reader.readAsText(file);});
+        const data=portalRecoveryFile(JSON.parse(fileText));if(data.userId!==id)throw Error('এই recovery file অন্য User ID-এর।');
+        const wait=loginWaitMessage(id);if(wait)throw Error(wait);
+        if(credentialLoginTask)throw Error('চলমান Login শেষ হলে আবার চেষ্টা করুন।');
+        busy=true;loginInProgress=true;deviceRecoveryBusy=true;portalLoginInteractionEpoch++;credentialActionEpoch++;button.disabled=true;document.getElementById('loginBtn').disabled=true;status.textContent='আগের ডিভাইস যাচাই হচ্ছে…';
+        await signInForPortal(id,password);const meta=await getCredentialMeta();if(meta.userId!==id)throw Error('User ID সঠিক নয়।');accountVerified=true;
+        const name='portal-device-'+id.toLowerCase();let app=firebase.apps.find(item=>item.name===name);if(!app)app=firebase.initializeApp(firebaseConfig,name);
+        const auth=app.auth();await authReady(auth);await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const result=await loginReadDeadline(()=>auth.signInWithEmailAndPassword(portalRecoveryEmail(data.deviceUid),data.secret),15000);
+        if(result.user.uid!==data.deviceUid||!isPortalDeviceIdentity(result.user))throw Error('ডিভাইসের পরিচয় মেলেনি।');
+        const approval=await readDeviceApproval(app,result.user.uid);
+        if(approval?.status!=='approved'||approval.userId!==id||approval.credentialUid!==credentialAuth.currentUser.uid)throw Error('এই ডিভাইসের অনুমোদন নেই বা Admin বন্ধ করেছেন।');
+        try{localStorage.setItem('collectionDeviceUid:'+id.toLowerCase(),result.user.uid);}catch(_){}
+        devicePreparationTasks.delete(id.toLowerCase());deviceRecoveryBackup=data;void protectDeviceIdentityStorage();
+        status.textContent='আগের অনুমোদিত ডিভাইস ফিরে এসেছে। এখন Login চাপুন।';
+      }catch(error){const wait=isWrongLogin(error)&&busy&&!accountVerified?recordWrongLogin(id):'';status.textContent=wait||(error.code?.startsWith('auth/')?'User ID, Password অথবা recovery file সঠিক নয়।':error.message||'পুনরুদ্ধার হয়নি। আবার চেষ্টা করুন।');}
+      finally{input.value='';if(busy){loginInProgress=false;deviceRecoveryBusy=false;button.disabled=false;updateReleaseGate();}}
+    }
     function prepareDeviceApp(id){
       const key=String(id).trim().toLowerCase();
-      if(devicePreparationTasks.has(key))return devicePreparationTasks.get(key).then(app=>{if(app.auth().currentUser?.isAnonymous)return app;devicePreparationTasks.delete(key);return prepareDeviceApp(id);});
+      if(devicePreparationTasks.has(key))return devicePreparationTasks.get(key).then(app=>{if(isPortalDeviceIdentity(app.auth().currentUser))return app;devicePreparationTasks.delete(key);return prepareDeviceApp(id);});
       const work=async()=>{
         const name='portal-device-'+key;
         let app=firebase.apps.find(a=>a.name===name);if(!app)app=firebase.initializeApp(firebaseConfig,name);
@@ -1331,7 +1394,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           if(!recovered){const error=Error('এই browser-এর আগের device session পাওয়া যায়নি। পেজ Refresh করে আবার চেষ্টা করুন। Browser-এর site data মুছে গেলে Admin-এর অনুমোদন আবার প্রয়োজন হবে।');error.code='portal/device-restore';throw error;}
         }
         if(!auth.currentUser)await auth.signInAnonymously();
-        if(!auth.currentUser?.isAnonymous)throw Error('Device identity সঠিক নয়। অন্য browser profile ব্যবহার করুন।');
+        if(!isPortalDeviceIdentity(auth.currentUser))throw Error('Device identity সঠিক নয়। আগের ডিভাইস পুনরুদ্ধার করুন।');
         try{localStorage.setItem('collectionDeviceUid:'+key,auth.currentUser.uid);}catch{}
         // Keep the stable named app and its Firebase LOCAL identity across releases.
         // The permission/session checks still run on the server for every login.
@@ -1485,14 +1548,14 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.23.01';
+    const APP_RELEASE_VERSION = '2026.10.23.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
     let hostedReleaseEtags = null;
     function updateReleaseGate(){const blocked=firebaseReleaseMismatch||hostedReleaseMismatch;const gate=document.getElementById('releaseGate');gate.style.display=blocked?'flex':'none';
       if(blocked)document.getElementById('releaseGateMessage').textContent='আপনার অভিজ্ঞতা আরও চমৎকার করতে আমরা অ্যাপটি আপডেট করেছি।';
-      const login=document.getElementById('loginBtn');if(login&&!loginInProgress)login.disabled=blocked;
+      const login=document.getElementById('loginBtn');if(login&&!loginInProgress)login.disabled=blocked;const restore=document.getElementById('deviceRestoreButton');if(restore)restore.disabled=blocked||loginInProgress||deviceRecoveryBusy;
     }
     let releaseVersionRef = null, releaseSignalRef = null, seenReleaseSignal = null;
     function startReleaseWatcher() {
@@ -1895,7 +1958,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(restoreEpoch!==null&&(restoreEpoch!==portalLoginInteractionEpoch||loginInProgress))return;
       currentUser = String(id || '').trim();
       if (!currentUser) return;
-      installFirebaseDeviceMenu();watchDevicePermission(currentUser);
+      installFirebaseDeviceMenu();installPortalDeviceRecovery();watchDevicePermission(currentUser);
       const rememberedPage=freshLogin?null:getRememberedPortalPage(currentUser);
       if(currentUser==='admin'&&freshLogin&&!hostedReleaseMismatch){database.ref('appConfig/releaseVersion').transaction(current=>{
         const previous=String(current||'');return !previous||APP_RELEASE_VERSION.localeCompare(previous,undefined,{numeric:true})>0?APP_RELEASE_VERSION:undefined;
@@ -2133,7 +2196,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function logout() {
-      clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();
+      clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();document.getElementById('deviceRecoveryButton')?.remove();deviceRecoveryBackup=null;
       clearTimeout(deviceSessionExpiryTimer);portalLedger.reset();
       accountDeviceCleanup?.();accountDeviceCleanup=null;if(accountDeviceRef&&accountDeviceHandler)accountDeviceRef.off('value',accountDeviceHandler);accountDeviceRef=null;accountDeviceHandler=null;portalAccountDeviceEnforced=false;
       const closingEpoch=++credentialActionEpoch;
