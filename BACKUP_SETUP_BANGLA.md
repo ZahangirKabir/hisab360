@@ -1,6 +1,8 @@
 # Hisab360 — Backup চালু করা
 
-অ্যাপের Data Backup মেনু শুধু মূল Admin দেখবেন। Backup Download-এ নতুন একটি কমপক্ষে ১৬ অক্ষরের backup password দুবার লিখে download করুন। ফাইল ও password আলাদা নিরাপদ জায়গায় রাখুন। Password হারালে encrypted backup খোলা যাবে না। এই password আপনার Login password থেকে আলাদা রাখুন। Backup যাচাই বাটনে ফাইলটি বেছে একই password দিয়ে পরীক্ষা করা যায়। যাচাই বা download কোনো live data পরিবর্তন করে না।
+অ্যাপের Settings → Data Backup শুধু মূল Admin দেখবেন। Backup Download-এর জন্য বর্তমান Admin Login password দিতে হবে। Firebase সেটি যাচাই করার পর financial data পড়বে ও একই password দিয়ে file encrypt করবে। Password কোথাও নতুন করে সংরক্ষণ করা হয় না। তৈরি হওয়া file private জায়গায় রাখুন।
+
+Backup তৈরির সময়কার password দিয়েই পরে ওই file খোলা যাবে। Admin password পরিবর্তন করলে পুরোনো file-এর জন্য পুরোনো password প্রয়োজন হবে। একই ঘরে সেই password দিয়ে Backup যাচাই করতে পারেন। আলাদা কোনো Backup password বা confirmation input লাগবে না। স্বয়ংক্রিয় workflow-এর file যাচাইয়ের সময় ওই workflow-এর BACKUP_PASSPHRASE ব্যবহার করুন। যাচাই বা download কোনো live data পরিবর্তন করে না।
 
 ## দৈনিক Full Database Backup চালু করতে
 
@@ -8,7 +10,7 @@
 2. **New repository secret** চাপুন। Name: `FIREBASE_SERVICE_ACCOUNT_JSON`। Secret ঘরে Firebase-এর service-account JSON ফাইলের সম্পূর্ণ লেখা বসিয়ে **Add secret** দিন। এটি GitHub-এর সাধারণ ফাইল হিসেবে upload করবেন না এবং chat-এ পাঠাবেন না।
 3. আরেকটি Secret যোগ করুন। Name: `BACKUP_PASSPHRASE`। Secret ঘরে নতুন কমপক্ষে ১৬ অক্ষরের, সম্ভব হলে ২৪ বা বেশি অক্ষরের শক্ত password দিন। এটি আলাদা নিরাপদ জায়গায় রাখুন।
 4. https://github.com/ZahangirKabir/hisab360/actions খুলুন → **Hisab360 Financial Backup** → **Run workflow** → সবুজ Success হওয়া পর্যন্ত অপেক্ষা করুন।
-5. সফল Run খুলুন → Artifacts → `Hisab360-encrypted-backup-...` Download করুন। ZIP Extract করে `.hisabbackup` ফাইলটি অ্যাপের **Data Backup → Backup যাচাই** দিয়ে পরীক্ষা করুন। এর জন্য একই `BACKUP_PASSPHRASE` দুটি ঘরে লিখতে হবে।
+5. সফল Run খুলুন → Artifacts → `Hisab360-encrypted-backup-...` Download করুন। ZIP Extract করে `.hisabbackup` ফাইলটি অ্যাপের **Data Backup → Backup যাচাই** দিয়ে পরীক্ষা করুন। এর জন্য Admin password ঘরে workflow-এর `BACKUP_PASSPHRASE` লিখতে হবে। যাচাই পুরোনো encrypted file পড়বে; নতুন download-এর ক্ষেত্রে শুধু বর্তমান Admin Login password গ্রহণযোগ্য।
 
 প্রথম Success এবং যাচাই হওয়ার আগে স্বয়ংক্রিয় Backup চালু হয়েছে ধরে নেবেন না। কোনো Secret ভুল হলে workflow ব্যর্থ হবে। আমি আপনার হয়ে Secret-এর মান দেখতে বা বসাতে পারি না।
 
