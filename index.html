@@ -1321,6 +1321,21 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(!data||data.format!=='Hisab360DeviceRecovery'||data.version!==1||typeof data.userId!=='string'||typeof data.deviceUid!=='string'||!/^[A-Za-z0-9_-]{20,128}$/.test(data.deviceUid)||typeof data.secret!=='string'||!/^[a-f0-9]{64}$/.test(data.secret))throw Error('Hisab360-এর সঠিক recovery file বাছুন।');
       return {format:data.format,version:1,userId:normalizeLoginId(data.userId),deviceUid:data.deviceUid,secret:data.secret};
     }
+    let recoveryFloorRef=null,recoveryFloorHandler=null,recoveryFloorCleanup=null;
+    async function markPortalRecoverySession(app){
+      const user=app.auth().currentUser,token=await loginReadDeadline(()=>user.getIdTokenResult(true));
+      const authTime=Number(token.claims?.auth_time);if(!Number.isFinite(authTime))throw Error('ডিভাইস যাচাই হয়নি। আবার চেষ্টা করুন।');
+      await writeLoginServer(app,'deviceRecovery/'+user.uid,{authTime,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+    }
+    function stopPortalRecoveryWatcher(){recoveryFloorCleanup?.();recoveryFloorCleanup=null;if(recoveryFloorRef&&recoveryFloorHandler)recoveryFloorRef.off('value',recoveryFloorHandler);recoveryFloorRef=null;recoveryFloorHandler=null;}
+    function watchPortalRecoverySession(id){
+      stopPortalRecoveryWatcher();if(id==='admin'||portalFinancialApp?.auth().currentUser?.isAnonymous)return;
+      const app=portalFinancialApp,uid=portalDeviceUid,epoch=credentialActionEpoch;let checking=false;
+      const active=()=>currentUser===id&&portalDeviceUid===uid&&credentialActionEpoch===epoch;
+      const verify=async value=>{if(checking||!active()||!value?.authTime)return;checking=true;try{const token=await app.auth().currentUser.getIdTokenResult();if(active()&&Number(token.claims?.auth_time)<Number(value.authTime)){logout();alert('ডিভাইসের পরিচয় অন্য জায়গায় পুনরুদ্ধার করা হয়েছে। এই সেশন বন্ধ হয়েছে।');}}catch(_){}finally{checking=false;}};
+      recoveryFloorRef=app.database().ref('deviceRecovery/'+uid);recoveryFloorHandler=snap=>verify(snap.val());recoveryFloorRef.on('value',recoveryFloorHandler,()=>{});
+      const poll=()=>{if(!document.hidden&&active())readLoginREST(app,'deviceRecovery/'+uid).then(verify,()=>{});};const timer=setInterval(poll,30000);document.addEventListener('visibilitychange',poll);window.addEventListener('online',poll);recoveryFloorCleanup=()=>{clearInterval(timer);document.removeEventListener('visibilitychange',poll);window.removeEventListener('online',poll);};
+    }
     let deviceRecoveryBackup=null,deviceRecoveryBusy=false;
     function downloadPortalRecovery(data){
       const blob=new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Hisab360_Device_Recovery_'+data.userId+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
@@ -1339,7 +1354,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const backup={format:'Hisab360DeviceRecovery',version:1,userId:currentUser,deviceUid:user.uid,secret};
         await user.linkWithCredential(firebase.auth.EmailAuthProvider.credential(portalRecoveryEmail(user.uid),secret));
         deviceRecoveryBackup=backup;downloadPortalRecovery(backup);
-        await user.getIdToken(true);
+        await markPortalRecoverySession(portalFinancialApp);watchPortalRecoverySession(currentUser);
         alert('Recovery file সংরক্ষণ করুন। Browser data মুছলে Login পেজের আগের ডিভাইস পুনরুদ্ধার থেকে এই ফাইলটি বাছবেন।');
       }catch(error){alert(error.code?.startsWith('auth/')?loginErrorMessage(error):error.message);}
       finally{deviceRecoveryBusy=false;if(button)button.disabled=false;}
@@ -1368,6 +1383,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(result.user.uid!==data.deviceUid||!isPortalDeviceIdentity(result.user))throw Error('ডিভাইসের পরিচয় মেলেনি।');
         const approval=await readDeviceApproval(app,result.user.uid);
         if(approval?.status!=='approved'||approval.userId!==id||approval.credentialUid!==credentialAuth.currentUser.uid)throw Error('এই ডিভাইসের অনুমোদন নেই বা Admin বন্ধ করেছেন।');
+        await markPortalRecoverySession(app);
         try{localStorage.setItem('collectionDeviceUid:'+id.toLowerCase(),result.user.uid);}catch(_){}
         devicePreparationTasks.delete(id.toLowerCase());deviceRecoveryBackup=data;void protectDeviceIdentityStorage();
         status.textContent='আগের অনুমোদিত ডিভাইস ফিরে এসেছে। এখন Login চাপুন।';
@@ -1548,7 +1564,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.23.02';
+    const APP_RELEASE_VERSION = '2026.10.23.03';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -1958,7 +1974,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(restoreEpoch!==null&&(restoreEpoch!==portalLoginInteractionEpoch||loginInProgress))return;
       currentUser = String(id || '').trim();
       if (!currentUser) return;
-      installFirebaseDeviceMenu();installPortalDeviceRecovery();watchDevicePermission(currentUser);
+      installFirebaseDeviceMenu();installPortalDeviceRecovery();watchPortalRecoverySession(currentUser);watchDevicePermission(currentUser);
       const rememberedPage=freshLogin?null:getRememberedPortalPage(currentUser);
       if(currentUser==='admin'&&freshLogin&&!hostedReleaseMismatch){database.ref('appConfig/releaseVersion').transaction(current=>{
         const previous=String(current||'');return !previous||APP_RELEASE_VERSION.localeCompare(previous,undefined,{numeric:true})>0?APP_RELEASE_VERSION:undefined;
@@ -2196,7 +2212,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function logout() {
-      clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();document.getElementById('deviceRecoveryButton')?.remove();deviceRecoveryBackup=null;
+      clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();document.getElementById('deviceRecoveryButton')?.remove();deviceRecoveryBackup=null;stopPortalRecoveryWatcher();
       clearTimeout(deviceSessionExpiryTimer);portalLedger.reset();
       accountDeviceCleanup?.();accountDeviceCleanup=null;if(accountDeviceRef&&accountDeviceHandler)accountDeviceRef.off('value',accountDeviceHandler);accountDeviceRef=null;accountDeviceHandler=null;portalAccountDeviceEnforced=false;
       const closingEpoch=++credentialActionEpoch;
