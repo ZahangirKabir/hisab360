@@ -2116,7 +2116,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         alert("ইউজার আইডি অথবা পাসওয়ার্ড সঠিক নয়। আবার চেষ্টা করুন।"); return;
       }
       const wait=loginWaitMessage(id);if(wait){alert(wait);return;}
-      if(credentialLoginTask){alert('আগের Login-এর উত্তর এখনও আসেনি। কিছুক্ষণ পরে চেষ্টা করুন। দীর্ঘ সময় হলে পেজ Refresh করুন।');return;}
+      if(credentialLoginTask){const button=document.getElementById('loginBtn');if(button){button.disabled=true;button.textContent='Please wait…';}credentialLoginTask.finally(()=>{if(button&&!loginInProgress){button.disabled=false;button.textContent='Login';}}).catch(()=>{});alert('আগের Login যাচাই শেষ হচ্ছে। শেষ হলে আবার Login চাপুন।');return;}
       credentialActionEpoch++;loginInProgress = true;
       if(btn){btn.disabled=true;btn.classList.add('is-loading');btn.textContent='Checking…';}
       const trace=startLoginTiming();let devicePermissionPending=false;
@@ -2143,7 +2143,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       } finally {
         trace.finish(devicePermissionPending);
         loginInProgress = false;
-        if(btn){btn.classList.remove('is-loading');btn.textContent='Login';}updateReleaseGate();
+        if(btn){btn.classList.remove('is-loading');btn.disabled=!!credentialLoginTask;btn.textContent=credentialLoginTask?'Please wait…':'Login';if(credentialLoginTask){const pending=credentialLoginTask;pending.finally(()=>{if(credentialLoginTask===null&&!loginInProgress){btn.disabled=false;btn.textContent='Login';}}).catch(()=>{});}}updateReleaseGate();
       }
     }
 
