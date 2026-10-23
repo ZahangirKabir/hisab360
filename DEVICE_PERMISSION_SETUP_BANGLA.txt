@@ -1,0 +1,16 @@
+Hisab360 — Device Permission
+
+অ্যাপের পরিবর্তন GitHub-এ দেওয়া হয়েছে। সার্ভারে এক ডিভাইসের নিয়ম চালু করতে:
+1. Device_Permission_Rules.json ফাইলটি খুলে সব লেখা Copy করুন।
+2. Firebase Console → collection-app-479e0 → Realtime Database → Rules খুলুন। বর্তমান Rules-এর একটি কপি রেখে দিন।
+3. নতুন Rules-এর সম্পূর্ণ লেখা বসিয়ে Publish চাপুন।
+
+কোনো JSON ডাটা Import/Delete করবেন না। Rules Publish করলে আগের হিসাব ও ডিভাইসের অনুমোদন মুছবে না।
+
+Publish-এর পরে:
+• একটি ID অন্য অনুমোদিত ডিভাইসে Login করলে আগের ডিভাইসের সেশন বন্ধ হবে। মূল admin ব্যতিক্রম।
+• অনুমোদন Login/Logout, Refresh ও অ্যাপ Update-এ থাকবে।
+• Admin Block/Delete করলে বা browser site data মুছলে পুনরায় অনুমোদন প্রয়োজন হতে পারে।
+• একই নামের browser আলাদা ফোনও হতে পারে। তালিকায় অনুরূপ এন্ট্রি লুকানো আছে; checkbox দিয়ে সব দেখা যাবে।
+
+অ্যাপ বর্তমান Rules-এ চলতে পারবে। কিন্তু নতুন Rules Publish না হওয়া পর্যন্ত সার্ভারে এক ডিভাইসের সীমা চালু হবে না।
