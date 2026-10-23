@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.24.05">
+<meta name="investment-release-version" content="2026.10.24.06">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -859,7 +859,7 @@ window.bankNavigate=show;show('range');
  tabs.hidden=false;
  const clear=document.getElementById('clearInvestmentData');let bridge=null;
  try{bridge=parent!==window&&parent.location.origin===location.origin?parent.portalInvestmentContext:null;}catch(_){bridge=null;}
- if(false){ // Test deletion disabled for financial-data protection.
+ if(bridge?.database&&bridge.getUser?.()==='admin'){
   clear.hidden=false;clear.textContent='🗑 পরীক্ষার ডেটা মুছুন';clear.title='Menu ও তারিখ বেছে পরীক্ষার ডেটা মুছুন';
   const deletionMenus=[['capital','Daily Working Capital','investmentEntries'],['calculator','Working Balance Calculator','investmentEntries'],['petty','Daily Expense','investmentEntries'],['bankCharge','Bank Charge Expense','investmentEntries'],['pettyDeclaration','Petty Cash Balance Summary','investmentEntries'],['pettyMonthClosing','Petty Cash Month Closing','investmentEntries'],['range','Cheque Number Entry','bankTrackerEntries'],['withdrawal','Withdrawal / Withdraw Report','bankTrackerEntries'],['debit','Bank Debit','bankTrackerEntries']];
   window.investmentTestDeletePlan=function(data,type,from,to){const valid=new Set(deletionMenus.map(x=>x[0]));if(!valid.has(type)||!/^\d{4}-\d{2}-\d{2}$/.test(from)||!/^\d{4}-\d{2}-\d{2}$/.test(to)||from>to)throw Error('সঠিক Menu ও তারিখ নির্বাচন করুন।');return Object.entries(data||{}).filter(([,row])=>row?.scope==='company'&&row.date>=from&&row.date<=to&&(type==='bankCharge'?row.type==='calculator'&&Object.values(row.bankCalculations||{}).some(bank=>Number(bank.bankCharge)>0):type==='withdrawal'?['withdrawal','cheque'].includes(row.type):row.type===type)).map(([key,row])=>({key,row,action:type==='bankCharge'?'clearBankCharge':'delete'}));};
