@@ -569,7 +569,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 @media(prefers-reduced-motion:reduce){#adminTabNav>button{transition:none!important}}
 @media print{#adminTabNav{display:none!important}}
 </style><style id="admin-filter-design-v10">
-#adminFilterPanel{display:flex!important;flex-wrap:wrap!important;align-items:flex-end!important;gap:10px!important;padding:14px!important;border:0!important;border-radius:12px!important;background:#f4f7f5!important;box-shadow:none!important;margin-bottom:16px!important}
+#adminFilterPanel{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:flex-end!important;gap:10px!important;padding:14px!important;border:0!important;border-radius:12px!important;background:#f4f7f5!important;box-shadow:none!important;margin-bottom:16px!important}
 #adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{flex:0 1 180px!important;width:180px!important;min-width:0!important;max-width:none!important;gap:0!important;margin:0}
 #adminFilterPanel .filter-group label{display:block;font-size:11px!important;font-weight:500!important;color:#5b7164!important;line-height:1.45!important;margin:0 0 6px!important;letter-spacing:0!important}
 #adminFilterPanel .filter-group input,#adminFilterPanel .filter-group select,#adminFilterPanel .dso-multiselect-toggle{width:100%!important;min-height:39px!important;height:39px!important;padding:8px 11px!important;border:1px solid #d8e4dc!important;border-radius:8px!important;background-color:#fff!important;color:#345543!important;font-family:inherit;font-size:12px!important;font-weight:500;box-shadow:0 1px 2px #163e2503!important;box-sizing:border-box!important}
@@ -591,6 +591,20 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 @media(max-width:600px){#adminFilterPanel{gap:10px 8px!important;padding:11px!important}#adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{flex:1 1 calc(50% - 8px)!important;width:calc(50% - 8px)!important}#adminFilterPanel .dso-filter{flex-basis:100%!important;width:100%!important}#adminFilterPanel .admin-filter-action{flex:1 1 calc(50% - 8px)!important;min-width:0!important}#adminFilterPanel .filter-group input,#adminFilterPanel .filter-group select{font-size:16px!important;letter-spacing:-.2px!important}#adminFilterPanel .dso-checkbox-container{max-width:calc(100vw - 45px)}}
 @media(max-width:330px){#adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{flex-basis:100%!important;width:100%!important}}
 @media print{#adminFilterPanel{display:none!important}}
+</style><style id="mobile-admin-layout-fix">
+@media(max-width:760px){
+#adminFilterPanel{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-flow:row!important;align-items:end!important;justify-items:stretch!important;gap:11px 9px!important;padding:12px!important;width:100%!important;min-width:0!important}
+#adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{width:100%!important;max-width:none!important;min-width:0!important;flex:none!important;align-self:stretch!important;grid-column:auto;margin:0!important}
+#adminFilterPanel .filter-group.dso-filter,#adminFilterPanel.group-admin-filter .filter-group.dso-filter{grid-column:1/-1!important;width:100%!important}
+#adminFilterPanel .filter-group label{font-size:11px!important;line-height:1.45!important;margin:0 0 6px!important}
+#adminFilterPanel .filter-group input,#adminFilterPanel .filter-group select,#adminFilterPanel .dso-multiselect-toggle{width:100%!important;max-width:100%!important;min-width:0!important;min-height:41px!important;height:41px!important;box-sizing:border-box!important}
+#adminFilterPanel .filter-group input,#adminFilterPanel .filter-group select{font-size:16px!important}
+#adminFilterPanel .dso-multiselect{height:41px!important;min-width:0!important;width:100%!important}
+#adminFilterPanel .admin-filter-action,#adminFilterPanel .admin-filter-action[onclick="exportToExcel()"]{display:flex!important;justify-content:center!important;align-self:stretch!important;width:100%!important;max-width:none!important;min-width:0!important;height:40px!important;min-height:40px!important;margin:0!important;flex:none!important;padding:8px!important;font-size:12px!important;grid-column:auto}
+#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu{min-height:41px!important;justify-content:flex-start!important;text-align:left!important}
+#adminFilterPanel .dso-checkbox-container{left:0!important;right:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box}
+}
+@media(max-width:320px){#adminFilterPanel{grid-template-columns:minmax(0,1fr)!important}#adminFilterPanel .filter-group.dso-filter{grid-column:auto!important}}
 </style></head>
 <body>
 
@@ -1661,7 +1675,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.11';
+    const APP_RELEASE_VERSION = '2026.10.24.12';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
