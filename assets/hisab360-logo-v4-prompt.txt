@@ -1,0 +1,9 @@
+Tool: built-in image_gen (transparent image editing).
+
+Logo production prompt:
+Production asset extraction from the approved reference. Keep the EXACT approved Hisab360 horizontal logo, including its distinctive forest-green H/circular negative-space mark, mint arc, precise Hisab360 lettering, typography, spacing, colors and proportions. Remove only the off-white background and all excess empty outer canvas. Deliver the same single horizontal lockup on true alpha transparency with small even clear margins. Do NOT redesign, add 3D, change the symbol, add a tagline, change text, add shadows or add a background panel. Exact text: Hisab360. This is the approved artwork being prepared for an app header.
+
+Favicon production prompt:
+Production favicon extraction from approved reference. Isolate ONLY the forest-green H symbol at the left, including its exact circular white/transparent negative-space cutout and small mint-green arc. Remove the Hisab360 wordmark completely. Keep the exact approved mark geometry, colors and proportions; DO NOT redesign or add anything. Center the isolated mark on a square true alpha-transparent canvas with 10% clear padding. No text, no background tile, no extra outline, no shadow, no 3D. This must match the approved logo exactly.
+
+Production processing: trim transparent margins, resize for app use, preserve alpha; PNG output.

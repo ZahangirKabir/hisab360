@@ -515,9 +515,9 @@
 .hisab-header-brand{display:flex;align-items:center;gap:18px;min-width:0;flex-wrap:wrap}.hisab-header-brand img{width:174px;max-width:100%;height:auto}.hisab-header-brand #portalTitle{font-size:15px;margin:0;padding-left:16px;border-left:1px solid #b4d1cc;color:#245358}
 .header-bar{gap:14px;align-items:center}.login-box input{box-sizing:border-box;border-radius:10px!important;min-height:45px;border-color:#c9dcdf!important}.login-box #loginBtn{border-radius:10px;background:#087f82;min-height:45px}
 @media(max-width:560px){.login-box{padding:24px 20px!important}.hisab-header-brand{gap:8px}.hisab-header-brand img{width:140px}.hisab-header-brand #portalTitle{font-size:12px;padding-left:0;border:0;width:100%}}
-</style><link rel="icon" type="image/png" sizes="64x64" href="assets/hisab360-favicon-v2.png">
-<link rel="shortcut icon" type="image/png" href="assets/hisab360-favicon-v2.png">
-<style>@media print{@page{size:A4 landscape;margin:12mm}body{background:white!important;color:#203c34!important;font-size:11px}button,nav,#loginSalam,#adminTabNav,#dsoTabNav,#adminFilterPanel{display:none!important}table{width:100%!important;border-collapse:collapse!important}thead{display:table-header-group}tr{break-inside:avoid}th,td{position:static!important;border:1px solid #ccdcd5!important;padding:6px!important}th{background:#e9f3ee!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-action-column{display:none!important}}</style><link rel="apple-touch-icon" sizes="180x180" href="assets/hisab360-touch-v2.png">
+</style><link rel="icon" type="image/png" sizes="64x64" href="assets/hisab360-favicon-v4.png">
+<link rel="shortcut icon" type="image/png" href="assets/hisab360-favicon-v4.png">
+<style>@media print{@page{size:A4 landscape;margin:12mm}body{background:white!important;color:#203c34!important;font-size:11px}button,nav,#loginSalam,#adminTabNav,#dsoTabNav,#adminFilterPanel{display:none!important}table{width:100%!important;border-collapse:collapse!important}thead{display:table-header-group}tr{break-inside:avoid}th,td{position:static!important;border:1px solid #ccdcd5!important;padding:6px!important}th{background:#e9f3ee!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-action-column{display:none!important}}</style><link rel="apple-touch-icon" sizes="180x180" href="assets/hisab360-touch-v4.png">
 <style>.device-restore-button{display:block;margin:12px auto 0;border:0;background:transparent;color:#08785c;font-size:12px;text-decoration:underline;cursor:pointer}.device-recovery-button{border:1px solid #c9ddd4;background:#eff7f3;color:#175b43;border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer}</style>
 <style id="business-polish">body{color:#182d3d;background-color:#f4f7fa}input,select,textarea{border-radius:8px;transition:box-shadow .15s}button{border-radius:8px}table{font-variant-numeric:tabular-nums}thead th{letter-spacing:.1px}tbody tr:hover{background-color:#f0f8f7}.login-box{box-shadow:0 12px 40px #143d5410;border-radius:18px}.device-admin-card{box-shadow:0 18px 60px #102b4320}@media print{body{background:white}}</style><style id="quiet-surfaces">
 /* Quiet surfaces, clear controls, accessible keyboard focus. */
@@ -557,7 +557,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 
   <!-- LOGIN SECTION -->
   <div id="loginSection" class="login-box">
-    <span class="hisab-logo-stage hisab-login-stage"><img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-ledger-v2.png" alt="Hisab360"></span><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
+    <span class="hisab-logo-stage hisab-login-stage"><img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-logo-v4.png" alt="Hisab360"></span><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
     <input type="text" id="loginId" placeholder="User ID / DSO ID" autocomplete="username" autocapitalize="none" spellcheck="false">
     <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
     <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Login</button>
@@ -1621,7 +1621,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.07';
+    const APP_RELEASE_VERSION = '2026.10.24.08';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
