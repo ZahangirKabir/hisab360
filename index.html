@@ -568,6 +568,29 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 @media(max-width:320px){#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){#adminTabNav>button{transition:none!important}}
 @media print{#adminTabNav{display:none!important}}
+</style><style id="admin-filter-design-v10">
+#adminFilterPanel{display:flex!important;flex-wrap:wrap!important;align-items:flex-end!important;gap:10px!important;padding:14px!important;border:0!important;border-radius:12px!important;background:#f4f7f5!important;box-shadow:none!important;margin-bottom:16px!important}
+#adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{flex:0 1 180px!important;width:180px!important;min-width:0!important;max-width:none!important;gap:0!important;margin:0}
+#adminFilterPanel .filter-group label{display:block;font-size:11px!important;font-weight:500!important;color:#5b7164!important;line-height:1.45!important;margin:0 0 6px!important;letter-spacing:0!important}
+#adminFilterPanel .filter-group input,#adminFilterPanel .filter-group select,#adminFilterPanel .dso-multiselect-toggle{width:100%!important;min-height:39px!important;height:39px!important;padding:8px 11px!important;border:1px solid #d8e4dc!important;border-radius:8px!important;background-color:#fff!important;color:#345543!important;font-family:inherit;font-size:12px!important;font-weight:500;box-shadow:0 1px 2px #163e2503!important;box-sizing:border-box!important}
+#adminFilterPanel .dso-multiselect{width:100%;height:39px!important;min-width:0!important}
+#adminFilterPanel .dso-multiselect-toggle{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:30px!important}
+#adminFilterPanel .filter-group input:hover,#adminFilterPanel .filter-group select:hover,#adminFilterPanel .dso-multiselect-toggle:hover{border-color:#a9c9b6!important}
+#adminFilterPanel .filter-group input:focus,#adminFilterPanel .filter-group select:focus,#adminFilterPanel .dso-multiselect-toggle:focus-visible{outline:0!important;border-color:#6ba887!important;box-shadow:0 0 0 3px #176c5010!important}
+#adminFilterPanel .admin-filter-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 1 auto!important;width:auto!important;min-width:96px!important;max-width:none!important;min-height:39px!important;height:39px!important;align-self:flex-end!important;margin:0!important;padding:8px 13px!important;border:0!important;border-radius:8px!important;background:#e6eee9!important;color:#486854!important;font-family:inherit;font-size:12px!important;font-weight:600;line-height:1.4;box-shadow:none!important;white-space:nowrap!important;transition:background .15s,color .15s}
+#adminFilterPanel .admin-filter-action:hover{background:#dae8df!important;color:#205b3c!important;transform:none!important;filter:none!important}
+#adminFilterPanel .admin-filter-action[onclick="resetAdminFilters()"]{background:#fff!important;color:#6d7e73!important}
+#adminFilterPanel .admin-filter-action[onclick="exportToExcel()"]{margin-left:auto!important;background:#176c50!important;color:#fff!important;padding:8px 16px!important;box-shadow:0 2px 6px #176c5015!important}
+#adminFilterPanel .admin-filter-action[onclick="exportToExcel()"]:hover{background:#10563d!important}
+#adminFilterPanel .filter-action-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 15px;width:15px;height:15px}
+#adminFilterPanel .filter-action-icon svg{width:15px;height:15px}
+#adminFilterPanel .dso-checkbox-container{border:1px solid #e0eae3;border-radius:12px;box-shadow:0 12px 30px #173f2c20;padding:10px;background:#fff;z-index:60}
+#adminFilterPanel .dso-checkbox-container label{font-size:12px!important;padding:7px 8px;border-radius:6px;margin:0!important}
+#adminFilterPanel .dso-checkbox-container label:hover{background:#edf5ef}
+@media(max-width:1050px){#adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{flex:1 1 170px!important;width:auto!important}#adminFilterPanel .admin-filter-action{flex:1 1 100px!important}#adminFilterPanel .admin-filter-action[onclick="exportToExcel()"]{margin-left:0!important}}
+@media(max-width:600px){#adminFilterPanel{gap:10px 8px!important;padding:11px!important}#adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{flex:1 1 calc(50% - 8px)!important;width:calc(50% - 8px)!important}#adminFilterPanel .dso-filter{flex-basis:100%!important;width:100%!important}#adminFilterPanel .admin-filter-action{flex:1 1 calc(50% - 8px)!important;min-width:0!important}#adminFilterPanel .filter-group input,#adminFilterPanel .filter-group select{font-size:16px!important;letter-spacing:-.2px!important}#adminFilterPanel .dso-checkbox-container{max-width:calc(100vw - 45px)}}
+@media(max-width:330px){#adminFilterPanel .filter-group,#adminFilterPanel.group-admin-filter .filter-group{flex-basis:100%!important;width:100%!important}}
+@media print{#adminFilterPanel{display:none!important}}
 </style></head>
 <body>
 
@@ -644,10 +667,10 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
           </div>
         </div>
 
-        <button class="admin-filter-action" style="background:#00897b;color:#fff;" onclick="filterThisMonth()">📅 এই মাস</button>
-        <button class="admin-filter-action" style="background:#546e7a;color:#fff;" onclick="filterAllData()">🌐 সকল ডাটা</button>
-        <button class="admin-filter-action" style="background:#eceff1;color:#37474f;border:1px solid #cfd8dc;" onclick="resetAdminFilters()">🔄 Reset</button>
-        <button class="admin-filter-action" style="background:#2e7d32;color:#fff;" onclick="exportToExcel()">📥 Excel Export</button>
+        <button class="admin-filter-action" style="background:#00897b;color:#fff;" onclick="filterThisMonth()"><span class="filter-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M8 15h2"/></svg></span> এই মাস</button>
+        <button class="admin-filter-action" style="background:#546e7a;color:#fff;" onclick="filterAllData()"><span class="filter-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18Z"/></svg></span> সকল ডাটা</button>
+        <button class="admin-filter-action" style="background:#eceff1;color:#37474f;border:1px solid #cfd8dc;" onclick="resetAdminFilters()"><span class="filter-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5M6 6a8 8 0 0 1 13 3M18 18A8 8 0 0 1 5 15"/></svg></span> Reset</button>
+        <button class="admin-filter-action" style="background:#2e7d32;color:#fff;" onclick="exportToExcel()"><span class="filter-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-4-4 4 4 4-4M4 15v6h16v-6"/></svg></span> Excel Export</button>
       </div>
 
       <!-- Investment module: independent HTML; keep future changes in Investment.html -->
@@ -1638,7 +1661,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.09';
+    const APP_RELEASE_VERSION = '2026.10.24.10';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
