@@ -542,18 +542,23 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 .backup-panel{background:white;border-radius:18px;padding:24px;width:min(100%,500px);max-height:90vh;overflow:auto;color:#234353;box-shadow:0 16px 60px #102a4026}.backup-panel h3{margin:0 0 10px}.backup-panel p{font-size:13px;line-height:1.7}.backup-panel input{width:100%;padding:12px;margin:6px 0;border:1px solid #d2dee4;box-sizing:border-box}.backup-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.backup-actions button{padding:10px 13px;border:0;background:#eaf3f1;color:#175b50;cursor:pointer}.backup-actions button:first-child{background:#087f6c;color:white}.backup-actions button:disabled{opacity:.6;cursor:wait}
 @media(max-width:600px){.image-zoom-overlay{padding:6px}.image-zoom-container{padding:10px;border-radius:13px;height:94dvh;max-height:96vh}.slip-view-close{right:10px;top:10px}.zoom-details-info{gap:7px;font-size:11px}.backup-panel{padding:18px}.backup-panel input{font-size:16px}}
 </style><style>.backup-settings-card{background:white;border-radius:14px;padding:20px;margin:16px 0;box-shadow:0 4px 18px #19374b08}.backup-settings-card h3{margin:0 0 12px;font-size:16px;color:#285548}.backup-settings-card button{padding:11px 18px;border:0;border-radius:9px;background:#087f6c;color:white;cursor:pointer;font-weight:600}</style><style>
-@keyframes hisabLogoPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 2px 3px rgba(8,110,90,.12)) brightness(1)}50%{transform:scale(1.085);filter:drop-shadow(0 9px 16px rgba(0,144,112,.48)) brightness(1.16)}}
-@keyframes hisabLogoHalo{0%,100%{opacity:.18;transform:scale(.92)}50%{opacity:.72;transform:scale(1.07)}}
-#hisabLoginLogo,#hisabHeaderLogo{animation:hisabLogoPulse 2.6s ease-in-out infinite!important;transform-origin:center center;position:relative;z-index:1}
-#hisabLoginLogo{max-width:100%;object-fit:contain}
-@media(prefers-reduced-motion:reduce){#hisabLoginLogo,#hisabHeaderLogo{animation:none!important}}
+@keyframes hisabLogoPremium{0%,100%{transform:scale(1);filter:drop-shadow(0 3px 4px rgba(0,115,91,.16))}50%{transform:scale(1.045);filter:drop-shadow(0 8px 14px rgba(0,143,112,.35))}}
+@keyframes hisabLogoSpark{0%,12%,88%,100%{opacity:0;transform:scale(.5) rotate(-25deg)}22%,72%{opacity:1;transform:scale(1.12) rotate(0deg)}46%{opacity:.65;transform:scale(.85) rotate(20deg)}}
+@keyframes hisabLogoSweep{0%,15%{left:-48%;opacity:0}25%{opacity:.65}55%{left:125%;opacity:.45}65%,100%{left:125%;opacity:0}}
+.hisab-logo-stage{position:relative;display:block;isolation:isolate;flex-shrink:0}
+.hisab-login-stage{width:min(260px,100%);margin:0 auto 18px}
+.hisab-header-stage{width:174px;max-width:100%}
+.hisab-logo-stage img{display:block!important;width:100%!important;max-width:100%!important;height:auto!important;margin:0!important;animation:hisabLogoPremium 3.6s ease-in-out infinite!important;transform-origin:center center}
+.hisab-logo-stage::before{content:'';position:absolute;top:0;bottom:0;left:-48%;width:32%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.42),transparent);transform:skewX(-18deg);animation:hisabLogoSweep 5.5s ease-in-out infinite;pointer-events:none;z-index:2}
+.hisab-logo-stage::after{content:'✦';position:absolute;top:-11px;right:-10px;color:#e4b44e;font-size:22px;line-height:1;text-shadow:0 0 8px rgba(255,209,95,.7);animation:hisabLogoSpark 3.6s ease-in-out infinite;pointer-events:none;z-index:3}
+@media(prefers-reduced-motion:reduce){.hisab-logo-stage img,.hisab-logo-stage::before,.hisab-logo-stage::after{animation:none!important}.hisab-logo-stage::before,.hisab-logo-stage::after{display:none}}
 </style></head>
 <body>
 
 
   <!-- LOGIN SECTION -->
   <div id="loginSection" class="login-box">
-    <img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-ledger-v2.png" alt="Hisab360"><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
+    <span class="hisab-logo-stage hisab-login-stage"><img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-ledger-v2.png" alt="Hisab360"></span><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
     <input type="text" id="loginId" placeholder="User ID / DSO ID" autocomplete="username" autocapitalize="none" spellcheck="false">
     <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
     <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Login</button>
@@ -563,7 +568,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
   <div id="appContainer" class="container" style="display: none;">
     <div class="portal-sticky-top">
       <div class="header-bar">
-        <div class="hisab-header-brand"><img id="hisabHeaderLogo" alt="Hisab360"><h2 id="portalTitle">Collection Portal</h2></div>
+        <div class="hisab-header-brand"><span class="hisab-logo-stage hisab-header-stage"><img id="hisabHeaderLogo" alt="Hisab360"></span><h2 id="portalTitle">Collection Portal</h2></div>
         <div style="float:right;display:flex;gap:6px;align-items:center;">
           <button class="btn-reset" id="refreshDataBtn" type="button" onclick="refreshCurrentData()" style="padding:8px 11px;font-weight:800;">🔄 Refresh</button>
           <button class="btn btn-logout" onclick="logout()">Logout</button>
