@@ -551,7 +551,24 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 .hisab-logo-stage::before{content:''!important;display:block!important;position:absolute;inset:0 auto 0 0;width:24%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:translateX(-170%) skewX(-18deg);animation:hisabLogoShimmer 5s ease-in-out infinite;pointer-events:none;z-index:2}
 .hisab-logo-stage::after{content:none!important;display:none!important}
 @media(prefers-reduced-motion:reduce){.hisab-logo-stage img,.hisab-logo-stage::before{animation:none!important}.hisab-logo-stage::before{display:none!important}}
-</style><style>.report-paging{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 12px;margin:10px 0;background:#edf6f3;border-radius:10px;font-size:12px;color:#32564c}.report-paging button{padding:8px 13px;border:0;border-radius:8px;background:#087f6c;color:white;cursor:pointer}.report-paging button:disabled{opacity:.6;cursor:wait}.report-paging[hidden]{display:none}@media print{.report-paging button{display:none}}</style></head>
+</style><style>.report-paging{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 12px;margin:10px 0;background:#edf6f3;border-radius:10px;font-size:12px;color:#32564c}.report-paging button{padding:8px 13px;border:0;border-radius:8px;background:#087f6c;color:white;cursor:pointer}.report-paging button:disabled{opacity:.6;cursor:wait}.report-paging[hidden]{display:none}@media print{.report-paging button{display:none}}</style><style id="admin-main-menu-polish">
+#adminTabNav{align-items:center;flex-wrap:wrap;gap:7px;margin:16px 0!important;padding:7px!important;border:0!important;border-radius:13px;background:#f2f6f4;box-shadow:none;min-width:0}
+#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu{display:inline-flex;align-items:center;justify-content:center;gap:9px;flex:0 1 auto;min-width:0;min-height:44px;margin:0;padding:8px 14px;border:0!important;border-radius:9px;background:transparent;color:#456254;box-shadow:none;font-family:inherit;font-size:13px;font-weight:600;line-height:1.4;text-align:center;white-space:normal;transition:background .16s,color .16s,box-shadow .16s;cursor:pointer}
+#adminTabNav>.tab-btn:hover,#adminTabNav>#deviceAdminButton.device-approval-menu:hover{background:#e3eee7;color:#175b3f;transform:none}
+#adminTabNav>.tab-btn.active{background:#176c50;color:#fff;box-shadow:0 3px 8px #176c5020}
+#adminTabNav .main-menu-icon{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;flex:0 0 25px;border-radius:7px;color:#52806a;background:#e5ede8}
+#adminTabNav .main-menu-icon svg{width:17px;height:17px}
+#adminTabNav>.tab-btn.active .main-menu-icon{color:#fff;background:#ffffff20}
+#adminTabNav>#deviceAdminButton.device-approval-menu{margin-left:auto;background:#fff;color:#476c59;box-shadow:0 1px 4px #233c2c08}
+#adminTabNav>#deviceAdminButton.device-approval-menu:hover{background:#e3eee7}
+#adminTabNav button:focus-visible{outline:2px solid #247c5b!important;outline-offset:2px}
+#adminTabNav>.tab-btn[style*="display: none"],#adminTabNav>.tab-btn[style*="display:none"],#adminTabNav>[hidden]{display:none!important}
+@media(max-width:1100px){#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu{flex:1 1 140px;font-size:12px;padding:8px 10px}#adminTabNav>#deviceAdminButton.device-approval-menu{margin-left:0}}
+@media(max-width:600px){#adminTabNav{gap:6px;padding:6px!important;border-radius:11px}#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu{flex:1 1 calc(50% - 6px);min-height:45px;justify-content:flex-start;font-size:11.5px;padding:9px 10px;gap:7px}#adminTabNav .main-menu-icon{width:24px;height:24px;flex-basis:24px}#adminTabNav .main-menu-icon svg{width:16px;height:16px}}
+@media(max-width:320px){#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){#adminTabNav>button{transition:none!important}}
+@media print{#adminTabNav{display:none!important}}
+</style></head>
 <body>
 
 
@@ -576,12 +593,12 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 
       <!-- ADMIN PANEL NAVIGATION -->
       <div id="adminTabNav" class="tab-nav" style="display:none;">
-        <button class="tab-btn active" id="tabAdminReportBtn" onclick="switchAdminTab('report')">📊 DSO Daily Report</button>
-        <button class="tab-btn" id="tabAdminBankBtn" onclick="switchAdminTab('bank')">🏦 Bank Details</button>
-        <button class="tab-btn" id="tabAdminSlipApprovalBtn" onclick="switchAdminTab('slipApproval')">🧾 Bank Slip Approval</button>
-        <button class="tab-btn" id="tabAdminNotesBtn" onclick="switchAdminTab('notes')">💵 Note Summary</button>
-        <button class="tab-btn" id="tabAdminSettingsBtn" onclick="switchAdminTab('settings')">⚙️ Settings</button>
-        <button style="display:none" class="tab-btn" id="tabAdminInvestmentBtn" onclick="switchAdminTab('investment')">💼 Investment</button>
+        <button class="tab-btn active" id="tabAdminReportBtn" onclick="switchAdminTab('report')"><span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7"/></svg></span> DSO Daily Report</button>
+        <button class="tab-btn" id="tabAdminBankBtn" onclick="switchAdminTab('bank')"><span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 9-5 9 5H3ZM5 11v7M10 11v7M14 11v7M19 11v7M3 21h18"/></svg></span> Bank Details</button>
+        <button class="tab-btn" id="tabAdminSlipApprovalBtn" onclick="switchAdminTab('slipApproval')"><span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6M9 11h6M9 15h3"/></svg></span> Bank Slip Approval</button>
+        <button class="tab-btn" id="tabAdminNotesBtn" onclick="switchAdminTab('notes')"><span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M16 13h5M7 15h3"/></svg></span> Note Summary</button>
+        <button class="tab-btn" id="tabAdminSettingsBtn" onclick="switchAdminTab('settings')"><span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3H9Z"/><circle cx="12" cy="12" r="3"/></svg></span> Settings</button>
+        <button style="display:none" class="tab-btn" id="tabAdminInvestmentBtn" onclick="switchAdminTab('investment')"><span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v3h4v-3"/></svg></span> Investment</button>
       </div>
 
       <!-- DSO PANEL NAVIGATION -->
@@ -1584,7 +1601,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
     function installFirebaseDeviceMenu(){
       if(currentUser!=='admin'||document.getElementById('deviceAdminButton'))return;
-      const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.textContent='Device Permision';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
+      const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.innerHTML='<span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4m-5-8 2 2 4-4"/></svg></span><span>Device Permision</span>';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
     }
     async function openFirebaseDeviceAdmin(){
       if(currentUser!=='admin')return;
@@ -1621,7 +1638,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.08';
+    const APP_RELEASE_VERSION = '2026.10.24.09';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
