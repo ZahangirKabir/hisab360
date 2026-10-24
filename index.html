@@ -551,7 +551,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 .hisab-logo-stage::before{content:''!important;display:block!important;position:absolute;inset:0 auto 0 0;width:24%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:translateX(-170%) skewX(-18deg);animation:hisabLogoShimmer 5s ease-in-out infinite;pointer-events:none;z-index:2}
 .hisab-logo-stage::after{content:none!important;display:none!important}
 @media(prefers-reduced-motion:reduce){.hisab-logo-stage img,.hisab-logo-stage::before{animation:none!important}.hisab-logo-stage::before{display:none!important}}
-</style></head>
+</style><style>.report-paging{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 12px;margin:10px 0;background:#edf6f3;border-radius:10px;font-size:12px;color:#32564c}.report-paging button{padding:8px 13px;border:0;border-radius:8px;background:#087f6c;color:white;cursor:pointer}.report-paging button:disabled{opacity:.6;cursor:wait}.report-paging[hidden]{display:none}@media print{.report-paging button{display:none}}</style></head>
 <body>
 
 
@@ -1129,15 +1129,15 @@ function create(raw,options={}){
    if(o.userDates)return q.orderByChild('userId').equalTo(String(o.userDates[0]));
    if(o.order&&o.order!=='$key')q=q.orderByChild(o.order);else q=q.orderByKey();
    if(o.equal)q=q.equalTo(...o.equal);
-   if(o.start)q=q.startAt(o.start[0]);if(o.end)q=q.endAt(o.end[0]);
+   if(o.start){const v=[...o.start];if(v[1]&&this.root==='bankSlipRequests'&&!/^\d{4}-\d{2}-\d{2}_\d+$/.test(v[1]))v[1]=await locate(this.root,v[1]);q=q.startAt(...v);}if(o.end){const v=[...o.end];if(v[1]&&this.root==='bankSlipRequests'&&!/^\d{4}-\d{2}-\d{2}_\d+$/.test(v[1]))v[1]=await locate(this.root,v[1]);q=q.endAt(...v);}
    // Request pages load the selected date's small metadata, never image blobs.
-   if(this.root==='collections'){if(o.last)q=q.limitToLast(o.last);if(o.first)q=q.limitToFirst(o.first);}
+   if(o.last)q=q.limitToLast(o.last);if(o.first)q=q.limitToFirst(o.first);
    return q;
   }
   project(s){if(this.parts.length>1){const a=s.val();learn(s.key,a);return snapshot(this.key,pathGet(entity(a,this.root,this.parts[1]),this.parts.slice(2)));}
-   const out={};const add=(k,a)=>{if(!a||(this.opts.userDates&&String(a.userId)!==String(this.opts.userDates[0])))return;if(this.opts.userDates&&(a.date<this.opts.userDates[1]||a.date>this.opts.userDates[2]))return;if(this.opts.start&&a.date<this.opts.start[0])return;if(this.opts.end&&a.date>this.opts.end[0])return;learn(k,a);if(this.root==='collections'){if(a.report)out[a.reportKey]=a.report;}else Object.assign(out,a.requests||{});};
+   const out={},cursors=[];const add=(k,a)=>{if(a?.date)cursors.push({date:a.date,key:k});if(!a||(this.opts.userDates&&String(a.userId)!==String(this.opts.userDates[0])))return;if(this.opts.userDates&&(a.date<this.opts.userDates[1]||a.date>this.opts.userDates[2]))return;if(this.opts.start&&a.date<this.opts.start[0])return;if(this.opts.end&&a.date>this.opts.end[0])return;learn(k,a);if(this.root==='collections'){if(a.report)out[a.reportKey]=a.report;}else Object.assign(out,a.requests||{});};
    if(this.root==='bankSlipRequests'&&this.opts.order==='userId'&&this.opts.equal)add(s.key,s.val());else s.forEach(c=>add(c.key,c.val()));
-   return snapshot(this.root,out);
+   const projected=snapshot(this.root,out);cursors.sort((a,b)=>a.date.localeCompare(b.date)||a.key.localeCompare(b.key));projected.ledgerPage={count:s.numChildren(),oldest:cursors[0]||null};return projected;
   }
   async once(event,success,failure){try{if(event!=='value')throw Error('Unsupported ledger event');const q=await this.source();const s=this.project(await q.once('value'));success?.(s);return s;}catch(e){failure?.(e);throw e;}}
   on(event,fn,error){const state={event,fn,cancel:false,previous:null,q:null,handler:null};this.listeners.push(state);
@@ -1561,18 +1561,24 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     async function backupKey(password,salt,usages){const raw=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},raw,{name:'AES-GCM',length:256},false,usages);}
     function backupBase64(bytes){let out='';for(let i=0;i<bytes.length;i+=32768)out+=String.fromCharCode(...bytes.subarray(i,i+32768));return btoa(out);}
     function backupBytes(text){return Uint8Array.from(atob(text),c=>c.charCodeAt(0));}
-    async function sealFinancialBackup(payload,password){if(typeof CompressionStream==='undefined')throw Error('এই browser-এ compressed backup সমর্থিত নয়।');const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await backupKey(password,salt,['encrypt']);const encoded=new TextEncoder().encode(JSON.stringify(payload));if(encoded.byteLength>48*1024*1024)throw Error('Mobile backup নিরাপদ সীমার চেয়ে বড়। GitHub Actions থেকে Full Backup নিন।');const compressed=await new Response(new Blob([encoded]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();const ciphertext=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,compressed));return {format:'Hisab360EncryptedBackup',version:1,kdf:'PBKDF2-SHA256',iterations:310000,compression:'gzip',salt:backupBase64(salt),iv:backupBase64(iv),ciphertext:backupBase64(ciphertext)};}
-    async function verifyFinancialBackup(file,password){if(file.format!=='Hisab360EncryptedBackup'||file.version!==1||file.kdf!=='PBKDF2-SHA256'||file.iterations!==310000)throw Error('Backup file সঠিক নয়।');const salt=backupBytes(file.salt),iv=backupBytes(file.iv);if(salt.length!==16||iv.length!==12)throw Error('Backup file সঠিক নয়।');const key=await backupKey(password,salt,['decrypt']);let bytes=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,backupBytes(file.ciphertext));if(file.compression==='gzip'){if(typeof DecompressionStream==='undefined')throw Error('এই Backup যাচাই করতে হালনাগাদ browser ব্যবহার করুন।');bytes=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();}else if(file.compression!=='none')throw Error('Backup format সঠিক নয়।');const payload=JSON.parse(new TextDecoder().decode(bytes));if(payload.format!=='Hisab360Backup'||payload.projectId!=='collection-app-479e0'||!payload.database||typeof payload.database!=='object')throw Error('এই app-এর Backup নয়।');return payload;}
+    async function sealFinancialBackup(payload,password){if(typeof CompressionStream==='undefined')throw Error('এই browser-এ compressed backup সমর্থিত নয়।');const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await backupKey(password,salt,['encrypt']);const encoded=new TextEncoder().encode(JSON.stringify(payload));if(encoded.byteLength>10*1024*1024)throw Error('Mobile backup নিরাপদ সীমার চেয়ে বড়। GitHub Actions থেকে Full Backup নিন।');const compressed=await new Response(new Blob([encoded]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();const ciphertext=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,compressed));return {format:'Hisab360EncryptedBackup',version:1,kdf:'PBKDF2-SHA256',iterations:310000,compression:'gzip',salt:backupBase64(salt),iv:backupBase64(iv),ciphertext:backupBase64(ciphertext)};}
+    async function verifyFinancialBackup(file,password){if(file.format!=='Hisab360EncryptedBackup'||file.version!==1||file.kdf!=='PBKDF2-SHA256'||file.iterations!==310000)throw Error('Backup file সঠিক নয়।');const salt=backupBytes(file.salt),iv=backupBytes(file.iv);if(salt.length!==16||iv.length!==12)throw Error('Backup file সঠিক নয়।');const key=await backupKey(password,salt,['decrypt']);let bytes=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,backupBytes(file.ciphertext));if(file.compression==='gzip'){if(typeof DecompressionStream==='undefined')throw Error('এই Backup যাচাই করতে হালনাগাদ browser ব্যবহার করুন।');const expanded=await readBackupResponseBounded(new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))),16*1024*1024);if(expanded.value.format!=='Hisab360Backup'||expanded.value.projectId!=='collection-app-479e0')throw Error('এই app-এর Backup নয়।');return expanded.value;}else if(file.compression!=='none')throw Error('Backup format সঠিক নয়।');const payload=JSON.parse(new TextDecoder().decode(bytes));if(payload.format!=='Hisab360Backup'||payload.projectId!=='collection-app-479e0'||!payload.database||typeof payload.database!=='object')throw Error('এই app-এর Backup নয়।');return payload;}
+    async function readBackupResponseBounded(response,limit){
+      if(limit<=0)throw Error('Backup বড়। Full Backup workflow ব্যবহার করুন।');
+      if(!response.body?.getReader)throw Error('নিরাপদ Backup-এর জন্য হালনাগাদ browser ব্যবহার করুন।');
+      const declared=Number(response.headers?.get('content-length')||0);if(declared>limit){await response.body.cancel();throw Error('Backup বড়। Full Backup workflow ব্যবহার করুন।');}
+      const reader=response.body.getReader(),decoder=new TextDecoder();let text='',bytes=0;try{while(true){const part=await reader.read();if(part.done)break;bytes+=part.value.byteLength;if(bytes>limit){await reader.cancel();throw Error('Backup বড়। Full Backup workflow ব্যবহার করুন।');}text+=decoder.decode(part.value,{stream:true});}text+=decoder.decode();return {value:JSON.parse(text),bytes};}finally{reader.releaseLock();}
+    }
     function openFinancialBackup(){
       if(currentUser!=='admin'||!portalFinancialApp)return;document.getElementById('financialBackupModal')?.remove();
       const overlay=document.createElement('div');overlay.id='financialBackupModal';overlay.className='backup-overlay';const card=document.createElement('section');card.className='backup-panel';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','Data Backup');const heading=document.createElement('h3');heading.textContent='Data Backup';const description=document.createElement('p');description.textContent='Backup নিতে বর্তমান Admin password দিন। পুরোনো Backup যাচাই করতে সেই Backup তৈরির password দিন।';
       const password=document.createElement('input');password.type='password';password.placeholder='Admin password';password.setAttribute('aria-label','Admin password');password.autocomplete='current-password';
-      const download=document.createElement('button');download.type='button';download.textContent='Backup Download';const verify=document.createElement('button');verify.type='button';verify.textContent='Backup যাচাই';const file=document.createElement('input');file.type='file';file.accept='.hisabbackup,application/json';file.hidden=true;file.style.display='none';const close=document.createElement('button');close.type='button';close.textContent='বন্ধ করুন';const status=document.createElement('p');status.setAttribute('role','status');let controller=null,busy=false;
+      const download=document.createElement('button');download.type='button';download.textContent='Backup Download';const verify=document.createElement('button');verify.type='button';verify.textContent='Backup যাচাই';const file=document.createElement('input');file.type='file';file.accept='.hisabbackup,application/json';file.hidden=true;file.style.display='none';const close=document.createElement('button');close.type='button';close.textContent='বন্ধ করুন';const status=document.createElement('p');status.setAttribute('role','status');let controller=null,busy=false,backupLoadedBytes=0;
       const setBusy=value=>{busy=value;download.disabled=verify.disabled=password.disabled=value;};
       const checkPassword=()=>{if(!password.value||password.value.length>128)throw Error('Admin password দিন।');};
       close.onclick=()=>{controller?.abort();password.value='';overlay.remove();};verify.onclick=()=>{try{checkPassword();file.click();}catch(e){status.textContent=e.message;}};
-      file.onchange=async()=>{const selected=file.files[0];if(!selected||busy)return;setBusy(true);status.textContent='Backup যাচাই হচ্ছে…';try{if(selected.size>512*1024*1024)throw Error('এই file browser-এ যাচাই করার সীমার চেয়ে বড়।');const value=await verifyFinancialBackup(JSON.parse(await selected.text()),password.value);status.textContent='✓ Backup পড়া গেছে · '+new Date(value.createdAt).toLocaleString('bn-BD')+' · '+(value.scope==='full-rtdb'?'Full Database':'Financial Data');}catch(e){status.textContent='যাচাই হয়নি। Password ও Backup file পরীক্ষা করুন।';}finally{file.value='';setBusy(false);}};
-      download.onclick=async()=>{if(busy||currentUser!=='admin')return;try{checkPassword();}catch(e){status.textContent=e.message;return;}setBusy(true);controller=new AbortController();const epoch=credentialActionEpoch,app=portalFinancialApp,uid=app.auth().currentUser?.uid,startedAt=new Date().toISOString(),roots=['ledgerAccounts','collections','bankSlipRequests','investmentEntries','bankTrackerEntries','ledgerLocations','appConfig','notifications','slipImages'],databaseCopy={};try{if(!crypto?.subtle)throw Error('এই browser-এ নিরাপদ Backup সম্ভব হয়নি।');status.textContent='Admin password যাচাই হচ্ছে…';const admin=credentialAuth.currentUser;if(!admin||admin.email!==accountEmail('admin'))throw Error('আবার Admin Login করুন।');await loginReadDeadline(()=>admin.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(accountEmail('admin'),password.value)),15000);if(currentUser!=='admin'||credentialActionEpoch!==epoch||app.auth().currentUser?.uid!==uid||controller.signal.aborted||!overlay.isConnected)throw Error('আবার Admin Login করুন।');for(let i=0;i<roots.length;i++){if(currentUser!=='admin'||credentialActionEpoch!==epoch||app.auth().currentUser?.uid!==uid)throw Error('আবার Admin Login করুন।');status.textContent='Backup প্রস্তুত হচ্ছে… '+(i+1)+'/'+roots.length;const token=await app.auth().currentUser.getIdToken(),url=new URL(roots[i]+'.json',firebaseConfig.databaseURL.replace(/\/?$/,'/'));url.searchParams.set('auth',token);url.searchParams.set('format','export');const timer=setTimeout(()=>controller.abort(),120000);try{const response=await fetch(url.href,{signal:controller.signal,cache:'no-store',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('Backup data পড়া যায়নি। আবার চেষ্টা করুন।');const declared=Number(response.headers.get('content-length')||0);if(declared>24*1024*1024)throw Error('এই অংশটি মোবাইলে Backup করার জন্য বড়। GitHub Actions Full Backup ব্যবহার করুন।');const raw=await response.text();if(raw.length>24*1024*1024)throw Error('এই অংশটি মোবাইলে Backup করার জন্য বড়। GitHub Actions Full Backup ব্যবহার করুন।');databaseCopy[roots[i]]=JSON.parse(raw);}finally{clearTimeout(timer);}}if(!Object.values(databaseCopy).some(x=>x!==null))throw Error('কোনো data পাওয়া যায়নি; Backup তৈরি হয়নি।');status.textContent='Backup সুরক্ষিত ও যাচাই হচ্ছে…';const payload={format:'Hisab360Backup',version:1,projectId:'collection-app-479e0',scope:'financial-roots',startedAt,createdAt:new Date().toISOString(),includes:roots,excludes:['Firebase Authentication','Account/device security metadata','Daily submission indexes','Database Rules'],database:databaseCopy},encrypted=await sealFinancialBackup(payload,password.value);if(encrypted.format!=='Hisab360EncryptedBackup'||!encrypted.ciphertext)throw Error('Backup encryption ব্যর্থ হয়েছে।');if(currentUser!=='admin'||credentialActionEpoch!==epoch||!overlay.isConnected||controller.signal.aborted)return;const blob=new Blob([JSON.stringify(encrypted)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Hisab360_FINANCIAL_'+new Date().toISOString().replace(/[:.]/g,'-')+'.hisabbackup';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='✓ Backup প্রস্তুত। Download ফাইলটি নিরাপদে সংরক্ষণ করুন।';}catch(e){status.textContent=e.name==='AbortError'?'Backup সম্পন্ন হয়নি। আবার চেষ্টা করুন।':(/^auth\/(wrong-password|invalid-credential|invalid-login-credentials)$/.test(e.code||'')?'Admin password সঠিক নয়।':e.code?.startsWith('auth/')?'Admin password যাচাই হয়নি। আবার চেষ্টা করুন।':e.message||'Backup হয়নি।');}finally{password.value='';setBusy(false);}};
+      file.onchange=async()=>{const selected=file.files[0];if(!selected||busy)return;setBusy(true);status.textContent='Backup যাচাই হচ্ছে…';try{if(selected.size>16*1024*1024)throw Error('এই file browser-এ যাচাই করার সীমার চেয়ে বড়।');const value=await verifyFinancialBackup(JSON.parse(await selected.text()),password.value);status.textContent='✓ Backup পড়া গেছে · '+new Date(value.createdAt).toLocaleString('bn-BD')+' · '+(value.scope==='full-rtdb'?'Full Database':'Financial Data');}catch(e){status.textContent='যাচাই হয়নি। Password ও Backup file পরীক্ষা করুন।';}finally{file.value='';setBusy(false);}};
+      download.onclick=async()=>{if(busy||currentUser!=='admin')return;try{checkPassword();}catch(e){status.textContent=e.message;return;}setBusy(true);backupLoadedBytes=0;controller=new AbortController();const epoch=credentialActionEpoch,app=portalFinancialApp,uid=app.auth().currentUser?.uid,startedAt=new Date().toISOString(),roots=['ledgerAccounts','collections','bankSlipRequests','investmentEntries','bankTrackerEntries','ledgerLocations','appConfig','notifications','slipImages'],databaseCopy={};try{if(!crypto?.subtle)throw Error('এই browser-এ নিরাপদ Backup সম্ভব হয়নি।');status.textContent='Admin password যাচাই হচ্ছে…';const admin=credentialAuth.currentUser;if(!admin||admin.email!==accountEmail('admin'))throw Error('আবার Admin Login করুন।');await loginReadDeadline(()=>admin.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(accountEmail('admin'),password.value)),15000);if(currentUser!=='admin'||credentialActionEpoch!==epoch||app.auth().currentUser?.uid!==uid||controller.signal.aborted||!overlay.isConnected)throw Error('আবার Admin Login করুন।');for(let i=0;i<roots.length;i++){if(currentUser!=='admin'||credentialActionEpoch!==epoch||app.auth().currentUser?.uid!==uid)throw Error('আবার Admin Login করুন।');status.textContent='Backup প্রস্তুত হচ্ছে… '+(i+1)+'/'+roots.length;const token=await app.auth().currentUser.getIdToken(),url=new URL(roots[i]+'.json',firebaseConfig.databaseURL.replace(/\/?$/,'/'));url.searchParams.set('auth',token);url.searchParams.set('format','export');const timer=setTimeout(()=>controller.abort(),120000);try{const response=await fetch(url.href,{signal:controller.signal,cache:'no-store',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('Backup data পড়া যায়নি। আবার চেষ্টা করুন।');const part=await readBackupResponseBounded(response,Math.min(4*1024*1024,8*1024*1024-backupLoadedBytes));backupLoadedBytes+=part.bytes;databaseCopy[roots[i]]=part.value;}finally{clearTimeout(timer);}}if(!Object.values(databaseCopy).some(x=>x!==null))throw Error('কোনো data পাওয়া যায়নি; Backup তৈরি হয়নি।');status.textContent='Backup সুরক্ষিত ও যাচাই হচ্ছে…';const payload={format:'Hisab360Backup',version:1,projectId:'collection-app-479e0',scope:'financial-roots',startedAt,createdAt:new Date().toISOString(),includes:roots,excludes:['Firebase Authentication','Account/device security metadata','Daily submission indexes','Database Rules'],database:databaseCopy},encrypted=await sealFinancialBackup(payload,password.value);if(encrypted.format!=='Hisab360EncryptedBackup'||!encrypted.ciphertext)throw Error('Backup encryption ব্যর্থ হয়েছে।');if(currentUser!=='admin'||credentialActionEpoch!==epoch||!overlay.isConnected||controller.signal.aborted)return;const blob=new Blob([JSON.stringify(encrypted)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='Hisab360_FINANCIAL_'+new Date().toISOString().replace(/[:.]/g,'-')+'.hisabbackup';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);status.textContent='✓ Backup প্রস্তুত। Download ফাইলটি নিরাপদে সংরক্ষণ করুন।';}catch(e){status.textContent=e.name==='AbortError'?'Backup সম্পন্ন হয়নি। আবার চেষ্টা করুন।':(/^auth\/(wrong-password|invalid-credential|invalid-login-credentials)$/.test(e.code||'')?'Admin password সঠিক নয়।':e.code?.startsWith('auth/')?'Admin password যাচাই হয়নি। আবার চেষ্টা করুন।':e.message||'Backup হয়নি।');}finally{password.value='';setBusy(false);}};
       const actions=document.createElement('div');actions.className='backup-actions';actions.append(download,verify,close);card.append(heading,description,password,actions,file,status);overlay.append(card);document.body.append(overlay);password.focus();
     }
 
@@ -1615,7 +1621,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.02';
+    const APP_RELEASE_VERSION = '2026.10.24.03';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -1881,7 +1887,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       rememberPortalPage(tab);
       const previousTab=activeAdminTab;
       if(tab==='slipApproval'&&previousTab!=='slipApproval')slipReturnState={mode:masterAdminDataMode,date:document.getElementById('filterDate').value};
-      activeAdminTab = tab;
+      activeAdminTab = tab;paintAdminReportPaging();
       ["report","bank","slipApproval","notes","settings","investment"].forEach(t => {
         const btn = document.getElementById("tabAdmin" + t.charAt(0).toUpperCase() + t.slice(1) + "Btn");
         const page = document.getElementById("adminPage" + t.charAt(0).toUpperCase() + t.slice(1));
@@ -2090,7 +2096,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const text=document.createElement('div');text.textContent='Hisab360-এ আপনাকে স্বাগতম';text.style.cssText='font-size:12px;margin-top:5px;color:#e8fff7;font-weight:600;';
       const line=document.createElement('div');line.style.cssText='height:3px;width:64px;margin:11px auto 0;border-radius:99px;background:linear-gradient(90deg,#e6bf70,#fff4c6,#e6bf70);';
       toast.append(shine,icon,title,text,line);document.body.append(toast);
-      salamTimer=setTimeout(()=>{if(toast.isConnected)toast.remove();},4800);
+      salamTimer=setTimeout(()=>{if(toast.isConnected)toast.remove();},2000);
     }
 
     function startLoginTiming(){
@@ -2548,16 +2554,17 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
     let slipStatusRef = null, slipStatusHandler = null, slipStatusScope = '';
     let slipStatusListeners=[], slipStatusRenderTimer=null;
-    const slipPagedListeners=new Map();
+    const slipPagedListeners=new Map(),slipPageData=new Map();let slipLastPageId='';
     function detachSlipStatusListeners(){
       if(slipStatusRef)slipStatusListeners.forEach(([event,handler])=>slipStatusRef.off(event,handler));
       slipStatusRef=null;slipStatusListeners=[];
       for(const {ref,handler} of slipPagedListeners.values())ref.off('value',handler);
-      slipPagedListeners.clear();
+      slipPagedListeners.clear();slipPageData.clear();slipLastPageId='';
       clearTimeout(slipStatusRenderTimer);slipStatusRenderTimer=null;
     }
     let slipStatusItems = {}, slipStatusLoading = false, slipStatusLoadError = '';
-    const BANK_SLIP_PAGE_SIZE=Number.MAX_SAFE_INTEGER;
+    const BANK_SLIP_PAGE_SIZE=25;
+    let slipStatusCursor=null,slipPagedCursor=null;
     let slipPagedItems={},slipStatusHasMore=false,slipStatusLoadingMore=false;
     function watchOlderSlip(key,value,scope){
       if(!key||!value||slipPagedListeners.has(key))return;
@@ -2639,7 +2646,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const scope=user==='admin'?(mode==='date'?'date:'+(document.getElementById('filterDate')?.value||getLocalDateString()):mode==='month'?'month:'+getLocalMonthString():'all'):'user:'+user;
       if(slipStatusRef&&slipStatusScope===scope)return;
       detachSlipStatusListeners();
-      userSlipReadyEpoch=-1;slipStatusScope=scope;slipStatusItems={};slipPagedItems={};slipStatusHasMore=false;slipStatusLoadingMore=false;slipStatusLoading=true;slipStatusLoadError='';
+      userSlipReadyEpoch=-1;slipStatusScope=scope;slipStatusItems={};slipPagedItems={};slipStatusCursor=null;slipPagedCursor=null;slipStatusHasMore=false;slipStatusLoadingMore=false;slipStatusLoading=true;slipStatusLoadError='';
       const root=database.ref('bankSlipRequests');
       slipStatusRef=user==='admin' ? (mode==='date'?root.orderByChild('date').equalTo(scope.slice(5)):
         mode==='month'?root.orderByChild('date').startAt(getLocalMonthString()+'-01').endAt(getLocalMonthString()+'-31'):root.orderByChild('date')).limitToLast(BANK_SLIP_PAGE_SIZE) :
@@ -2663,8 +2670,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(String(currentUser)!==user||slipStatusScope!==scope||slipStatusRef!==watchedRef)return;
         // Replace the complete selected scope so removals and status changes
         // cannot leave entries from an older snapshot behind.
-        slipStatusItems=snap.val()||{};
-        slipStatusHasMore=user==='admin'&&snap.numChildren()===BANK_SLIP_PAGE_SIZE;
+        slipStatusItems=snap.val()||{};slipStatusCursor=snap.ledgerPage?.oldest||null;
+        if(!slipPageData.size)slipStatusHasMore=user==='admin'&&(snap.ledgerPage?.count??snap.numChildren())===BANK_SLIP_PAGE_SIZE;
         slipStatusLoading=false;slipStatusLoadError='';
         if(user!=='admin')userSlipReadyEpoch=databaseConnected?databaseConnectionEpoch:-1;
         schedule();
@@ -2676,24 +2683,22 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(currentUser!=='admin'||!slipStatusHasMore||slipStatusLoadingMore||slipStatusLoading)return;
       const scope=slipStatusScope,mode=slipApprovalViewMode;
       const loaded={...slipPagedItems,...slipStatusItems};
-      const oldest=Object.entries(loaded).sort((a,b)=>String(a[1].date||'').localeCompare(String(b[1].date||''))||a[0].localeCompare(b[0]))[0];
-      if(!oldest)return;
+      const oldest=Object.entries(loaded).sort((a,b)=>String(a[1].date||'').localeCompare(String(b[1].date||''))||a[0].localeCompare(b[0]))[0],cursor=slipPagedCursor||slipStatusCursor||(oldest?{date:oldest[1].date,key:oldest[0]}:null);
+      if(!cursor)return;
       slipStatusLoadingMore=true;renderBankSlipStatus('admin');
       try{
         const root=database.ref('bankSlipRequests').orderByChild('date');
         const lowerBound=mode==='date'?scope.slice(5):mode==='month'?getLocalMonthString()+'-01':null;
         const bounded=lowerBound?root.startAt(lowerBound):root;
-        const query=bounded.endAt(oldest[1].date,oldest[0]).limitToLast(BANK_SLIP_PAGE_SIZE+1);
-        const snapshot=await query.once('value');
-        if(scope!==slipStatusScope||mode!==slipApprovalViewMode||currentUser!=='admin')return;
-        const page=[];snapshot.forEach(child=>{
-          const value=child.val();
-          if(child.key!==oldest[0])page.push([child.key,value]);
+        const query=bounded.endAt(cursor.date,cursor.key).limitToLast(BANK_SLIP_PAGE_SIZE+1);
+        const pageId='page:'+cursor.key;slipLastPageId=pageId;
+        await new Promise((resolve,reject)=>{let first=true;const timer=setTimeout(()=>{if(first){query.off('value',handler);slipPagedListeners.delete(pageId);reject(Error('Bank Slip load timeout'));}},20000);
+          const handler=snapshot=>{if(scope!==slipStatusScope||mode!==slipApprovalViewMode||currentUser!=='admin')return;clearTimeout(timer);slipPageData.set(pageId,snapshot.val()||{});slipPagedItems=Object.assign({},...Array.from(slipPageData.values()).reverse());if(slipLastPageId===pageId){slipPagedCursor=snapshot.ledgerPage?.oldest||null;slipStatusHasMore=(snapshot.ledgerPage?.count??snapshot.numChildren())>=BANK_SLIP_PAGE_SIZE+1&&!!slipPagedCursor&&slipPagedCursor.key!==cursor.key;}renderBankSlipStatus('admin');if(first){first=false;resolve();}};
+          const fail=error=>{clearTimeout(timer);if(first){query.off('value',handler);slipPagedListeners.delete(pageId);reject(error);}else{slipStatusLoadError='Bank Slip আপডেট লোড হয়নি। আবার চেষ্টা করুন।';renderBankSlipStatus('admin');}};
+          slipPagedListeners.set(pageId,{ref:query,handler});query.on('value',handler,fail);
         });
-        for(const [key,value] of page)watchOlderSlip(key,value,scope);
-        slipStatusHasMore=page.length>=BANK_SLIP_PAGE_SIZE;
       }catch(err){slipStatusLoadError='আরও Bank Slip লোড হয়নি: '+(err?.message||'সংযোগ সমস্যা');console.error('Bank Slip next page failed:',err);}
-      finally{if(scope===slipStatusScope){slipStatusLoadingMore=false;renderBankSlipStatus('admin');}}
+      finally{if(scope===slipStatusScope&&currentUser==='admin'){slipStatusLoadingMore=false;renderBankSlipStatus('admin');}}
     }
     function slipStatusLabel(status){return ({approved:'✅ Approved',rejected:'❌ Rejected',rejecting:'⏳ Rejecting',approving:'⏳ Approving',pending:'⏳ Pending'})[status]||String(status||'Pending');}
     async function submitBankSlips() {
@@ -4810,68 +4815,38 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       loadMasterAdminData('date', getLocalDateString());
     }
 
-    function loadMasterAdminData(mode = 'date', selectedDate = '', force = false) {
-      if (currentUser !== 'admin') return;
-
-      // Tab changes must reuse the active date-scoped live query. Reattaching
-      // the same query downloads its slip images again and flashes Loading.
-      const scope=mode==='date'?'date:'+(selectedDate||getLocalDateString()):
-        mode==='month'?(()=>{const b=getCurrentMonthBounds();return 'month:'+b.start+':'+b.end;})():'all';
-      if(!force&&masterAdminRealtimeRef?.scope===scope){
-        masterAdminDataMode=mode;
-        if(!masterAdminDataLoading)applyAdminFilters(true);
-        return;
-      }
-
-      const token = ++masterAdminDataToken;
-      masterAdminDataMode = mode;
-      masterAdminDataLoading = true;
-
-      if (masterAdminRealtimeRef) {
-        try { masterAdminRealtimeRef.ref.off('value', masterAdminRealtimeRef.handler); } catch(e) {}
-        masterAdminRealtimeRef = null;
-      }
-
-      let queryRef = database.ref('collections');
-
-      if (mode === 'date') {
-        const dateValue = selectedDate || getLocalDateString();
-        queryRef = queryRef.orderByChild('date').equalTo(dateValue);
-      } else if (mode === 'month') {
-        const bounds = getCurrentMonthBounds();
-        queryRef = queryRef.orderByChild('date').startAt(bounds.start).endAt(bounds.end);
-      }
-      // mode === 'all' intentionally uses the complete collections node.
-
-      // Show a lightweight loading state immediately; do not freeze the page.
-      if (activeAdminTab === 'report') {
-        const tbody = document.getElementById('adminTableBody');
-        if (tbody) tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:18px;font-weight:bold;color:#00695c;">⏳ ডাটা লোড হচ্ছে...</td></tr>`;
-      }
-
-      // Keep one live listener for the selected scope. This makes delete/edit/approval
-      // changes appear immediately without a manual refresh.
-      const handler = snapshot => {
-        if (token !== masterAdminDataToken || currentUser !== 'admin') return;
-        const incoming = snapshot.val() || {};
-        pendingOptimisticDeletes.forEach(key => { delete incoming[key]; });
-        globalAllData = incoming;
-        realtimeInitialDataReady = true;
-        masterAdminDataLoading = false;
-        scheduleDataUiUpdate();
+    const ADMIN_REPORT_BATCH=50;
+    let adminReportPages=null;
+    function paintAdminReportPaging(){
+      let bar=document.getElementById('adminReportPaging');const host=document.getElementById('adminFilterPanel')||document.getElementById('adminPageReport');if(!host)return;
+      if(!bar){bar=document.createElement('div');bar.id='adminReportPaging';bar.className='report-paging';if(host.id==='adminFilterPanel')host.after(bar);else host.prepend(bar);}
+      const state=adminReportPages;if(currentUser!=='admin'||!['report','bank','notes'].includes(activeAdminTab)||!state||state.cancelled){bar.hidden=true;return;}bar.hidden=false;bar.replaceChildren();
+      const label=document.createElement('span');label.textContent=Object.keys(globalAllData||{}).length+'টি হিসাব লোড হয়েছে'+(state.hasMore?' · আরও আছে — মোট শুধু লোড হওয়া হিসাবের':'');bar.append(label);
+      if(state.hasMore){const more=document.createElement('button');more.type='button';more.textContent=state.loading?'লোড হচ্ছে…':'আরও '+ADMIN_REPORT_BATCH+'টি দেখুন';more.disabled=state.loading;more.onclick=loadMoreAdminReports;bar.append(more);}
+      if(state.error){const note=document.createElement('span');note.setAttribute('role','status');note.textContent=state.error;bar.append(note);}
+    }
+    function loadMoreAdminReports(){const state=adminReportPages;if(!state||state.cancelled||state.loading||!state.hasMore||!state.cursor)return;state.addPage(state.cursor);}
+    function loadMasterAdminData(mode='date',selectedDate='',force=false){
+      if(currentUser!=='admin')return;const date=selectedDate||getLocalDateString(),bounds=mode==='month'?getCurrentMonthBounds():null,scope=mode==='date'?'date:'+date:bounds?'month:'+bounds.start+':'+bounds.end:'all';
+      if(!force&&masterAdminRealtimeRef?.scope===scope){masterAdminDataMode=mode;if(!masterAdminDataLoading)applyAdminFilters(true);paintAdminReportPaging();return;}
+      try{masterAdminRealtimeRef?.ref.off('value',masterAdminRealtimeRef.handler);}catch(_){}
+      const token=++masterAdminDataToken;masterAdminDataMode=mode;masterAdminDataLoading=true;globalAllData={};
+      const state={token,scope,pages:[],listeners:[],cancelled:false,loading:false,hasMore:false,cursor:null,error:''};adminReportPages=state;
+      const valid=()=>!state.cancelled&&token===masterAdminDataToken&&currentUser==='admin';
+      const emit=()=>{if(!valid())return;const incoming=Object.assign({},...state.pages.slice().reverse().map(x=>x||{}));pendingOptimisticDeletes.forEach(key=>delete incoming[key]);globalAllData=incoming;realtimeInitialDataReady=true;masterAdminDataLoading=false;scheduleDataUiUpdate();paintAdminReportPaging();};
+      const cancel=()=>{state.cancelled=true;for(const [q,h]of state.listeners)q.off('value',h);state.listeners=[];state.pages=[];if(adminReportPages===state){adminReportPages=null;document.getElementById('adminReportPaging')?.remove();}};
+      masterAdminRealtimeRef={scope,ref:{off:cancel},handler:null};
+      state.addPage=cursor=>{if(!valid()||state.loading)return;state.loading=true;state.error='';paintAdminReportPaging();const index=state.pages.length;state.pages.push(null);let query=database.ref('collections').orderByChild('date');
+        if(mode==='date')query=cursor?query.startAt(date).endAt(cursor.date,cursor.key):query.equalTo(date);else{if(bounds)query=query.startAt(bounds.start);if(cursor)query=query.endAt(cursor.date,cursor.key);else if(bounds)query=query.endAt(bounds.end);}
+        query=query.limitToLast(ADMIN_REPORT_BATCH+(cursor?1:0));
+        const handler=snap=>{if(!valid())return;const values=snap.val()||{},meta=snap.ledgerPage;
+          // Keep overlap in both live pages: newly added accounts must not create a gap at the boundary.
+          state.pages[index]=values;if(index===state.pages.length-1){const count=meta?.count??snap.numChildren();state.hasMore=count>=ADMIN_REPORT_BATCH+(cursor?1:0);state.cursor=meta?.oldest||Object.values(values).sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.userId).localeCompare(String(b.userId))).map(x=>({date:x.date,key:x.date+'_'+x.userId}))[0]||null;if(!state.cursor||(cursor&&state.cursor.key===cursor.key))state.hasMore=false;state.loading=false;}emit();};
+        const failed=error=>{if(!valid())return;state.loading=false;masterAdminDataLoading=false;state.error='এই অংশের ডাটা লোড হয়নি। আবার চেষ্টা করুন।';if(state.pages[index]===null){state.pages.splice(index,1);query.off('value',handler);}emit();};
+        state.listeners.push([query,handler]);query.on('value',handler,failed);
       };
-      const errorHandler = err => {
-        if (token !== masterAdminDataToken || currentUser !== 'admin') return;
-        masterAdminDataLoading = false;
-        if (!globalAllData) globalAllData = {};
-        if (activeAdminTab === 'report') {
-          const tbody = document.getElementById('adminTableBody');
-          if (tbody) tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:18px;font-weight:bold;color:#c62828;">❌ ডাটা লোড করতে সমস্যা হয়েছে। ${escapeHtml(err.message || 'Unknown error')}</td></tr>`;
-        }
-        console.error('Master Admin data load failed:', err);
-      };
-      queryRef.on('value', handler, errorHandler);
-      masterAdminRealtimeRef = { ref: queryRef, handler, scope };
+      if(activeAdminTab==='report'){const body=document.getElementById('adminTableBody');if(body)body.innerHTML='<tr><td colspan="15" style="text-align:center;padding:18px">ডাটা লোড হচ্ছে…</td></tr>';}
+      state.addPage(null);
     }
 
     function onAdminDateFilterChange() {
