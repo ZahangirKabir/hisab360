@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.24.07">
+<meta name="investment-release-version" content="2026.10.24.08">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -499,7 +499,7 @@ function capitalForm(){
    const transfers={salary:amount(form.elements.transfer_salary.value),routeConvence:amount(form.elements.transfer_route.value),petty:amount(form.elements.transfer_petty.value)};
    const cash=capitalCashCalculation(closing.cashInHand,headOfficeTransfer,transfers,form.dataset.cashIsNet==='true',Number(form.dataset.bankChargeTotal)||0);closing.cashIsNet=form.dataset.cashIsNet==='true';if(cash.closingCash<0)throw Error('Transfer Amount Cash In Hand-এর বেশি। অঙ্কগুলো যাচাই করুন।');closing.cashBeforeTransfer=cash.cashBeforeTransfer;closing.cashTransferTotal=cash.cashTransferTotal;closing.cashInHand=cash.closingCash;
    const total=a=>a.maWallet+a.cashInHand+a.cashInOffice+Object.values(a.banks).reduce((s,n)=>s+n,0);
-   const openingTotal=form.elements.opening_total.dataset.testManual==='true'?amount(form.elements.opening_total.value):total(opening)+commission.reduce((sum,x)=>sum+x.amount,0)+headOfficeReceive.reduce((sum,x)=>sum+x.amount,0);
+   const openingTotal=Math.round((form.elements.opening_total.dataset.testManual==='true'?amount(form.elements.opening_total.value):total(opening)+commission.reduce((sum,x)=>sum+x.amount,0)+headOfficeReceive.reduce((sum,x)=>sum+x.amount,0))*100)/100;
    const closingTotal=Math.round((total(closing)+cash.cashTransferTotal)*100)/100;
    if(!window.INVESTMENT_MANUAL_TEST&&Math.round(openingTotal*100)!==Math.round(closingTotal*100))throw Error(`Total Opening Balance ${money(openingTotal)} এবং Total Closing Balance ${money(closingTotal)} সমান নয়। পার্থক্য থাকলে Submit হবে না।`);
    const record={bankCharges:JSON.parse(form.dataset.bankCharges||'{}'),schemaVersion:2,monthKey:date.slice(0,7),writeToken:window.investmentWriteToken(),type:'capital',date,scope:'company',opening,closing,commission,headOfficeReceive,headOfficeTransfer,transfers,
