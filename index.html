@@ -1621,7 +1621,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.03';
+    const APP_RELEASE_VERSION = '2026.10.24.04';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5694,8 +5694,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
               bankName: bName,
               accountName: s.accountName || '',
               amt: amt,
-              img: s.img || s.image || s.imageUrl || s.imgUrl || '',
-              depositDate: s.depositDate || s.date || item.date || ''
             });
           });
         } else if (item.bankDeposit > 0) {
@@ -5710,7 +5708,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
             bankName: bName,
             accountName: '',
             amt: amt,
-            img: ''
           });
         }
       });
@@ -5757,7 +5754,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       });
       headerTr.innerHTML += `
         <th class="th-return">মোট ডিপোজিট</th>
-        <th class="th-info">ডিপোজিট স্লিপ</th>
       `;
       thead.appendChild(headerTr);
 
@@ -5783,33 +5779,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         });
 
         grandTotalRowSum += entry.amt;
-        // Render the thumbnail as a DOM node instead of putting a large Base64
-        // string inside an inline onclick attribute. This fixes missing images
-        // on the Bank Details page for large slip images.
-        rowHtml += `
-          <td style="font-weight:bold; color:#2e7d32; background:#e8f5e9;"> ${formatBD(entry.amt)}</td>
-          <td class="bank-slip-image-cell"></td>
-        `;
-
+        rowHtml += `<td style="font-weight:bold; color:#2e7d32; background:#e8f5e9;"> ${formatBD(entry.amt)}</td>`;
         tr.innerHTML = rowHtml;
         tbody.appendChild(tr);
-
-        const imageCell=tr.querySelector('.bank-slip-image-cell');
-        if(imageCell){
-          if(entry.img){
-            const img=document.createElement('img');
-            img.className='slip-img-preview';
-            img.alt='Bank Slip';
-            img.loading='lazy';
-            img.decoding='async';
-            setLedgerImage(img,entry.img);
-            img.addEventListener('click',()=>zoomImage(entry.img,entry.dsoId,entry.bankName,entry.amt,entry.depositDate||''));
-            img.addEventListener('error',()=>{imageCell.innerHTML='<span style="color:#c62828;font-size:10px;">Image unavailable</span>';},{once:true});
-            imageCell.appendChild(img);
-          }else{
-            imageCell.innerHTML='<span style="color:#aaa;">No Image</span>';
-          }
-        }
       });
 
       let footTr = document.createElement("tr");
@@ -5821,7 +5793,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       });
       footHtml += `
         <td style="color:#2e7d32; background:#c8e6c9;"> ${formatBD(grandTotalRowSum)}</td>
-        <td>-</td>
       `;
       footTr.innerHTML = footHtml;
       tfoot.appendChild(footTr);
