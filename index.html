@@ -576,7 +576,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 
       <!-- ADMIN PANEL NAVIGATION -->
       <div id="adminTabNav" class="tab-nav" style="display:none;">
-        <button class="tab-btn active" id="tabAdminReportBtn" onclick="switchAdminTab('report')">📊 DSO Daily Hisab</button>
+        <button class="tab-btn active" id="tabAdminReportBtn" onclick="switchAdminTab('report')">📊 DSO Daily Report</button>
         <button class="tab-btn" id="tabAdminBankBtn" onclick="switchAdminTab('bank')">🏦 Bank Details</button>
         <button class="tab-btn" id="tabAdminSlipApprovalBtn" onclick="switchAdminTab('slipApproval')">🧾 Bank Slip Approval</button>
         <button class="tab-btn" id="tabAdminNotesBtn" onclick="switchAdminTab('notes')">💵 Note Summary</button>
@@ -1621,7 +1621,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.04';
+    const APP_RELEASE_VERSION = '2026.10.24.05';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5902,31 +5902,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         });
       }
 
-      let slipsList = item.slips || [];
-      let slipsGridHtml = "";
-      if (slipsList.length > 0) {
-        slipsGridHtml = `<div class="slip-grid-modal">`;
-        slipsList.forEach((s, idx) => {
-          let bName = s.bankName || item.bankName || 'Bank Slip';
-          const slipImage = s.img || s.image || s.imageUrl || s.imgUrl || '';
-          let imgHtml = slipImage
-            ? `<img data-ledger-src="${escapeHtml(slipImage)}" data-slip-image="1" alt="Bank Slip">`
-            : `<div style="height:100px; display:flex; align-items:center; justify-content:center; background:#eee; font-size:11px;">No Image</div>`;
-
-          slipsGridHtml += `
-            <div class="slip-card-modal">
-              ${imgHtml}
-              <div style="font-weight:bold; font-size:11px; margin-top:4px; color:#00695c;">${escapeHtml(bName)}</div>
-              <div style="font-size:11px; color:#37474f;">${escapeHtml(s.accountName || 'Account Name not detected')}</div>
-              <div style="font-size:11px; color:#2e7d32;"> ${formatBD(s.amt || 0)}</div>
-            </div>
-          `;
-        });
-        slipsGridHtml += `</div>`;
-      } else {
-        slipsGridHtml = `<p style="font-size:12px; color:#777; text-align:center;">কোনো ব্যাংক ডিপোজিট স্লিপ আপলোড করা হয়নি।</p>`;
-      }
-
       body.innerHTML = `
         <div class="detail-section">
           <h4>📥 Received Details</h4>
@@ -5971,11 +5946,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           </div>
         </div>
 
-        <div class="detail-section">
-          <h4>🧾 Bank Deposit Slips (${slipsList.length})</h4>
-          ${slipsGridHtml}
-        </div>
-
         <div class="detail-section" style="background:#f3f8ff;border-color:#bbdefb;">
           <h4>📝 Admin Update History</h4>
           ${Array.isArray(item.adminEditHistory) && item.adminEditHistory.length ? item.adminEditHistory.slice().reverse().map(h => `<div style="padding:7px 0;border-bottom:1px solid #e3f2fd;"><strong>${escapeHtml(h.by || 'Admin')}</strong> — ${new Date(h.at || Date.now()).toLocaleString('en-GB')}<br>${(h.changes || []).map(c => escapeHtml(c)).join('<br>')}</div>`).join('') : '<div style="color:#78909c;font-size:12px;">এখনও কোনো Admin amount update নেই।</div>'}
@@ -5983,19 +5953,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       `;
 
       document.getElementById("detailsModal").style.display = "flex";
-      body.querySelectorAll('img[data-slip-image="1"]').forEach((img,idx)=>{
-        const slip=slipsList[idx];
-        const src=slip ? (slip.img || slip.image || slip.imageUrl || slip.imgUrl || '') : '';
-        if(!src) return;
-        img.addEventListener('click',()=>zoomImage(src,item.userId,slip.bankName || item.bankName || 'Bank Slip',slip.amt || 0,slip.depositDate || item.date || ''));
-        img.addEventListener('error',()=>{
-          img.style.display='none';
-          const msg=document.createElement('div');
-          msg.style.cssText='height:100px;display:flex;align-items:center;justify-content:center;background:#eee;font-size:11px;color:#c62828;';
-          msg.textContent='Image unavailable';
-          img.parentElement.appendChild(msg);
-        },{once:true});
-      });
     }
 
     function closeDetailsModal() {
@@ -6259,7 +6216,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const wb = XLSX.utils.book_new();
         const sheetName =
           tabName === "bank" ? "Bank Details" :
-          tabName === "notes" ? "Note Summary" : "DSO Daily Hisab";
+          tabName === "notes" ? "Note Summary" : "DSO Daily Report";
 
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
