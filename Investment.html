@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.24.10">
+<meta name="investment-release-version" content="2026.10.24.11">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -273,6 +273,54 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 @media(max-width:340px){#moduleMenu{grid-template-columns:1fr}#moduleMenu>#showHeadOfficeReport{grid-column:auto}#moduleMenu .module-dropdown-panel{left:0!important;right:auto!important;width:100%;max-width:100%}}
 @media(prefers-reduced-motion:reduce){#moduleMenu>.module-dropdown>summary,#moduleMenu>button{transition:none}}
 @media print{#moduleMenu{display:none!important}}
+</style><style id="working-calculator-design-v11">
+.calculator-page{padding:24px!important;border:0!important;border-radius:17px!important;box-shadow:0 5px 24px #214d3610!important}
+.calculator-page>h2{display:flex;align-items:center;gap:11px;margin:0 0 22px!important;font-size:20px!important;font-weight:650!important;letter-spacing:-.3px;color:#123f34!important}
+.calculator-page>h2::before{content:'';width:7px;height:25px;border-radius:5px;background:linear-gradient(#188269,#84c9ac);flex-shrink:0}
+#balanceCalculatorForm{display:grid;gap:18px;min-width:0}
+#balanceCalculatorForm>.finance-section{margin:0!important;padding:18px!important;border:0!important;border-radius:14px;background:#f5f9f7;min-width:0;box-shadow:none}
+#balanceCalculatorForm>.finance-section>legend{float:left;display:flex;align-items:center;gap:9px;width:100%;padding:0!important;margin:0 0 17px;font-size:14px;font-weight:650!important;color:#245a48;line-height:1.4}
+#balanceCalculatorForm>.finance-section>legend::before{display:inline-flex;justify-content:center;align-items:center;width:25px;height:25px;border-radius:8px;background:#dfede5;color:#34705a;font-size:11px;font-weight:700}
+#balanceCalculatorForm>.calculator-ma>legend::before{content:'01'}
+#balanceCalculatorForm>.calculator-cash>legend::before{content:'02'}
+#balanceCalculatorForm>.calculator-bank>legend::before{content:'03'}
+#balanceCalculatorForm>.finance-section>.fields{clear:both;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 18px}
+#balanceCalculatorForm .field{min-width:0}
+#balanceCalculatorForm .field>label{font-size:12px!important;font-weight:500!important;color:#476259!important;margin-bottom:7px!important;line-height:1.45}
+#balanceCalculatorForm .field>input,#balanceCalculatorForm .field>select{width:100%;min-height:43px!important;padding:10px 12px!important;border:1px solid #d4e2db!important;border-radius:9px!important;background:#fff!important;color:#1b4335!important;font-size:14px!important;font-weight:500;box-shadow:0 1px 2px #183b2e03;transition:border-color .15s,box-shadow .15s;font-variant-numeric:tabular-nums}
+#balanceCalculatorForm .field>input:focus,#balanceCalculatorForm .field>select:focus{border-color:#5ba88b!important;box-shadow:0 0 0 3px #16826412!important}
+#balanceCalculatorForm .field>input[readonly]{background:#edf3f0!important;color:#2f6450!important;border-color:#e1eae5!important}
+#balanceCalculatorForm .calculator-net{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 15px;background:#e0efe6;border-radius:11px;margin-top:2px}
+#balanceCalculatorForm .calculator-net>label{margin:0!important;font-weight:650!important;font-size:13px!important;color:#205c43!important}
+#balanceCalculatorForm .calculator-net>input[readonly]{max-width:240px;background:#ffffffa6!important;border-color:transparent!important;text-align:right;font-size:18px!important;font-weight:650!important}
+#balanceCalculatorForm .calculator-subtotal>label{font-weight:650!important}
+#balanceCalculatorForm .calculator-bank{background:#f1f6fa}
+#balanceCalculatorForm .calculator-bank>legend{color:#315a72}
+#balanceCalculatorForm .calculator-bank>legend::before{background:#dfebf3;color:#37657f}
+#balanceCalculatorForm .calculator-bank .calculator-net{background:#e0edf5}
+#balanceCalculatorForm .calculator-bank-choice{grid-column:1/-1;max-width:310px;width:100%}
+#balanceCalculatorForm>.compact-capital-date{padding:0 0 3px!important;background:transparent!important;max-width:225px}
+#balanceCalculatorForm>.compact-capital-date>.fields{grid-template-columns:minmax(0,1fr)}
+#balanceCalculatorForm .submission-date-trigger{min-height:43px!important;border-radius:10px!important;border-color:#bfd8cb!important;background:#f8fcfa!important;font-size:13px!important;box-shadow:0 2px 5px #1c5b3b06!important}
+#balanceCalculatorForm>.calculator-closing{background:linear-gradient(110deg,#0b604d,#18745b)!important;padding:20px!important;color:#fff}
+#balanceCalculatorForm>.calculator-closing>legend{display:none}
+#balanceCalculatorForm>.calculator-closing>.fields{grid-template-columns:1fr}
+#balanceCalculatorForm .calculator-closing .field{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#balanceCalculatorForm .calculator-closing .field>label{color:#e6f6ed!important;font-size:15px!important;font-weight:600!important;margin:0!important}
+#balanceCalculatorForm .calculator-closing input:disabled{max-width:280px;opacity:1;background:#ffffff17!important;border-color:#ffffff25!important;color:#fff!important;font-size:23px!important;font-weight:650!important;text-align:right;min-height:50px!important}
+#balanceCalculatorForm>.bank-net-grid{margin:0!important;padding:0!important;border:0;background:transparent;box-shadow:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#balanceCalculatorForm .bank-net-card{border:0;background:#f1f6f3;padding:13px;border-radius:11px;gap:7px}
+#balanceCalculatorForm .bank-net-card>span{font-size:12px;color:#587467}
+#balanceCalculatorForm .bank-net-card>strong{font-size:16px;font-weight:650;color:#255c45}
+#balanceCalculatorForm .bank-net-sum{background:#e9f2ec;color:#245c43;font-size:13px;padding:13px 15px;border-radius:10px}
+#balanceCalculatorForm .bank-net-sum strong{font-size:17px;font-weight:650}
+#balanceCalculatorForm>button.add-row{justify-self:start;min-height:40px;padding:9px 14px;border:0;background:#edf3f0;color:#376351;border-radius:9px;font-size:12px;font-weight:600}
+#balanceCalculatorForm>button.save{justify-self:end;min-height:45px;min-width:200px;margin:0;padding:11px 26px;border-radius:10px;background:linear-gradient(115deg,#09614e,#188368);font-size:14px;font-weight:600;box-shadow:0 4px 10px #08634f20}
+#balanceCalculatorForm>button.save:hover{background:#075941}
+@media(min-width:1350px){#balanceCalculatorForm>.finance-section>.fields{grid-template-columns:repeat(4,minmax(0,1fr))}#balanceCalculatorForm>.compact-capital-date>.fields,#balanceCalculatorForm>.calculator-closing>.fields{grid-template-columns:1fr}}
+@media(max-width:800px){.calculator-page{padding:18px!important}#balanceCalculatorForm>.finance-section>.fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}#balanceCalculatorForm>.compact-capital-date>.fields,#balanceCalculatorForm>.calculator-closing>.fields{grid-template-columns:1fr}#balanceCalculatorForm>.bank-net-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.calculator-page{padding:14px!important}.calculator-page>h2{font-size:17px!important;gap:9px}#balanceCalculatorForm{gap:14px}#balanceCalculatorForm>.finance-section{padding:14px!important}#balanceCalculatorForm>.finance-section>.fields{grid-template-columns:minmax(0,1fr);gap:13px}#balanceCalculatorForm .calculator-net{padding:10px;gap:10px}#balanceCalculatorForm .calculator-net>input[readonly]{max-width:52%;font-size:16px!important}#balanceCalculatorForm .calculator-closing .field{align-items:flex-start;flex-direction:column;gap:10px}#balanceCalculatorForm .calculator-closing input:disabled{max-width:100%;width:100%}#balanceCalculatorForm>button.save{width:100%}#balanceCalculatorForm .bank-net-card>strong{font-size:14px}#balanceCalculatorForm .bank-net-sum strong{font-size:15px}}
+@media print{.calculator-page{box-shadow:none!important}#balanceCalculatorForm>.finance-section{break-inside:avoid}}
 </style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
@@ -601,7 +649,7 @@ function collectCashHeadOffice(rows,validate=false){
  window.cashHeadOfficeAdjustment(values,validate);return values;
 }
 function balanceCalculator(){
- const box=card('Working Balance Calculator'),form=node('form');form.id='balanceCalculatorForm';
+ const box=card('Working Balance Calculator'),form=node('form');form.id='balanceCalculatorForm';box.classList.add('calculator-page');
  const top=section(form,'Date'),date=field(top,'Date','calc_date','date',true);date.readOnly=false;date.value='';top.classList.add('compact-capital-date');installSubmissionDatePicker(date,'calculator');
  const maArea=section(form,'MA Balance Calculation');
  const maOpening=field(maArea,'MA Opening Balance','calc_ma_opening'),lifting=field(maArea,'Lifting','calc_lifting'),commissionReceived=field(maArea,'Commission Received','calc_commission_received'),maRefund=field(maArea,'Refund','calc_refund'),receive=field(maArea,'B2B Receive','calc_receive'),send=field(maArea,'B2B Send','calc_send'),netMA=field(maArea,'Net MA Balance','calc_net_ma');
@@ -617,7 +665,8 @@ function balanceCalculator(){
  const bankArea=section(form,'Bank Balance Calculation'),choice=select(bankArea,'Bank','calc_bank',[['','All Bank'],...banks.map(b=>[b,b])]);choice.required=false;
  const bankOpening=field(bankArea,'Opening Balance','calc_bank_opening'),depositDso=field(bankArea,'Bank Deposit-DSO','calc_bank_deposit_dso'),depositRefund=field(bankArea,'Bank Deposit-Refund','calc_bank_deposit_refund'),transfer=field(bankArea,'Fund Transfer','calc_bank_transfer'),withdraw=field(bankArea,'Withdraw by Cheque','calc_bank_withdraw'),bankCharge=field(bankArea,'Bank Charge','calc_bank_charge'),netBank=field(bankArea,'Net Bank Balance','calc_net_bank');
  [bankOpening,depositDso,depositRefund,transfer,withdraw,netBank].forEach(x=>x.readOnly=true);
- const closingArea=section(form,'Closing Working Capital');const totalClosing=field(closingArea,'Total Closing','calc_total_closing');totalClosing.disabled=true;
+ maArea.parentElement.classList.add('calculator-ma');cashArea.parentElement.classList.add('calculator-cash');bankArea.parentElement.classList.add('calculator-bank');[netMA,netCash,netBank].forEach(input=>input.closest('.field').classList.add('calculator-net'));cashHand.closest('.field').classList.add('calculator-subtotal');choice.closest('.field').classList.add('calculator-bank-choice');
+ const closingArea=section(form,'Closing Working Capital');closingArea.parentElement.classList.add('calculator-closing');const totalClosing=field(closingArea,'Total Closing','calc_total_closing');totalClosing.disabled=true;
  const results=node('div');results.className='card';form.append(results);
  const refresh=node('button','↻ Refresh Source Data');refresh.type='button';refresh.className='add-row';form.append(refresh);
  const {save,status}=submitTools(form,box);let loading=true,busy=false,loaded=false,sourceEpoch=0,bankDrafts={},previous=null,approved=[],withdrawalRows=[],maValue=0,bankValue=0;
