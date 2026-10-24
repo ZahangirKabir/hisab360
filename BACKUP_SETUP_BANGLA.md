@@ -1,3 +1,11 @@
+## এই আপডেটের পর প্রথমে করুন
+
+১. `Firebase_Rules_Reliability.json` ফাইলের সম্পূর্ণ লেখা Firebase Console → Realtime Database → Rules-এ বসিয়ে Publish করুন। পুরোনো Rules আগে আলাদা করে রাখুন। Database Data অংশে Import/Delete করবেন না। নতুন Rules-এ আগের অনুমতি রেখে Investment-এর দ্রুত record save ও closed-month validation যোগ হয়েছে।
+
+২. অ্যাপ Refresh করুন। Rules Publish না হলে অ্যাপ নিরাপদ পুরোনো save পদ্ধতিতে চলবে; দ্রুত record save তখন চালু হবে না।
+
+৩. নিচের দুই GitHub Secret বসিয়ে Hisab360 Financial Backup-এর Run workflow চালান এবং Success ও download যাচাই করুন। সর্বশেষ ব্যর্থ run-এ দুটি Secret খালি ছিল। Secret ছাড়া workflow তৈরি থাকা মানেই Backup সক্রিয় নয়।
+
 # Hisab360 — Backup চালু করা
 
 অ্যাপের Settings → Data Backup শুধু মূল Admin দেখবেন। Backup Download-এর জন্য বর্তমান Admin Login password দিতে হবে। Firebase সেটি যাচাই করার পর financial data পড়বে ও একই password দিয়ে file encrypt করবে। Password কোথাও নতুন করে সংরক্ষণ করা হয় না। তৈরি হওয়া file private জায়গায় রাখুন।

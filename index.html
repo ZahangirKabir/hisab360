@@ -1610,8 +1610,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       database,
       async readInvestmentData(root,date=''){
         if(currentUser!=='admin'||!portalFinancialApp?.auth().currentUser)throw Error('Investment-এর জন্য Admin login প্রয়োজন।');
-        if(!['investmentEntries','bankTrackerEntries','ledgerAccounts'].includes(root))throw Error('Investment data path গ্রহণযোগ্য নয়।');
-        if(date&&!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('সঠিক Date প্রয়োজন।');
+        if(!['investmentEntries','bankTrackerEntries','ledgerAccounts','investmentCapabilities/recordWrites'].includes(root))throw Error('Investment data path গ্রহণযোগ্য নয়।');
+        if(date&&typeof date==='object'){if(!date.byKey||!Number.isInteger(date.last)||date.last<1||date.last>101||date.endAt!==null&&date.endAt!==undefined&&typeof date.endAt!=='string')throw Error('Investment query গ্রহণযোগ্য নয়।');return readLoginREST(portalFinancialApp,root,{orderBy:'$key',limitToLast:date.last,...(date.endAt?{endAt:date.endAt}:{})});}if(date&&!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('সঠিক Date প্রয়োজন।');
         return readLoginREST(portalFinancialApp,root,date?{orderBy:'date',equalTo:date}:null);
       },
       getUser: () => currentUser,
@@ -1621,7 +1621,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.05';
+    const APP_RELEASE_VERSION = '2026.10.24.06';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -4922,15 +4922,15 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       }
 
       userEntries.forEach(item => {
-        let emRec = item.emReceived || 0;
-        let cashRec = item.cashReceived || 0;
-        let dsoRecSum = Array.isArray(item.dsoReceivedList) ? item.dsoReceivedList.reduce((a, b) => a + (Number(b.amount) || 0), 0) : (item.dsoReceived || 0);
+        let emRec = storedMoney(item.emReceived);
+        let cashRec = storedMoney(item.cashReceived);
+        let dsoRecSum = Array.isArray(item.dsoReceivedList) ? item.dsoReceivedList.reduce((a, b) => a + storedMoney(b.amount), 0) : (item.dsoReceived || 0);
         let totalRec = emRec + cashRec + dsoRecSum;
 
-        let emRet = item.emReturn || 0;
-        let bankDep = item.bankDeposit || 0;
-        let cashDep = item.cashDeposit || 0;
-        let dsoTransSum = Array.isArray(item.dsoTransferList) ? item.dsoTransferList.reduce((a, b) => a + (Number(b.amount) || 0), 0) : (item.dsoTransfer || 0);
+        let emRet = storedMoney(item.emReturn);
+        let bankDep = storedMoney(item.bankDeposit);
+        let cashDep = storedMoney(item.cashDeposit);
+        let dsoTransSum = Array.isArray(item.dsoTransferList) ? item.dsoTransferList.reduce((a, b) => a + storedMoney(b.amount), 0) : (item.dsoTransfer || 0);
         let totalRet = emRet + bankDep + cashDep + dsoTransSum;
 
         let diff = roundMoney(totalRec - totalRet);
@@ -5339,8 +5339,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         let item = data[key];
         count++;
 
-        let emRec = item.emReceived || 0;
-        let cashRec = item.cashReceived || 0;
+        let emRec = storedMoney(item.emReceived);
+        let cashRec = storedMoney(item.cashReceived);
         sumEmRec += emRec; sumCashRec += cashRec;
 
         let dsoRecText = ""; let dsoRecSum = 0;
@@ -5352,8 +5352,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         } else { dsoRecSum = item.dsoReceived || 0; if (dsoRecSum > 0) dsoRecText = ` ${formatBD(dsoRecSum)}`; }
 
         let totalRec = emRec + cashRec + dsoRecSum;
-        let emRet = item.emReturn || 0;
-        let bankDep = item.bankDeposit || 0;
+        let emRet = storedMoney(item.emReturn);
+        let bankDep = storedMoney(item.bankDeposit);
         sumEmRet += emRet;
 
         let dsoTransText = ""; let dsoTransSum = 0;
@@ -5364,7 +5364,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           });
         } else { dsoTransSum = item.dsoTransfer || 0; if (dsoTransSum > 0) dsoTransText = ` ${formatBD(dsoTransSum)}`; }
 
-        let cashDep = item.cashDeposit || 0;
+        let cashDep = storedMoney(item.cashDeposit);
         sumCashDep += cashDep;
 
         let totalRet = emRet + bankDep + dsoTransSum + cashDep;
@@ -5373,7 +5373,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
         let slipsList = item.slips || [];
         let totalSlipAmt = 0;
-        if (slipsList.length > 0) { slipsList.forEach(s => totalSlipAmt += (s.amt || 0)); }
+        if (slipsList.length > 0) { slipsList.forEach(s => totalSlipAmt += storedMoney(s.amt??s.amount)); }
 
         totalRecSum += totalRec; totalRetSum += totalRet; totalDiffSum += diff;
         totalDsoRecSum += dsoRecSum; totalDsoTransSum += dsoTransSum; totalDsoDiffSum += dsoDiff;
@@ -5657,6 +5657,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       }
     }
 
+    function storedMoney(value){if(value==null||value==='')return 0;const raw=String(value).trim().replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^-?\d+(\.\d{1,2})?$/.test(raw)||!Number.isFinite(Number(raw))||Math.abs(Number(raw))>1e12)throw Error('সংরক্ষিত Amount সঠিক নয়। Admin-কে জানান।');return Math.round(Number(raw)*100)/100;}
     function renderBankDetailsTable(data) {
       const cardsContainer = document.getElementById("bankSummaryCardsContainer");
       const thead = document.getElementById("bankDetailsTableHead");
@@ -5668,6 +5669,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       tbody.innerHTML = "";
       tfoot.innerHTML = "";
 
+      try{for(const item of Object.values(data||{})){if(item.slips?.length){for(const slip of item.slips)storedMoney(slip.amt??slip.amount);}else storedMoney(item.bankDeposit);}}catch(error){tbody.innerHTML='<tr><td colspan="4" style="color:#b91c1c;padding:14px">'+escapeHtml(error.message)+'</td></tr>';return;}
       if (!data || Object.keys(data).length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:15px; color:#c62828;">কোনো ব্যাংক বিবরণ পাওয়া যায়নি</td></tr>`;
         return;
@@ -5683,9 +5685,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if (slipsList.length > 0) {
           slipsList.forEach(s => {
             let bName = (s.bankName || item.bankName || 'Unknown Bank').trim();
-            let amt = s.amt || 0;
+            let amt = storedMoney(s.amt??s.amount);
             if (!bankTotals[bName]) { bankTotals[bName] = { amount: 0, slipsCount: 0 }; }
-            bankTotals[bName].amount += amt;
+            bankTotals[bName].amount = Math.round((bankTotals[bName].amount+amt)*100)/100;
             bankTotals[bName].slipsCount += 1;
 
             entriesList.push({
@@ -5698,9 +5700,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           });
         } else if (item.bankDeposit > 0) {
           let bName = (item.bankName || 'Unknown Bank').trim();
-          let amt = item.bankDeposit || 0;
+          let amt = storedMoney(item.bankDeposit);
           if (!bankTotals[bName]) { bankTotals[bName] = { amount: 0, slipsCount: 0 }; }
-          bankTotals[bName].amount += amt;
+          bankTotals[bName].amount = Math.round((bankTotals[bName].amount+amt)*100)/100;
 
           entriesList.push({
             date: item.date || '-',
@@ -5723,7 +5725,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
       let totalBankDepositAll = 0;
       uniqueBanks.forEach(bName => {
-        totalBankDepositAll += bankTotals[bName].amount;
+        totalBankDepositAll = Math.round((totalBankDepositAll+bankTotals[bName].amount)*100)/100;
         let card = document.createElement("div");
         card.className = "card bank-card";
         card.innerHTML = `
@@ -5772,13 +5774,13 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         uniqueBanks.forEach(bName => {
           if (entry.bankName === bName) {
             rowHtml += `<td style="font-weight:bold; color:#1a237e;"> ${formatBD(entry.amt)}</td>`;
-            bankColumnSums[bName] += entry.amt;
+            bankColumnSums[bName] = Math.round((bankColumnSums[bName]+entry.amt)*100)/100;
           } else {
             rowHtml += `<td style="color:#ccc;">-</td>`;
           }
         });
 
-        grandTotalRowSum += entry.amt;
+        grandTotalRowSum = Math.round((grandTotalRowSum+entry.amt)*100)/100;
         rowHtml += `<td style="font-weight:bold; color:#2e7d32; background:#e8f5e9;"> ${formatBD(entry.amt)}</td>`;
         tr.innerHTML = rowHtml;
         tbody.appendChild(tr);
@@ -5874,15 +5876,15 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       document.getElementById("modalTitle").innerText = `Collection Details - DSO ${item.userId} (${item.date})`;
       let body = document.getElementById("modalBody");
 
-      let emRec = item.emReceived || 0;
-      let cashRec = item.cashReceived || 0;
-      let dsoRecSum = Array.isArray(item.dsoReceivedList) ? item.dsoReceivedList.reduce((a, b) => a + (Number(b.amount) || 0), 0) : (item.dsoReceived || 0);
+      let emRec = storedMoney(item.emReceived);
+      let cashRec = storedMoney(item.cashReceived);
+      let dsoRecSum = Array.isArray(item.dsoReceivedList) ? item.dsoReceivedList.reduce((a, b) => a + storedMoney(b.amount), 0) : (item.dsoReceived || 0);
       let totalRec = emRec + cashRec + dsoRecSum;
 
-      let emRet = item.emReturn || 0;
-      let bankDep = item.bankDeposit || 0;
-      let cashDep = item.cashDeposit || 0;
-      let dsoTransSum = Array.isArray(item.dsoTransferList) ? item.dsoTransferList.reduce((a, b) => a + (Number(b.amount) || 0), 0) : (item.dsoTransfer || 0);
+      let emRet = storedMoney(item.emReturn);
+      let bankDep = storedMoney(item.bankDeposit);
+      let cashDep = storedMoney(item.cashDeposit);
+      let dsoTransSum = Array.isArray(item.dsoTransferList) ? item.dsoTransferList.reduce((a, b) => a + storedMoney(b.amount), 0) : (item.dsoTransfer || 0);
       let totalRet = emRet + bankDep + cashDep + dsoTransSum;
 
       let diff = roundMoney(totalRec - totalRet);
