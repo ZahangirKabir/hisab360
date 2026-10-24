@@ -1661,7 +1661,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.10';
+    const APP_RELEASE_VERSION = '2026.10.24.11';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -4860,8 +4860,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     function paintAdminReportPaging(){
       let bar=document.getElementById('adminReportPaging');const host=document.getElementById('adminFilterPanel')||document.getElementById('adminPageReport');if(!host)return;
       if(!bar){bar=document.createElement('div');bar.id='adminReportPaging';bar.className='report-paging';if(host.id==='adminFilterPanel')host.after(bar);else host.prepend(bar);}
-      const state=adminReportPages;if(currentUser!=='admin'||!['report','bank','notes'].includes(activeAdminTab)||!state||state.cancelled){bar.hidden=true;return;}bar.hidden=false;bar.replaceChildren();
-      const label=document.createElement('span');label.textContent=Object.keys(globalAllData||{}).length+'টি হিসাব লোড হয়েছে'+(state.hasMore?' · আরও আছে — মোট শুধু লোড হওয়া হিসাবের':'');bar.append(label);
+      const state=adminReportPages;if(currentUser!=='admin'||!['report','bank','notes'].includes(activeAdminTab)||!state||state.cancelled){bar.hidden=true;return;}bar.hidden=!state.hasMore&&!state.error;bar.replaceChildren();
+      if(state.hasMore){const label=document.createElement('span');label.textContent='আরও হিসাব আছে — মোট শুধু লোড হওয়া হিসাবের';bar.append(label);}
       if(state.hasMore){const more=document.createElement('button');more.type='button';more.textContent=state.loading?'লোড হচ্ছে…':'আরও '+ADMIN_REPORT_BATCH+'টি দেখুন';more.disabled=state.loading;more.onclick=loadMoreAdminReports;bar.append(more);}
       if(state.error){const note=document.createElement('span');note.setAttribute('role','status');note.textContent=state.error;bar.append(note);}
     }
