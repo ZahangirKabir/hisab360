@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.25.05">
+<meta name="investment-release-version" content="2026.10.25.06">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -393,6 +393,39 @@ html body #app #content .investment-form-card input:focus,html body #app #conten
 html body .cheque-modal .edit-original-form .edit-original-section{background:#fff!important;border:0!important;border-top:1px solid #e5ebe7!important;border-radius:0!important;padding:14px 0!important}
 #app #content .investment-form-card .submission-date-trigger{background:#fff!important;box-shadow:none!important}
 @media(max-width:560px){#app #content .investment-form-card,#bankApp #bankContent .investment-form-card{padding:14px!important}}
+</style><style id="aligned-soft-form-sections">
+/* Keep summary inputs with their labels on the left, like other fields. */
+#app #capitalForm>.opening-total>.field,#app #capitalForm>.closing-total>.field,#app #capitalForm>.difference-total>.field{display:block!important;width:100%!important;max-width:320px!important;margin:0!important}
+#app #capitalForm>.opening-total>.field>label,#app #capitalForm>.closing-total>.field>label,#app #capitalForm>.difference-total>.field>label{margin:0 0 7px!important;line-height:1.5!important}
+#app #capitalForm>.opening-total>.field>input,#app #capitalForm>.closing-total>.field>input,#app #capitalForm>.difference-total>.field>input{text-align:left!important;width:100%!important;max-width:100%!important}
+#app #content .investment-form-card .working-level{border:0!important;border-radius:11px!important;padding:16px!important;box-shadow:none!important}
+#app #content .investment-form-card .opening-level{background:#f0f6fa!important}
+#app #content .investment-form-card .closing-level{background:#fbf6ed!important}
+#app #content .investment-form-card .working-level>legend{background:transparent!important;padding:0 7px!important}
+#app #content .investment-form-card .finance-section:not(.date-selection-section){background:#f3f7f4!important;padding:15px!important;border:0!important;border-radius:10px!important}
+#app #content .investment-form-card .finance-section:nth-of-type(3n+2):not(.date-selection-section){background:#f1f5fa!important}
+#app #content .investment-form-card .finance-section:nth-of-type(3n):not(.date-selection-section){background:#f6f3fa!important}
+#app #content .investment-form-card .finance-section>legend{background:transparent!important}
+#app #content .investment-form-card .working-level .finance-section{background:#ffffff70!important;padding:13px!important}
+#app #content .investment-form-card .date-selection-section{background:transparent!important;border:0!important;padding:0!important}
+#app #content .investment-form-card .calculator-ma{background:#f1f7f3!important}
+#app #content .investment-form-card .calculator-cash{background:#f1f6fa!important}
+#app #content .investment-form-card .calculator-bank{background:#f5f2fa!important}
+#app #content .investment-form-card .calculator-closing{background:#faf5ec!important;padding:15px!important;border:0!important;border-radius:10px!important}
+#app #content .investment-form-card .opening-total{background:#edf4f9!important}
+#app #content .investment-form-card .closing-total{background:#faf4e8!important}
+#app #content .investment-form-card .difference-total{background:#f2f6f3!important}
+#app #content .investment-form-card .opening-total,#app #content .investment-form-card .closing-total,#app #content .investment-form-card .difference-total{padding:15px!important;border:0!important;border-radius:10px!important}
+#app #balanceCalculatorForm>.calculator-closing>.fields>.field{display:block!important;max-width:320px!important;margin:0!important}
+#app #balanceCalculatorForm>.calculator-closing>.fields>.field>label{display:block!important;margin:0 0 7px!important}
+#app #balanceCalculatorForm>.calculator-closing input{width:100%!important;max-width:100%!important;text-align:left!important;margin:0!important}
+#bankApp #bankContent .investment-form-card .bank-form{background:#f3f7fa;padding:16px;border-radius:11px;min-width:0}
+#bankApp #bankContent .investment-form-card .withdraw-reason-row{background:#f7f5fb;padding:13px;border:0;border-radius:9px;margin:0 0 10px}
+html body .cheque-modal .edit-original-form .edit-original-section{background:#f3f7f4!important;padding:15px!important;border:0!important;border-radius:10px!important}
+html body .cheque-modal .edit-original-form .edit-original-section:nth-of-type(even){background:#f2f5fa!important}
+/* White controls remain distinct from softly tinted section surfaces. */
+#app #content .investment-form-card button.save,#bankApp #bankContent .investment-form-card button.save,.cheque-modal .edit-original-form button.save{justify-self:start!important;align-self:start!important;grid-column:1/-1!important;display:inline-flex!important;width:auto!important;max-width:100%!important;min-width:150px!important;margin:12px auto 0 0!important;text-align:center!important}
+@media(max-width:560px){#app #content .investment-form-card .working-level,#app #content .investment-form-card .finance-section:not(.date-selection-section),#bankApp #bankContent .investment-form-card .bank-form{padding:12px!important}#app #content .investment-form-card .date-selection-section{padding:0!important}#app #capitalForm>.opening-total>.field,#app #capitalForm>.closing-total>.field,#app #capitalForm>.difference-total>.field,#app #balanceCalculatorForm>.calculator-closing>.fields>.field{max-width:100%!important}}
 </style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
