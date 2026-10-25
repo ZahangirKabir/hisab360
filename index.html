@@ -645,13 +645,13 @@ body.login-design-visible>.portal-footer{max-width:480px;margin:0 auto;padding:0
 body.login-design-visible>.portal-footer strong{font-weight:400}
 @media(max-width:480px){body.login-design-visible{padding:20px 15px}#loginSection.login-box{margin:clamp(22px,7vh,65px) auto 20px!important;padding:29px 23px 30px!important;border-radius:15px!important}#loginSection #hisabLoginLogo{width:218px}#loginSection .hisab-login-stage{margin-bottom:20px}#loginSection .hisab-login-heading{font-size:23px!important}#loginSection .hisab-login-caption{margin-bottom:27px!important;font-size:12px!important}body.login-design-visible>.portal-footer{font-size:9px}}
 @media(max-height:600px){#loginSection.login-box{margin-top:10px!important}#loginSection .hisab-login-stage{margin-bottom:13px}#loginSection .hisab-login-caption{margin-bottom:20px!important}}
-</style><style id="transparent-logo-surfaces">#loginSection .hisab-logo-stage,.hisab-header-brand .hisab-logo-stage{background:transparent!important;border:0!important;box-shadow:none!important}#hisabLoginLogo,#hisabHeaderLogo{background:transparent!important}</style><style id="brand-v8-digits-only">
+</style><style id="transparent-logo-surfaces">#loginSection .hisab-logo-stage,.hisab-header-brand .hisab-logo-stage{background:transparent!important;border:0!important;box-shadow:none!important}#hisabLoginLogo,#hisabHeaderLogo{background:transparent!important}</style><style id="brand-v8-full-logo">
 .hisab-logo-stage img{animation:none!important;filter:none!important;transform:none!important}
 .hisab-logo-stage::before{content:none!important;display:none!important;animation:none!important}
-#loginSection .hisab-logo-stage::after,.hisab-header-brand .hisab-logo-stage::after{content:''!important;display:block!important;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.48) 49%,transparent 58%);background-size:300% 100%;background-position:150% 0;mask:url('assets/hisab360-digits-mask-v8.png') center/100% 100% no-repeat;-webkit-mask:url('assets/hisab360-digits-mask-v8.png') center/100% 100% no-repeat;animation:hisab360Only 5s ease-in-out infinite}
-@keyframes hisab360Only{0%,35%{background-position:150% 0}70%,100%{background-position:-150% 0}}
+#loginSection .hisab-logo-stage::after,.hisab-header-brand .hisab-logo-stage::after{content:''!important;display:block!important;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.48) 49%,transparent 58%);background-size:300% 100%;background-position:150% 0;mask:url('assets/hisab360-logo-v8.png') center/100% 100% no-repeat;-webkit-mask:url('assets/hisab360-logo-v8.png') center/100% 100% no-repeat;animation:hisab360Only 12s ease-in-out infinite}
+@keyframes hisab360Only{0%,75%{background-position:150% 0}92%,100%{background-position:-150% 0}}
 @media(prefers-reduced-motion:reduce){#loginSection .hisab-logo-stage::after,.hisab-header-brand .hisab-logo-stage::after{display:none!important;animation:none!important}}
-</style></head>
+</style><style id="compact-brand-size">#loginSection .hisab-login-stage{width:220px!important;max-width:85%!important}.hisab-header-brand .hisab-header-stage{width:145px!important}@media(max-width:480px){#loginSection .hisab-login-stage{width:200px!important}.hisab-header-brand .hisab-header-stage{width:130px!important}}</style></head>
 <body>
 
 
@@ -1722,7 +1722,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.26.01';
+    const APP_RELEASE_VERSION = '2026.10.26.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
