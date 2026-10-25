@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.25.02">
+<meta name="investment-release-version" content="2026.10.25.03">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -317,6 +317,49 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 @media(max-width:700px){.calculator-page{padding:16px!important}#balanceCalculatorForm>.finance-section>.fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 12px}#balanceCalculatorForm>.compact-capital-date>.fields,#balanceCalculatorForm>.calculator-closing>.fields{grid-template-columns:1fr}#balanceCalculatorForm>.bank-net-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.calculator-page>h2{font-size:17px!important}}
 @media(max-width:390px){.calculator-page{padding:13px!important}#balanceCalculatorForm>.finance-section>.fields{grid-template-columns:minmax(0,1fr)}#balanceCalculatorForm .calculator-closing .field{display:block}#balanceCalculatorForm .calculator-closing input:disabled{margin-top:10px;max-width:none;width:100%}#balanceCalculatorForm>button.save{width:100%}#balanceCalculatorForm .bank-net-card{padding:11px}#balanceCalculatorForm .bank-net-sum{flex-wrap:wrap}}
 @media print{.calculator-page{box-shadow:none!important}#balanceCalculatorForm>.finance-section{break-inside:avoid}}
+</style><style id="investment-all-form-design">
+.investment-form-card{padding:22px!important;background:#fff!important;border:0!important;border-radius:15px!important;box-shadow:0 3px 18px #244c3610!important}
+.investment-form-card>h2{font-size:18px!important;font-weight:650!important;letter-spacing:-.2px;margin:0 0 21px!important;color:#234737!important;line-height:1.5}
+#app .investment-form-card form,#bankApp .investment-form-card form{min-width:0}
+#app .investment-form-card .fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px 17px}
+#app .investment-form-card .finance-section{min-width:0;padding:15px;border:0!important;background:#f7faf8;border-radius:11px;margin:14px 0}
+#app .investment-form-card .finance-section>legend{font-size:12px;font-weight:650;color:#496c58;padding:0 6px}
+#app .investment-form-card .working-level{min-width:0;border-radius:12px;padding:17px;margin:17px 0}
+#app .investment-form-card .opening-level{background:#f2f7fb;box-shadow:inset 3px 0 #6c9fb8}
+#app .investment-form-card .closing-level{background:#fcf8f0;box-shadow:inset 3px 0 #c7a562}
+#app .investment-form-card .working-level>legend{font-size:14px;font-weight:650;padding:0 8px;color:#4d6c7c}
+#app .investment-form-card .closing-level>legend{color:#8b733e}
+#app .investment-form-card .working-level .finance-section{background:#ffffff90}
+#app .investment-form-card .field,#bankApp .bank-form .bank-field,.edit-original-form .field{min-width:0}
+#app .investment-form-card label,#bankApp .investment-form-card .bank-field>label,.edit-original-form .field>label{font-size:12px!important;line-height:1.45!important;font-weight:500!important;color:#536e5f!important;margin-bottom:6px!important}
+html body #app .investment-form-card input:not([type=checkbox]):not([type=radio]),html body #bankApp .bank-form input:not([type=checkbox]):not([type=radio]),html body .edit-original-form input:not([type=checkbox]):not([type=radio]){width:100%;max-width:100%;min-width:0;box-sizing:border-box;min-height:41px!important;padding:9px 11px!important;border:1px solid #d5e2d9!important;border-radius:8px!important;background:#fff;color:#294936!important;font-family:inherit;font-size:13px!important;box-shadow:0 1px 2px #23493203;font-variant-numeric:tabular-nums}
+html body #app .investment-form-card input[readonly],html body #app .investment-form-card input:disabled,html body #bankApp .bank-form input[readonly],html body .edit-original-form input[readonly]{background:#edf4ef!important;color:#37664b!important;border-color:#e2ebe4!important;opacity:1}
+html body #app .investment-form-card select,html body #bankApp .investment-form-card select,html body .edit-original-form select,html body .cheque-dialog select{appearance:none!important;-webkit-appearance:none!important;width:100%!important;max-width:100%!important;min-width:0;box-sizing:border-box;min-height:41px!important;padding:9px 36px 9px 11px!important;border:1px solid #d5e2d9!important;border-radius:8px!important;background-color:#fff!important;color:#345a43!important;font:500 13px/1.5 'Segoe UI',Tahoma,sans-serif!important;cursor:pointer;box-shadow:0 1px 3px #23493204!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath d='m7 10 5 5 5-5' fill='none' stroke='%235c806b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 11px center!important;background-size:16px!important;transition:border-color .15s,box-shadow .15s,background-color .15s}
+html body #app .investment-form-card select:hover,html body #bankApp .investment-form-card select:hover,html body .edit-original-form select:hover{border-color:#9cbea9!important;background-color:#fcfefc!important}
+html body #app .investment-form-card input:focus,html body #app .investment-form-card select:focus,html body #bankApp .bank-form input:focus,html body #bankApp .investment-form-card select:focus,html body .edit-original-form input:focus,html body .edit-original-form select:focus{outline:0!important;border-color:#6fa889!important;box-shadow:0 0 0 3px #23794f10!important}
+.investment-form-card select option,.edit-original-form select option{background:#fff;color:#345a43;padding:8px}
+#bankApp .investment-form-card .bank-form{grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+#bankApp .investment-form-card.bank-card{border-top:0!important}
+.investment-form-card .repeat-row{padding:12px 0 15px;border-bottom:1px solid #e5ede7;gap:13px}
+#bankApp .withdraw-reason-row{display:grid;grid-template-columns:minmax(160px,1fr) minmax(130px,1fr) auto;gap:12px;align-items:end;padding:12px 0;margin:0;border-bottom:1px solid #e5ede7}
+#bankApp .withdraw-reason-row>.bank-field{width:100%;max-width:none;min-width:0}
+
+.investment-form-card .add-row,.edit-original-form .add-row{min-height:37px;padding:8px 12px;border:0;border-radius:8px;background:#eaf2ed;color:#38664b;font-size:12px;font-weight:600;box-shadow:none}
+.investment-form-card .add-row:hover,.edit-original-form .add-row:hover{background:#deece3}
+#bankApp .withdraw-reason-row>.add-row{height:41px;margin:0;background:#fbefee;color:#a75e58;font-size:11px}
+.investment-form-card button.save{min-width:160px;min-height:42px;padding:10px 23px;border-radius:9px;background:#176c50;color:#fff;border:0;font-size:13px;font-weight:600;box-shadow:0 3px 8px #176c5014;justify-self:end}
+.investment-form-card button.save:hover{background:#11573f}
+#app .investment-form-card .opening-total,#app .investment-form-card .closing-total,#app .investment-form-card .difference-total{grid-template-columns:1fr;margin:13px 0;padding:14px 16px;border-radius:11px;box-shadow:none}
+#app .investment-form-card .opening-total{background:#eaf2f7}#app .investment-form-card .closing-total{background:#f7efdf}
+#app .investment-form-card .opening-total .field,#app .investment-form-card .closing-total .field,#app .investment-form-card .difference-total .field{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,230px);align-items:center;gap:12px}
+#app .investment-form-card .opening-total label,#app .investment-form-card .closing-total label{font-weight:650!important;margin:0!important}
+#app .investment-form-card .difference-total{background:#f1f6f2}#app .investment-form-card .difference-total.balance-mismatch{background:#fff0ed}
+.edit-original-form{gap:16px}.edit-original-form .edit-original-section{padding:15px;border:0;background:#f6f9f7;border-radius:11px}.edit-original-form .edit-original-section>legend{font-size:13px;font-weight:650;color:#466b54}
+@media(min-width:1450px){#app .investment-form-card .fields{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:850px){#app .investment-form-card .fields,#bankApp .investment-form-card .bank-form{grid-template-columns:repeat(2,minmax(0,1fr))}.investment-form-card{padding:18px!important}}
+@media(max-width:560px){.investment-form-card{padding:14px!important}.investment-form-card>h2{font-size:16px!important;margin-bottom:17px!important}#app .investment-form-card .fields,#bankApp .investment-form-card .bank-form{grid-template-columns:minmax(0,1fr);gap:13px}#app .investment-form-card .working-level{padding:12px}#app .investment-form-card .finance-section{padding:12px}html body #app .investment-form-card input:not([type=checkbox]):not([type=radio]),html body #app .investment-form-card select,html body #bankApp .bank-form input,html body #bankApp .investment-form-card select,html body .edit-original-form input,html body .edit-original-form select{font-size:16px!important}#bankApp .withdraw-reason-row{grid-template-columns:minmax(0,1fr);gap:10px}#bankApp .withdraw-reason-row>.add-row{justify-self:end;width:auto}.investment-form-card button.save{width:100%;justify-self:stretch}#app .investment-form-card .opening-total .field,#app .investment-form-card .closing-total .field,#app .investment-form-card .difference-total .field{grid-template-columns:minmax(0,1fr)}.edit-original-form .fields{grid-template-columns:minmax(0,1fr)}}
+#app .investment-form-card .date-selection-section>.fields,#app .investment-form-card .compact-capital-date>.fields{grid-template-columns:minmax(0,1fr)!important}
+@media(forced-colors:active){html body #app .investment-form-card select,html body #bankApp .investment-form-card select,html body .edit-original-form select{appearance:auto!important;background-image:none!important}}
 </style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
@@ -508,7 +551,7 @@ function capitalCashCalculation(cash,headOfficeTransfer,transfers={},cashIsNet=f
 window.capitalCashCalculation=capitalCashCalculation;
 function capitalTransferLines(record){const lines=[];for(const row of Array.isArray(record.headOfficeTransfer)?record.headOfficeTransfer:record.headOfficeTransfer?.amount?[record.headOfficeTransfer]:[]){lines.push({label:'Head Office',details:(row.via==='bank'?'Bank: '+(row.bankName||''):'Person: '+(row.personName||'')),amount:Number(row.amount)||0});}for(const [key,label]of [['salary','Salary'],['routeConvence','Route Convence'],['petty','Petty Cash']])if(Number(record.transfers?.[key]))lines.push({label,details:'',amount:Number(record.transfers[key])});return lines;}
 function capitalForm(){
- const box=card('Daily Working Capital'),form=node('form');form.id='capitalForm';
+ const box=card('Daily Working Capital'),form=node('form');form.id='capitalForm';box.classList.add('investment-form-card');
  const dateArea=section(form,'Date'),selectedDate=field(dateArea,'Date','capital_date','date',true);selectedDate.value='';dateArea.classList.add('compact-capital-date');installSubmissionDatePicker(selectedDate,'capital');
  const openingLevel=node('fieldset');openingLevel.className='working-level opening-level';openingLevel.append(node('legend','Opening Balance'));form.append(openingLevel);
  let grid=node('div');grid.className='fields';openingLevel.append(grid);field(grid,'MA Wallet','opening_wallet');field(grid,'Cash In Hand','opening_cashHand');field(grid,'Cash In Shivalaya Office','opening_cashOffice').closest('.field').hidden=true;
@@ -645,7 +688,7 @@ function collectCashHeadOffice(rows,validate=false){
  window.cashHeadOfficeAdjustment(values,validate);return values;
 }
 function balanceCalculator(){
- const box=card('Working Balance Calculator'),form=node('form');form.id='balanceCalculatorForm';box.classList.add('calculator-page');
+ const box=card('Working Balance Calculator'),form=node('form');form.id='balanceCalculatorForm';box.classList.add('investment-form-card');box.classList.add('calculator-page');
  const top=section(form,'Date'),date=field(top,'Date','calc_date','date',true);date.readOnly=false;date.value='';top.classList.add('compact-capital-date');installSubmissionDatePicker(date,'calculator');
  const maArea=section(form,'MA Balance Calculation');
  const maOpening=field(maArea,'MA Opening Balance','calc_ma_opening'),lifting=field(maArea,'Lifting','calc_lifting'),commissionReceived=field(maArea,'Commission Received','calc_commission_received'),maRefund=field(maArea,'Refund','calc_refund'),receive=field(maArea,'B2B Receive','calc_receive'),send=field(maArea,'B2B Send','calc_send'),netMA=field(maArea,'Net MA Balance','calc_net_ma');
@@ -754,7 +797,7 @@ function pettyBalanceRows(entries){
 }
 function recalculateDeclarations(entries){for(const row of pettyBalanceRows(entries))if(row.record){row.record.openingBalance=row.opening;row.record.totalBalance=Math.round((row.opening+row.received)*100)/100;}return entries;}
 window.investmentPettyBalanceRows=pettyBalanceRows;
-function pettyDeclaration(){const box=card('Petty Cash Balance Summary'),form=node('form');form.id='declarationForm';baseFields(form);form.elements.date.value='';
+function pettyDeclaration(){const box=card('Petty Cash Balance Summary'),form=node('form');form.id='declarationForm';box.classList.add('investment-form-card');baseFields(form);form.elements.date.value='';
  const grid=section(form,'Petty Cash Balance'),opening=field(grid,'Opening Balance','opening'),received=field(grid,'Received Balance','received'),totalInput=field(grid,'Total Balance','total');
  // A calculated total is always derived from the two balance inputs.
  totalInput.disabled=true;let busy=false;const {save,status}=submitTools(form,box);listBox();
@@ -763,7 +806,7 @@ function pettyDeclaration(){const box=card('Petty Cash Balance Summary'),form=no
  form.elements.date.onchange=()=>{declarationDirty=false;window.syncPettyDeclaration();render();};opening.addEventListener('input',sum);received.addEventListener('input',sum);
  form.onsubmit=async e=>{e.preventDefault();if(busy||preview||!form.reportValidity()||bridge.getUser()!==owner)return;try{if(!dataReady)throw Error('ডাটা লোড শেষ হলে আবার চেষ্টা করুন।');const date=form.elements.date.value,initial=amount(opening.value),incoming=amount(received.value)-Number(received.dataset.transfer||0);if(incoming<0)throw Error('Received Balance Cash Transfer-এর Petty Cash Amount-এর কম হতে পারবে না।');busy=true;save.disabled=true;status.textContent='Saving…';const key=date+'_pettyDeclaration',old=items[key]||null,record={type:'pettyDeclaration',scope:'company',date,openingBalance:initial,receivedBalance:incoming,totalBalance:Math.round((initial+amount(received.value))*100)/100,createdBy:old?.createdBy||owner,createdAt:old?.createdAt||bridge.serverTimestamp};const result=await window.investmentCommitRecord(bridge,'investmentEntries',key,record,{createOnly:!old,expected:old});items[key]=result.value;declarationDirty=false;window.syncPettyDeclaration();render();status.textContent='✅ Petty Cash Balance Summary সেভ হয়েছে।';}catch(error){status.textContent='Submit হয়নি: '+error.message;}finally{busy=false;save.disabled=preview;}};
 }
-function pettyForm(){const box=card('Daily Expense'),form=node('form');form.id='pettyForm';baseFields(form);form.elements.date.value='';
+function pettyForm(){const box=card('Daily Expense'),form=node('form');form.id='pettyForm';box.classList.add('investment-form-card');baseFields(form);form.elements.date.value='';
  const rows=repeatRows(form,'Expense Entries',row=>{const details=field(row,'Expense Purpose / Details','expense_details','text',true);details.maxLength=500;select(row,'Expense Type','expense_type',[['','—'],...expenseTypes.map(x=>[x,x])]);field(row,'Amount','expense_amount','number',true);});
  const sum=node('p');sum.className='balance';form.append(sum);const update=()=>{sum.textContent='Total Expense: '+money([...rows.children].reduce((n,row)=>n+(Number(row.querySelector('[name=expense_amount]').value.replace(/,/g,''))||0),0));};form.addEventListener('input',update);update();
  let busy=false;const {save,status}=submitTools(form,box);form.elements.date.onchange=()=>{};
@@ -930,7 +973,7 @@ function ask(bank,numbers){return new Promise(resolve=>{const overlay=el('div');
 const bankFormDrafts=new Map();
 function show(type){if(type==='debit')type='withdrawal';window.stopCalculatorWithdrawalSync?.();if(mode===type&&content.querySelector('form'))return;if(content.querySelector('form')&&mode!==type)bankFormDrafts.set(mode,[...content.childNodes]);mode=type;if(bankFormDrafts.has(type)){content.replaceChildren(...bankFormDrafts.get(type));render();return;}content.replaceChildren();menu.replaceChildren();document.getElementById('bankApp').hidden=false;
 const card=el('div');card.className='card bank-card';card.append(el('h2',({range:'Cheque Number Entry',withdrawal:' Withdraw',cheque:'Withdraw Report',debit:'Bank Debit'})[type]));content.append(card);
-if(type==='range'||type==='withdrawal'||type==='debit'){
+if(type==='range'||type==='withdrawal'||type==='debit'){card.classList.add('investment-form-card');
 const form=el('form');form.className='bank-form';const date=input(form,'Date','date','date');date.max=dateNow();if(type!=='withdrawal')date.value=dateNow();const bank=input(form,'Bank Name','bankName','text',true,choices);
 if(type==='range'){input(form,'Cheque Number From','chequeFrom');input(form,'Cheque Number To','chequeTo');}
 else{const amt=input(form,'Amount','amount');amt.addEventListener('blur',()=>{const n=Number(amt.value.replace(/,/g,''));if(n>0)amt.value=fmt(n);});
