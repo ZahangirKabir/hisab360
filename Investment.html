@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.25.06">
+<meta name="investment-release-version" content="2026.10.25.07">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -426,6 +426,10 @@ html body .cheque-modal .edit-original-form .edit-original-section:nth-of-type(e
 /* White controls remain distinct from softly tinted section surfaces. */
 #app #content .investment-form-card button.save,#bankApp #bankContent .investment-form-card button.save,.cheque-modal .edit-original-form button.save{justify-self:start!important;align-self:start!important;grid-column:1/-1!important;display:inline-flex!important;width:auto!important;max-width:100%!important;min-width:150px!important;margin:12px auto 0 0!important;text-align:center!important}
 @media(max-width:560px){#app #content .investment-form-card .working-level,#app #content .investment-form-card .finance-section:not(.date-selection-section),#bankApp #bankContent .investment-form-card .bank-form{padding:12px!important}#app #content .investment-form-card .date-selection-section{padding:0!important}#app #capitalForm>.opening-total>.field,#app #capitalForm>.closing-total>.field,#app #capitalForm>.difference-total>.field,#app #balanceCalculatorForm>.calculator-closing>.fields>.field{max-width:100%!important}}
+</style><style id="net-fields-surface-fix">
+#app #content .investment-form-card .calculator-net{background:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;border-radius:0!important}
+#app #content .investment-form-card .calculator-net>label{background:transparent!important;padding:0!important;margin:0 0 6px!important;line-height:1.5!important}
+#app #content .investment-form-card .bank-net-sum{display:none!important}
 </style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
