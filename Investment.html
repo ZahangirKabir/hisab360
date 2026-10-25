@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.25.04">
+<meta name="investment-release-version" content="2026.10.25.05">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -373,6 +373,26 @@ html body #app .investment-form-card input:focus,html body #app .investment-form
 #app .investment-form-card .field>input,#app .investment-form-card .field>select,#bankApp .investment-form-card .bank-field>input,#bankApp .investment-form-card .bank-field>select,.edit-original-form .field>input,.edit-original-form .field>select{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
 @media(max-width:650px){#app #capitalForm>.opening-total>.field,#app #capitalForm>.closing-total>.field,#app #capitalForm>.difference-total>.field{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}#app #capitalForm>.opening-total>.field>input,#app #capitalForm>.closing-total>.field>input,#app #capitalForm>.difference-total>.field>input{text-align:left!important}#app #balanceCalculatorForm>.calculator-closing>.fields>.field{display:block!important}#app #balanceCalculatorForm>.calculator-closing input{width:100%!important;max-width:100%!important;margin-top:9px!important}}
 @media(max-width:560px){#app .investment-form-card form .fields,#bankApp .investment-form-card .bank-form,.edit-original-form .fields{grid-template-columns:minmax(0,1fr)!important}}
+</style><style id="investment-simple-white-forms">
+#app #content .investment-form-card,#bankApp #bankContent .investment-form-card{background:#fff!important;box-shadow:none!important;border-radius:12px!important;padding:20px!important}
+#app #content .investment-form-card .finance-section,#app #content .investment-form-card .working-level,#app #content .investment-form-card .opening-total,#app #content .investment-form-card .closing-total,#app #content .investment-form-card .difference-total,#app #content .investment-form-card .calculator-net,#app #content .investment-form-card .calculator-closing,#app #content .investment-form-card .balance,#app #content .investment-form-card .bank-net-card,#app #content .investment-form-card .bank-net-sum{background:#fff!important;background-image:none!important;box-shadow:none!important;color:#345346!important}
+#app #content .investment-form-card .working-level{padding:15px 0!important;border:0!important;border-top:1px solid #e5ebe7!important;border-radius:0!important}
+#app #content .investment-form-card .working-level>legend{background:#fff!important;color:#345346!important;border:0!important;border-radius:0!important}
+#app #content .investment-form-card .finance-section{padding:14px 0!important;border:0!important;border-top:1px solid #edf0ed!important;border-radius:0!important}
+#app #content .investment-form-card .finance-section>legend{background:#fff!important;color:#496255!important}
+#app #content .investment-form-card .opening-total,#app #content .investment-form-card .closing-total,#app #content .investment-form-card .difference-total{border:0!important;border-top:1px solid #e5ebe7!important;border-radius:0!important;padding:14px 0!important;margin:10px 0!important}
+#app #content .investment-form-card .calculator-closing{border:0!important;border-top:1px solid #e0e9e3!important;border-radius:0!important;padding:16px 0!important}
+#app #content .investment-form-card .calculator-closing label{color:#345346!important}
+html body #app #content .investment-form-card input:not([type=checkbox]):not([type=radio]),html body #app #content .investment-form-card select,html body #app #content .investment-form-card textarea,html body #bankApp #bankContent .investment-form-card input:not([type=checkbox]):not([type=radio]),html body #bankApp #bankContent .investment-form-card select,html body #bankApp #bankContent .investment-form-card textarea,html body .cheque-modal .edit-original-form input:not([type=checkbox]):not([type=radio]),html body .cheque-modal .edit-original-form select{background-color:#fff!important;border:1px solid #d8e1db!important;color:#304c3c!important;box-shadow:none!important;opacity:1}
+html body #app #content .investment-form-card input:focus,html body #app #content .investment-form-card select:focus,html body #bankApp #bankContent .investment-form-card input:focus,html body #bankApp #bankContent .investment-form-card select:focus{border-color:#5a9c79!important;outline:2px solid #dcece2!important;outline-offset:1px!important;background-color:#fff!important}
+#app #content .investment-form-card input[readonly]{font-weight:600}
+#app #content .investment-form-card .difference-total.balance-mismatch label,#app #content .investment-form-card .difference-total.balance-mismatch input{color:#a93d35!important}
+#app #content .investment-form-card .bank-net-grid:empty{display:none!important;margin:0!important;padding:0!important;border:0!important;min-height:0!important}
+#app #content .investment-form-card .bank-net-grid:not(:empty){border:1px solid #e8ece9!important;border-radius:9px!important;box-shadow:none!important}
+#app #content .investment-form-card .bank-net-sum{border-top:1px solid #e5ebe7!important}
+html body .cheque-modal .edit-original-form .edit-original-section{background:#fff!important;border:0!important;border-top:1px solid #e5ebe7!important;border-radius:0!important;padding:14px 0!important}
+#app #content .investment-form-card .submission-date-trigger{background:#fff!important;box-shadow:none!important}
+@media(max-width:560px){#app #content .investment-form-card,#bankApp #bankContent .investment-form-card{padding:14px!important}}
 </style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
@@ -719,7 +739,7 @@ function balanceCalculator(){
  [bankOpening,depositDso,depositRefund,transfer,withdraw,netBank].forEach(x=>x.readOnly=true);
  maArea.parentElement.classList.add('calculator-ma');cashArea.parentElement.classList.add('calculator-cash');bankArea.parentElement.classList.add('calculator-bank');[netMA,netCash,netBank].forEach(input=>input.closest('.field').classList.add('calculator-net'));cashHand.closest('.field').classList.add('calculator-subtotal');choice.closest('.field').classList.add('calculator-bank-choice');
  const closingArea=section(form,'Closing Working Capital');closingArea.parentElement.classList.add('calculator-closing');const totalClosing=field(closingArea,'Total Closing','calc_total_closing');totalClosing.disabled=true;
- const results=node('div');results.className='card';form.append(results);
+ const results=node('div');results.className='card bank-net-grid';form.append(results);
  const refresh=node('button','↻ Refresh Source Data');refresh.type='button';refresh.className='add-row';form.append(refresh);
  const {save,status}=submitTools(form,box);let loading=true,busy=false,loaded=false,sourceEpoch=0,bankDrafts={},previous=null,approved=[],withdrawalRows=[],maValue=0,bankValue=0;
  const numeric=x=>[netMA,cashHand,netCash,netBank,totalClosing].includes(x)?Number(String(x.value||'0').replace(/,/g,'')):amount(x.value);let refundManual=false,liftingManual=false;lifting.addEventListener('input',()=>{liftingManual=true;delete netMA.dataset.testManual;});maRefund.addEventListener('input',()=>{refundManual=true;delete netMA.dataset.testManual;});
