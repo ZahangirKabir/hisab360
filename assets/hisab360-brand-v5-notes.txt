@@ -1,0 +1,7 @@
+Hisab360 approved wordmark and favicon
+Generated with built-in image_gen, not CLI.
+Wordmark source: exec-92db8f8a-397f-4305-b4df-ed8b35cddfed.png
+Prompt: Create a premium typographic wordmark using ONLY exact Hisab360, no separate icon. Custom modern geometric sans serif, medium-bold, rounded terminals, impeccable kerning. Hisab midnight navy, 360 rich teal, subtle flowing numerals, clear legibility. White background. No slogan, byline, shadows or decoration.
+Favicon source: exec-4c5a96f7-82ba-449b-8426-92f44a1c7c5a.png
+Prompt: One rounded-square navy tile with bespoke uppercase H, bold rounded white vertical pillars and a graceful teal joining stroke curving slightly upward into right pillar. Optically balanced and simple at 16px. No additional text, ring, symbols, gold, sparkle, bevel or mockup.
+Production optimization: trim surrounding white canvas, resize with Lanczos, optimized PNG and multi-size ICO. Original artwork retained.
