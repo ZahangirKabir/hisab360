@@ -621,18 +621,43 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 @media(max-width:280px){#dsoTabNav{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){#dsoTabNav>.tab-btn{transition:none}}
 @media print{#dsoTabNav{display:none!important}}
+</style><style id="approved-login-design">
+body.login-design-visible{min-height:100vh;min-height:100svh;box-sizing:border-box;padding:24px 16px;background:#f0f8f3;background-image:radial-gradient(ellipse at 0% 28%,#dcefe380 0,transparent 45%),radial-gradient(ellipse at 100% 85%,#d8eee380 0,transparent 50%);background-attachment:fixed}
+body.login-design-visible::before,body.login-design-visible::after{content:'';position:fixed;width:320px;height:320px;border-radius:50%;background:#d9eee14d;pointer-events:none;z-index:-1}
+body.login-design-visible::before{left:-190px;top:14%}body.login-design-visible::after{right:-160px;bottom:-100px}
+#loginSection.login-box{position:relative;width:100%;max-width:410px;margin:clamp(24px,8vh,90px) auto 22px!important;padding:32px 30px 34px!important;border:1px solid #d3e3d9!important;border-radius:17px!important;background:#fff!important;box-shadow:0 12px 35px #2567430b!important;text-align:center;box-sizing:border-box}
+#loginSection .hisab-login-stage{display:flex;align-items:center;justify-content:center;width:100%;max-width:100%;margin:0 auto 22px;padding:0!important}
+#loginSection #hisabLoginLogo{width:235px;max-width:100%;height:auto;max-height:85px;object-fit:contain}
+#loginSection .hisab-login-heading{display:block!important;margin:0 0 7px!important;font-size:25px!important;line-height:1.4;font-weight:650!important;color:#29383a!important;letter-spacing:-.4px}
+#loginSection .hisab-login-caption{display:block!important;margin:0 0 30px!important;font-size:13px!important;line-height:1.6;color:#7b8783!important;font-weight:400!important}
+#loginSection .login-field{position:relative;margin:0 0 15px;min-width:0;text-align:left}
+#loginSection .login-field-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:20px;height:22px;color:#697871;pointer-events:none;z-index:1}
+#loginSection .login-field-icon svg{width:20px;height:22px}
+#loginSection .login-field>input{display:block;width:100%;height:47px;min-height:47px;margin:0!important;padding:11px 13px 11px 46px!important;border:1px solid #d6dfda!important;border-radius:8px!important;background:#fdfefd!important;box-shadow:0 1px 2px #183b2e02!important;font-family:inherit;font-size:16px!important;line-height:1.5;color:#30443a;box-sizing:border-box}
+#loginSection .login-field>input::placeholder{color:#99a39f;opacity:1;font-size:14px}
+#loginSection .login-field>input:focus{outline:0!important;border-color:#6daa8b!important;box-shadow:0 0 0 3px #1486570d!important;background:#fff!important}
+#loginPass::-ms-reveal,#loginPass::-ms-clear{display:none}
+#loginSection #loginBtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:47px;margin:21px 0 0!important;padding:11px 18px;border:0;border-radius:8px;background:linear-gradient(110deg,#008959,#029762);color:#fff;font-family:inherit;font-size:15px;font-weight:600;box-shadow:0 3px 8px #0089590b}
+#loginSection #loginBtn::after{content:'→';font-size:23px;line-height:1;font-weight:400}
+#loginSection #loginBtn:hover{background:#008052}#loginSection #loginBtn:focus-visible{outline:2px solid #168553;outline-offset:3px}
+#loginSection #loginBtn:disabled{cursor:wait;opacity:.65}
+body.login-design-visible>.portal-footer{max-width:480px;margin:0 auto;padding:0 8px 16px;background:transparent;color:#87928c;font-size:10px;line-height:1.65;font-weight:400;text-align:center;border:0;box-shadow:none}
+body.login-design-visible>.portal-footer strong{font-weight:400}
+@media(max-width:480px){body.login-design-visible{padding:20px 15px}#loginSection.login-box{margin:clamp(22px,7vh,65px) auto 20px!important;padding:29px 23px 30px!important;border-radius:15px!important}#loginSection #hisabLoginLogo{width:218px}#loginSection .hisab-login-stage{margin-bottom:20px}#loginSection .hisab-login-heading{font-size:23px!important}#loginSection .hisab-login-caption{margin-bottom:27px!important;font-size:12px!important}body.login-design-visible>.portal-footer{font-size:9px}}
+@media(max-height:600px){#loginSection.login-box{margin-top:10px!important}#loginSection .hisab-login-stage{margin-bottom:13px}#loginSection .hisab-login-caption{margin-bottom:20px!important}}
 </style></head>
 <body>
 
 
   <!-- LOGIN SECTION -->
   <div id="loginSection" class="login-box">
-    <span class="hisab-logo-stage hisab-login-stage"><img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-logo-v4.png" alt="Hisab360"></span><h2 class="hisab-login-heading">স্বাগতম</h2><p class="hisab-login-caption">আপনার হিসাব, এক জায়গায়</p>
-    <input type="text" id="loginId" placeholder="User ID / DSO ID" autocomplete="username" autocapitalize="none" spellcheck="false">
-    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password">
-    <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Login</button>
+    <span class="hisab-logo-stage hisab-login-stage"><img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-logo-v4.png" alt="Hisab360"></span><h2 class="hisab-login-heading">স্বাগতম!</h2><p class="hisab-login-caption">আপনার হিসাবে প্রবেশ করুন</p>
+    <div class="login-field"><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span><input type="text" id="loginId" aria-label="User ID" placeholder="User ID" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+    <div class="login-field"><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></span><input type="password" id="loginPass" aria-label="Password" placeholder="Password" autocomplete="current-password"></div>
+    <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Log in</button>
   </div>
 
+<script>(()=>{const panel=document.getElementById('loginSection');const sync=()=>document.body.classList.toggle('login-design-visible',!panel.hidden&&panel.style.display!=='none');sync();new MutationObserver(sync).observe(panel,{attributes:true,attributeFilter:['style','hidden']});})();</script>
   <!-- APP MAIN CONTAINER -->
   <div id="appContainer" class="container" style="display: none;">
     <div class="portal-sticky-top">
@@ -1691,7 +1716,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.25.01';
+    const APP_RELEASE_VERSION = '2026.10.25.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2211,7 +2236,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         alert("ইউজার আইডি অথবা পাসওয়ার্ড সঠিক নয়। আবার চেষ্টা করুন।"); return;
       }
       const wait=loginWaitMessage(id);if(wait){alert(wait);return;}
-      if(credentialLoginTask){const button=document.getElementById('loginBtn');if(button){button.disabled=true;button.textContent='Please wait…';}credentialLoginTask.finally(()=>{if(button&&!loginInProgress){button.disabled=false;button.textContent='Login';}}).catch(()=>{});alert('আগের Login যাচাই শেষ হচ্ছে। শেষ হলে আবার Login চাপুন।');return;}
+      if(credentialLoginTask){const button=document.getElementById('loginBtn');if(button){button.disabled=true;button.textContent='Please wait…';}credentialLoginTask.finally(()=>{if(button&&!loginInProgress){button.disabled=false;button.textContent='Log in';}}).catch(()=>{});alert('আগের Login যাচাই শেষ হচ্ছে। শেষ হলে আবার Login চাপুন।');return;}
       credentialActionEpoch++;loginInProgress = true;
       if(btn){btn.disabled=true;btn.classList.add('is-loading');btn.textContent='Checking…';}
       const trace=startLoginTiming();let devicePermissionPending=false;
@@ -2238,7 +2263,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       } finally {
         trace.finish(devicePermissionPending);
         loginInProgress = false;
-        if(btn){btn.classList.remove('is-loading');btn.disabled=!!credentialLoginTask;btn.textContent=credentialLoginTask?'Please wait…':'Login';if(credentialLoginTask){const pending=credentialLoginTask;pending.finally(()=>{if(credentialLoginTask===null&&!loginInProgress){btn.disabled=false;btn.textContent='Login';}}).catch(()=>{});}}updateReleaseGate();
+        if(btn){btn.classList.remove('is-loading');btn.disabled=!!credentialLoginTask;btn.textContent=credentialLoginTask?'Please wait…':'Log in';if(credentialLoginTask){const pending=credentialLoginTask;pending.finally(()=>{if(credentialLoginTask===null&&!loginInProgress){btn.disabled=false;btn.textContent='Log in';}}).catch(()=>{});}}updateReleaseGate();
       }
     }
 
