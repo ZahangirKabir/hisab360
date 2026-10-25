@@ -605,6 +605,22 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 #adminFilterPanel .dso-checkbox-container{left:0!important;right:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box}
 }
 @media(max-width:320px){#adminFilterPanel{grid-template-columns:minmax(0,1fr)!important}#adminFilterPanel .filter-group.dso-filter{grid-column:auto!important}}
+</style><style id="dso-responsive-navigation">
+#dsoTabNav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(110px,.65fr);gap:6px!important;padding:6px!important;margin:12px 0 0!important;border:0!important;border-radius:12px;background:#f0f5f2!important;min-width:0;box-sizing:border-box}
+#dsoTabNav[style*="display:none"],#dsoTabNav[style*="display: none"],#dsoTabNav[hidden]{display:none!important}
+#dsoTabNav>.tab-btn,#dsoTabNav>.tab-btn.settings-icon{display:flex;align-items:center;justify-content:flex-start;gap:9px;min-width:0;width:100%;min-height:44px;margin:0;padding:9px 12px;border:0;border-radius:9px;background:transparent;color:#476555;font-family:inherit;font-size:13px;font-weight:600;line-height:1.45;text-align:left;white-space:normal;box-sizing:border-box;box-shadow:none;transition:background .15s,color .15s}
+#dsoTabNav>.tab-btn:hover{background:#e2eee6;color:#185c3e;transform:none}
+#dsoTabNav>.tab-btn.active{background:#176c50;color:#fff;box-shadow:0 2px 7px #176c5020}
+#dsoTabNav .dso-menu-icon{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;flex:0 0 27px;border-radius:7px;background:#e1ebe4;color:#508067}
+#dsoTabNav .dso-menu-icon svg{width:18px;height:18px}
+#dsoTabNav>.tab-btn.active .dso-menu-icon{background:#ffffff20;color:#fff}
+#dsoTabNav .dso-menu-label{min-width:0;overflow-wrap:anywhere}
+#dsoTabNav>.tab-btn:focus-visible{outline:2px solid #268462;outline-offset:2px}
+@media(max-width:760px){#dsoTabNav{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important;padding:6px!important;margin-top:10px!important}#dsoTabNav>.tab-btn,#dsoTabNav>.tab-btn.settings-icon{min-height:43px;padding:8px 10px;font-size:12px;gap:8px;flex:none}#dsoTabNav .dso-menu-icon{width:25px;height:25px;flex-basis:25px}#dsoTabNav .dso-menu-icon svg{width:17px;height:17px}}
+@media(max-width:380px){#dsoTabNav>.tab-btn,#dsoTabNav>.tab-btn.settings-icon{font-size:11px;padding:8px;gap:6px}#dsoTabNav .dso-menu-icon{width:23px;height:23px;flex-basis:23px}}
+@media(max-width:280px){#dsoTabNav{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){#dsoTabNav>.tab-btn{transition:none}}
+@media print{#dsoTabNav{display:none!important}}
 </style></head>
 <body>
 
@@ -640,10 +656,10 @@ button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible,s
 
       <!-- DSO PANEL NAVIGATION -->
       <div id="dsoTabNav" class="tab-nav" style="display:none;">
-        <button class="tab-btn active" id="tabDsoFormBtn" onclick="switchDsoTab('form')">📝 দিনের রিপোর্ট</button>
-        <button class="tab-btn" id="tabDsoSlipBtn" onclick="switchDsoTab('slip')">🧾 ব্যাংক স্লিপ আপলোড</button>
-        <button class="tab-btn" id="tabDsoReportBtn" onclick="switchDsoTab('report')">📁 আমার রিপোর্ট ও ইতিহাস (My Reports)</button>
-        <button class="tab-btn settings-icon" id="tabDsoSettingsBtn" type="button" onclick="switchDsoTab('settings')" title="Password Settings" aria-label="Password Settings">⚙️</button>
+        <button class="tab-btn active" id="tabDsoFormBtn" onclick="switchDsoTab('form')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9M8 16l1-4L19 2l3 3-10 10-4 1Z"/></svg></span><span class="dso-menu-label">দিনের রিপোর্ট</span></button>
+        <button class="tab-btn" id="tabDsoSlipBtn" onclick="switchDsoTab('slip')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6M9 11h6M9 15h3"/></svg></span><span class="dso-menu-label">ব্যাংক স্লিপ আপলোড</span></button>
+        <button class="tab-btn" id="tabDsoReportBtn" onclick="switchDsoTab('report')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h7l2-3h9v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7ZM7 12h10M7 16h7"/></svg></span><span class="dso-menu-label">রিপোর্ট ও ইতিহাস</span></button>
+        <button class="tab-btn settings-icon" id="tabDsoSettingsBtn" type="button" onclick="switchDsoTab('settings')" title="Password Settings" aria-label="Password Settings"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3H9Z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="dso-menu-label">সেটিংস</span></button>
       </div>
     </div>
 
@@ -1675,7 +1691,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.10.24.12';
+    const APP_RELEASE_VERSION = '2026.10.25.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
