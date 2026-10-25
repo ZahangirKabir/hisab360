@@ -1,0 +1,1 @@
+Built-in image_gen edit of approved ledger logo. Prompt: Remove only exterior white canvas, preserve navy/turquoise ledger icon, white checkmark inside page, exact lettering and proportions. Letter counters transparent, genuine alpha. No redesign or new backdrop. Production RGBA PNG, trimmed and downscaled to 1000px width.
