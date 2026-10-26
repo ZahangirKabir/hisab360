@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.26.05">
+<meta name="investment-release-version" content="2026.10.26.06">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -438,6 +438,24 @@ html body #app #content .investment-form-card input[type=date],html body #app #c
 #app #content .investment-form-card .submission-date-trigger{width:100%!important;max-width:100%!important}
 </style><style id="hide-investment-test-delete">#moduleMenu #clearInvestmentData{display:none!important}</style><style id="monthly-income-expense-style">
 .income-expense-table{width:100%;border-collapse:collapse;font-size:13px}.income-expense-table th,.income-expense-table td{padding:9px 11px;border:1px solid #dce6e2;white-space:normal;vertical-align:top}.income-expense-table thead tr:first-child th:first-child{background:#e5f2ee;color:#165944}.income-expense-table thead tr:first-child th:last-child{background:#eef0fa;color:#394879}.income-expense-table td:nth-child(3),.income-expense-table td:nth-child(5){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.income-expense-table tfoot th{background:#edf5f1}.income-expense-table tfoot tr:last-child th{background:#dceee5}.income-expense-signatures{display:none}@media(max-width:600px){.income-expense-table{min-width:680px;font-size:12px}.income-expense-table td,.income-expense-table th{padding:7px 8px}}@media print{.income-expense-table{min-width:0!important;font-size:11px}.income-expense-signatures{display:flex;justify-content:space-between;margin-top:45px;white-space:pre-line}}
+</style><style id="investment-menu-refinement">
+#moduleMenu{display:grid!important;grid-template-columns:1.12fr 1fr 1.65fr 1.08fr .8fr;align-items:stretch;gap:5px;padding:7px!important;border:0!important;border-radius:16px!important;background:#fff!important;box-shadow:0 5px 22px rgba(24,64,49,.07)!important}
+#moduleMenu>.module-dropdown,#moduleMenu>button{min-width:0!important;width:100%;margin:0!important;flex:none!important}
+#moduleMenu>.module-dropdown>summary,#moduleMenu>button{position:relative;display:flex;align-items:center;justify-content:flex-start;gap:9px;min-height:52px;padding:10px 13px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#405c51!important;box-shadow:none!important;font-size:12px!important;font-weight:600!important;line-height:1.4;transition:background .18s,color .18s}
+#moduleMenu>.module-dropdown>summary:hover,#moduleMenu>button:hover{background:#f1f7f4!important;color:#125c44!important}
+#moduleMenu>.module-dropdown.active>summary,#moduleMenu>button.active{background:#e8f4ee!important;color:#116447!important;font-weight:700!important}
+#moduleMenu>.module-dropdown.active>summary::after,#moduleMenu>button.active::after{content:'';position:absolute;bottom:0;left:16px;right:16px;height:3px;border-radius:3px;background:#15916b}
+#moduleMenu .investment-nav-icon{width:30px;height:30px;flex-basis:30px;border-radius:9px;background:#eff5f2;color:#517969}
+#moduleMenu .active>summary .investment-nav-icon,#moduleMenu>button.active .investment-nav-icon{background:#168566;color:white;box-shadow:0 3px 8px #16856622}
+#moduleMenu .dropdown-arrow{font-size:14px;opacity:.65;margin-left:auto}
+#moduleMenu .module-dropdown-panel{padding:8px;min-width:270px;border:1px solid #e4eee8;border-radius:13px;box-shadow:0 16px 38px #193e3024;background:#fff;gap:4px}
+#moduleMenu .module-dropdown-panel button{min-height:42px!important;padding:11px 14px!important;background:transparent;color:#426052;font-size:12px!important;font-weight:500;border:0!important;border-radius:8px;box-shadow:none!important;line-height:1.5}
+#moduleMenu .module-dropdown-panel button:hover{background:#f0f7f3;color:#136346}
+#moduleMenu .module-dropdown-panel button.active{background:#e7f3ed!important;color:#126547!important;font-weight:700}
+@media(max-width:1000px){#moduleMenu{grid-template-columns:repeat(4,minmax(0,1fr))}#moduleMenu>#showHeadOfficeReport{grid-column:span 2}#moduleMenu>#showTotalInvestment,#moduleMenu>#navBank{grid-row:2}}
+@media(max-width:600px){#moduleMenu{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;border-radius:13px!important;padding:6px!important}#moduleMenu>.module-dropdown>summary,#moduleMenu>button{min-height:49px;padding:9px 10px!important;font-size:11px!important;gap:7px}#moduleMenu>#showHeadOfficeReport{grid-column:1/-1;grid-row:3}#moduleMenu>#showTotalInvestment,#moduleMenu>#navBank{grid-row:2}#moduleMenu .investment-nav-icon{width:27px;height:27px;flex-basis:27px}#moduleMenu .module-dropdown-panel{width:min(280px,calc(100vw - 46px));min-width:0}#moduleMenu>#navPettyCash .module-dropdown-panel,#moduleMenu>#navBank .module-dropdown-panel{left:auto!important;right:0!important}}
+@media(prefers-reduced-motion:reduce){#moduleMenu summary,#moduleMenu button{transition:none!important}}
+@media print{#moduleMenu{display:none!important}}
 </style></head><body><script>
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
