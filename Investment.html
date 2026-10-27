@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.26.06">
+<meta name="investment-release-version" content="2026.10.27.01">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -932,7 +932,7 @@ function monthlyIncomeExpense(entries,month,date='',expenseType=''){
  const lines=expenseRows(entries,month,expenseType).filter(x=>!date||x.date===date),totals=new Map();
  for(const row of lines)totals.set(row.expenseType,(totals.get(row.expenseType)||0)+cents(row.amount));
  const types=expenseType?[expenseType]:[...new Set([...expenseTypes,'TMR Toll Kit (POSM)',...totals.keys()])];
- const expenses=types.map(type=>({type,amount:(totals.get(type)||0)/100}));
+ const expenses=types.filter(type=>(totals.get(type)||0)!==0).map(type=>({type,amount:totals.get(type)/100}));
  const totalIncome=income.reduce((n,x)=>n+cents(x.amount),0)/100,totalExpense=lines.reduce((n,x)=>n+cents(x.amount),0)/100;
  return {income,expenses,totalIncome,totalExpense,netIncome:Math.round((totalIncome-totalExpense)*100)/100};
 }
