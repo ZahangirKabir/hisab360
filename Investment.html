@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.10.27.01">
+<meta name="investment-release-version" content="2026.10.28.01">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1015,6 +1015,7 @@ function showCapitalClosingDetails(record){const reportNodes=[...content.childre
  if(record.closing?.cashBeforeTransfer!==undefined)add('Cash','Cash In Hand before Transfer',record.closing.cashBeforeTransfer);
  for(const line of capitalTransferLines(record))add('Transfer · '+line.label,line.details||line.label,line.amount);
  add('Closing Cash','Cash after Transfer',record.closing?.cashInHand);for(const bank of banks)add('Closing Bank',bank,record.closing?.banks?.[bank]);table.append(body);reportActions(detailPage,'Closing Cash & Transfer Details · '+record.date);const scroll=node('div');scroll.className='scroll';scroll.append(table);detailPage.append(scroll);content.append(detailPage);}
+function capitalReportClosingBalance(record){const closing=record?.closing||{};const cents=value=>Math.round((Number(value)||0)*100);return (cents(closing.maWallet)+cents(closing.cashInHand)+cents(closing.cashInOffice)+Object.values(closing.banks||{}).reduce((sum,value)=>sum+cents(value),0))/100;}
 function capitalReportTable(list,records){const table=node('table');table.className='capital-report-table';const thead=node('thead'),groups=node('tr');
  [['Date',1],['Opening Balance',6],['Closing Balance',6],['Difference',1],['Details',1]].forEach(([label,count])=>{const th=node('th',label);th.colSpan=count;groups.append(th);});thead.append(groups);
  const headers=node('tr');['Day / Date','MA Wallet','Cash','Bank','Commission Received','Received from Head Office','Total Opening','MA Wallet','Cash','Bank','Transfer to Head Office','Salary / Route / Petty Cash / Bank Charge','Total Closing','Opening − Closing (Wallet + Cash + Bank)','Details'].forEach(label=>headers.append(node('th',label)));thead.append(headers);table.append(thead);
@@ -1023,7 +1024,7 @@ function capitalReportTable(list,records){const table=node('table');table.classN
  const dateLabel=value=>{const [year,month,day]=String(value||'').split('-').map(Number);const date=new Date(Date.UTC(year,month-1,day));return `${new Intl.DateTimeFormat('en-GB',{weekday:'short',timeZone:'UTC'}).format(date)} ${String(day).padStart(2,'0')}/${String(month).padStart(2,'0')}/${String(year).slice(-2)}`;};
  const body=node('tbody');records.forEach(x=>{const tr=node('tr'),opening=x.opening||{},closing=x.closing||{},openCash=(Number(opening.cashInHand)||0)+(Number(opening.cashInOffice)||0),closeCash=(Number(closing.cashInHand)||0)+(Number(closing.cashInOffice)||0),outflow=(Number(x.transfers?.salary)||0)+(Number(x.transfers?.routeConvence)||0)+(Number(x.transfers?.petty)||0)+Object.values(x.bankCharges||{}).reduce((n,v)=>n+(Number(v)||0),0);
  const difference=Math.round(((Number(x.openingTotal)||0)-(Number(closing.maWallet)||0)-closeCash-bankTotal(closing))*100)/100;
- const values=[dateLabel(x.date),opening.maWallet,openCash,bankTotal(opening),totalRows(x.commission),totalRows(x.headOfficeReceive),x.openingTotal,closing.maWallet,closeCash,bankTotal(closing),totalRows(x.headOfficeTransfer),outflow,x.closingTotal,difference];
+ const values=[dateLabel(x.date),opening.maWallet,openCash,bankTotal(opening),totalRows(x.commission),totalRows(x.headOfficeReceive),x.openingTotal,closing.maWallet,closeCash,bankTotal(closing),totalRows(x.headOfficeTransfer),outflow,capitalReportClosingBalance(x),difference];
  values.forEach((value,index)=>{const td=node('td',index===0?value:`${money(value)}`);if(index===13&&difference!==0)td.className='report-difference';tr.append(td);});const detailCell=node('td'),button=node('button','Details দেখুন');button.type='button';button.className='report-detail-button';button.onclick=()=>showCapitalClosingDetails(x);detailCell.append(button);const edit=node('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('investmentEntries',x);detailCell.append(edit);const exported=node('div');exported.className='export-transfer-details';const lines=capitalTransferLines(x);exported.textContent=(x.closing?.cashBeforeTransfer!==undefined?'Cash In Hand: '+money(x.closing.cashBeforeTransfer)+'\n':'')+(lines.length?lines.map(line=>line.label+(line.details?' · '+line.details:'')+': '+money(line.amount)).join('\n'):'No Cash Transfer')+'\nClosing Cash: '+money(x.closing?.cashInHand);detailCell.append(exported);tr.append(detailCell);body.append(tr);});table.append(body);list.append(table);}
 function render(){if(page==='headOfficeReport'){renderHeadOfficeReport();return;}if(['declaration','petty','pettyReport','pettyTypeReport'].includes(page)){renderPetty();return;}
  const list=document.getElementById('investList');if(!list)return;list.replaceChildren();const month=document.getElementById('investMonth')?.value||'';
@@ -1045,7 +1046,7 @@ function render(){if(page==='headOfficeReport'){renderHeadOfficeReport();return;
  const summary=document.getElementById('investSummary');if(summary)summary.textContent=page==='total'?
   `Latest Working Capital Closing: ${money(closingCapital)} · Petty Cash Balance: ${money(historicalPettyBalance)} · Total Investment: ${money(closingCapital+historicalPettyBalance)}`:
   page==='capitalReport'?
-  `${capitalMode==='month'?'Month Wise':'Date Wise'} · ${capital.length} entries · Opening Total ${money(capital.reduce((s,x)=>s+Number(x.openingTotal||0),0))} · Closing Total ${money(capital.reduce((s,x)=>s+Number(x.closingTotal||0),0))}`:
+  `${capitalMode==='month'?'Month Wise':'Date Wise'} · ${capital.length} entries · Opening Total ${money(capital.reduce((s,x)=>s+Number(x.openingTotal||0),0))} · Closing Total ${money(capital.reduce((sum,x)=>sum+capitalReportClosingBalance(x),0))}`:
   `Working Capital entries: ${capital.length} · Petty Cash Transfer: ${money(transfer)} · Petty Cash Expense: ${money(expense)} · Petty Cash Balance: ${money(transfer-expense)}`;
  if(!rows.length){list.textContent='কোনো তথ্য পাওয়া যায়নি।';return;}
  if(page==='capitalReport'){capitalReportTable(list,capital);return;}
