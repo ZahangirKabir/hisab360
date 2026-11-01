@@ -669,7 +669,7 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
 #adminTabNav button:focus-visible,#dsoTabNav button:focus-visible{outline:2px solid #2c946e!important;outline-offset:2px}
 @media(max-width:600px){#adminTabNav,#dsoTabNav{gap:6px!important;padding:6px!important;border-radius:13px!important}#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu,#dsoTabNav>.tab-btn{min-height:50px!important;padding:9px!important;gap:8px!important;font-size:11.5px!important;border-radius:10px!important}#adminTabNav .main-menu-icon,#dsoTabNav .dso-menu-icon{width:29px!important;height:29px!important;flex-basis:29px!important}}
 @media(prefers-reduced-motion:reduce){#adminTabNav>button,#dsoTabNav>button{transition:none!important}}
-</style></head>
+</style><style id="user-management-design">.portal-user-management{width:100%;box-sizing:border-box;margin-top:18px;padding:20px;background:#fff;border:1px solid #dbe8e0;border-radius:14px}.user-management-heading{display:flex;align-items:center;gap:12px;margin-bottom:18px}.user-management-badge{display:grid;place-items:center;flex:0 0 38px;height:38px;background:#e6f3ed;border-radius:11px;color:#167154;font-size:25px}.user-management-heading h3{margin:0 0 4px;font-size:17px;color:#1d5b43}.user-management-heading p{margin:0;font-size:12px;color:#75867a}.user-management-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.user-management-grid label{display:flex;flex-direction:column;gap:7px;color:#405e4b;font-size:12px;font-weight:600}.user-management-grid input,.user-management-grid select{box-sizing:border-box;width:100%;min-height:43px;border:1px solid #ccdcd2;border-radius:8px;background:white;padding:10px 11px;font:inherit;font-weight:400}.portal-user-management #createDsoUserButton{width:auto;margin-top:18px;padding:11px 18px;border-radius:9px;background:#167453;font-size:13px}.portal-user-management p[role=status]{font-size:12px;white-space:pre-line;line-height:1.6}.portal-user-management [hidden]{display:none!important}#userManagementRulesHelp{padding:12px;background:#fff5df;color:#6b572e;border-radius:8px;font-size:12px;line-height:1.7}@media(max-width:650px){.user-management-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-user-management{padding:15px}}@media(max-width:400px){.user-management-grid{grid-template-columns:1fr}}</style></head>
 <body>
 
 
@@ -901,7 +901,19 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
                 <button id="adminResetPasswordButton" class="btn" style="width:auto;padding:10px 16px;font-size:13px;background:#147a83;" onclick="changeUserPasswordByAdmin()">Password Reset</button>
                 <p id="adminPasswordResetStatus" role="status" style="width:100%;margin:4px 0;line-height:1.6;"></p>
               </div>
-            </div>
+            <section id="portalUserManagement" class="portal-user-management">
+ <div class="user-management-heading"><span class="user-management-badge">＋</span><div><h3>User Management</h3><p>নতুন DSO যোগ করুন ও দায়িত্বপ্রাপ্ত Admin নির্ধারণ করুন</p></div></div>
+ <form id="portalNewUserForm" onsubmit="createPortalDsoUser(event)" autocomplete="off">
+ <div class="user-management-grid">
+ <label>User ID<input id="newDsoUserId" inputmode="numeric" pattern="[0-9]{3,6}" value="846" required placeholder="DSO ID"></label>
+ <label>Role<input value="DSO" readonly aria-label="Role DSO"></label>
+ <label>Assigned Admin<select id="newDsoAssignedAdmin" required><option value="adminSaturia">adminSaturia</option><option value="adminSadar">adminSadar</option><option value="adminSingair">adminSingair</option><option value="adminGhior">adminGhior</option></select></label>
+ <label>Temporary Password<input id="newDsoTemporaryPassword" type="password" minlength="8" maxlength="128" required autocomplete="new-password" placeholder="কমপক্ষে ৮ অক্ষর"></label>
+ <label>Confirm Password<input id="newDsoConfirmPassword" type="password" minlength="8" required autocomplete="new-password" placeholder="পাসওয়ার্ড আবার দিন"></label>
+ <label>Admin Password<input id="newDsoAdminPassword" type="password" required autocomplete="current-password" placeholder="আপনার Admin password"></label>
+ </div><button id="createDsoUserButton" class="btn" type="submit">Create DSO User</button><p id="newDsoUserStatus" role="status" aria-live="polite"></p>
+ <div id="userManagementRulesHelp" hidden>একবার Firebase Rules আপডেট প্রয়োজন। <a href="Firebase_User_Management_Rules.json" download>Rules ডাউনলোড করুন</a> → Firebase Console → Realtime Database → Rules-এ বসিয়ে Publish করুন।</div>
+ </form></section></div>
           </div>
         </div>
       </div>
@@ -1740,7 +1752,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.01.03';
+    const APP_RELEASE_VERSION = '2026.11.01.04';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2067,8 +2079,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function getDsoOptionsHTML() {
-      let html = '<option value="">-- DSO (801-846) --</option>';
-      for (let i = 801; i <= 846; i++) {
+      let html = '<option value="">-- Select DSO --</option>';
+      for (const i of portalDsoIds()) {
         html += `<option value="${i}">DSO ${i}</option>`;
       }
       return html;
@@ -2089,6 +2101,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     // Restricted Group Admin groups: each account can VIEW ONLY the report of its assigned DSO IDs.
+    let portalDsoRegistry={};
+    function portalDsoIds(){return [...new Set([...Array.from({length:46},(_,i)=>String(801+i)),...Object.keys(portalDsoRegistry).filter(id=>/^\d{3,6}$/.test(id)&&Number(id)>=801)])].sort((a,b)=>Number(a)-Number(b));}
     const SUB_ADMIN_GROUPS = {
       adminSadar: new Set(["801","802","803","804","806","808","809","811","812","813","814","815"]),
       adminSaturia: new Set(["805","807","816","817","818","819","820","821","822","823","846"]),
@@ -2256,7 +2270,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if (!id || !pass) { alert("ইউজার আইডি এবং পাসওয়ার্ড লিখুন!"); return; }
       let userIdNum = parseInt(id, 10);
       const isPrivileged = id === "admin" || isGroupAdmin(id);
-      if (!isPrivileged && (isNaN(userIdNum) || userIdNum < 801 || userIdNum > 846)) {
+      if (!isPrivileged && (isNaN(userIdNum) || userIdNum < 801 || !/^\d{3,6}$/.test(id))) {
         alert("ইউজার আইডি অথবা পাসওয়ার্ড সঠিক নয়। আবার চেষ্টা করুন।"); return;
       }
       const wait=loginWaitMessage(id);if(wait){alert(wait);return;}
@@ -5128,10 +5142,10 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         // Group Admins can only see/filter their own assigned DSO IDs.
         SUB_ADMIN_GROUPS[currentUser].forEach(id => dsoSet.add(String(id)));
       } else {
-        for (let i = 801; i <= 846; i++) { dsoSet.add(String(i)); }
+        for (const i of portalDsoIds()) { dsoSet.add(String(i)); }
         if (data) {
           Object.values(data).forEach(r => {
-            if (/^(80[1-9]|8[1-3][0-9]|84[0-5])$/.test(String(r.userId))) dsoSet.add(String(r.userId));
+            if (portalDsoIds().includes(String(r.userId))) dsoSet.add(String(r.userId));
           });
         }
       }
@@ -5254,7 +5268,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let startRange = parseInt(document.getElementById("filterDsoStart").value, 10);
       let endRange = parseInt(document.getElementById("filterDsoEnd").value, 10);
       if (isNaN(startRange)) startRange = 801;
-      if (isNaN(endRange)) endRange = 846;
+      if (isNaN(endRange)) endRange = Number(portalDsoIds().at(-1));
       if (startRange > endRange) [startRange, endRange] = [endRange, startRange];
 
       const ids = new Set();
@@ -5371,7 +5385,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         displayRange = "Selected: " + selectedDsos.join(", ");
       } else {
         let startRange = parseInt(document.getElementById("filterDsoStart").value, 10) || 801;
-        let endRange = parseInt(document.getElementById("filterDsoEnd").value, 10) || 846;
+        let endRange = parseInt(document.getElementById("filterDsoEnd").value, 10) || Number(portalDsoIds().at(-1));
         if (startRange > endRange) [startRange, endRange] = [endRange, startRange];
         displayRange = `Range: ${startRange} to ${endRange}`;
       }
@@ -5402,7 +5416,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let today = getLocalDateString();
       document.getElementById("filterDate").value = today;
       document.getElementById("filterDsoStart").value = "801";
-      document.getElementById("filterDsoEnd").value = "846";
+      document.getElementById("filterDsoEnd").value = portalDsoIds().at(-1);
       const adminFilter = document.getElementById("filterAdmin");
       if (adminFilter) adminFilter.value = "";
       document.querySelectorAll(".dso-chk").forEach(chk => chk.checked = false);
@@ -6456,5 +6470,5 @@ global.PortalLedger={create,sync,balance,same,snapshot};
  window.addEventListener('online',function(){if(!started&&!injected)boot();});boot();
 })();
 </script>
-<script>document.getElementById("hisabHeaderLogo").src=document.getElementById("hisabLoginLogo").src;</script><script>window.addEventListener('beforeprint',()=>{document.querySelectorAll('.print-action-column').forEach(c=>c.classList.remove('print-action-column'));document.querySelectorAll('table').forEach(table=>{const hidden=new Set(),cells=[],grid=[];[...table.rows].forEach((row,r)=>{let col=0;for(const cell of row.cells){while(grid[r]?.[col])col++;const w=cell.colSpan||1,h=cell.rowSpan||1;cells.push({cell,col,w});if(cell.tagName==='TH'&&/^(edit|সম্পাদনা)$/i.test(cell.textContent.trim()))for(let c=col;c<col+w;c++)hidden.add(c);for(let rr=r;rr<r+h;rr++){grid[rr]||=[];for(let c=col;c<col+w;c++)grid[rr][c]=true;}col+=w;}});cells.forEach(({cell,col,w})=>{if([...Array(w)].every((_,i)=>hidden.has(col+i)))cell.classList.add('print-action-column');});});});</script><script src="assets/hisab360-date-picker-v2.js"></script></body>
+<script>document.getElementById("hisabHeaderLogo").src=document.getElementById("hisabLoginLogo").src;</script><script>window.addEventListener('beforeprint',()=>{document.querySelectorAll('.print-action-column').forEach(c=>c.classList.remove('print-action-column'));document.querySelectorAll('table').forEach(table=>{const hidden=new Set(),cells=[],grid=[];[...table.rows].forEach((row,r)=>{let col=0;for(const cell of row.cells){while(grid[r]?.[col])col++;const w=cell.colSpan||1,h=cell.rowSpan||1;cells.push({cell,col,w});if(cell.tagName==='TH'&&/^(edit|সম্পাদনা)$/i.test(cell.textContent.trim()))for(let c=col;c<col+w;c++)hidden.add(c);for(let rr=r;rr<r+h;rr++){grid[rr]||=[];for(let c=col;c<col+w;c++)grid[rr][c]=true;}col+=w;}});cells.forEach(({cell,col,w})=>{if([...Array(w)].every((_,i)=>hidden.has(col+i)))cell.classList.add('print-action-column');});});});</script><script src="assets/hisab360-date-picker-v2.js"></script><script src="assets/hisab360-user-management-v1.js"></script></body>
 </html>
