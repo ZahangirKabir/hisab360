@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.01.08">
+<meta name="investment-release-version" content="2026.11.01.09">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1307,4 +1307,4 @@ window.exportWorkingCapital=async function(mode,button,container=null,reportTitl
  const updated={...data};delete updated[record.key];updated[newKey]={...next,updatedBy:'admin',updatedAt:bridge.serverTimestamp};return updated;},undefined,false);if(!result.committed||!result.snapshot.child(newKey).exists())throw Error(problem||'হিসাবটি বদলেছে বা পাওয়া যাচ্ছে না। Refresh করে আবার Edit করুন।');overlay.remove();await done();alert('সংশোধন সেভ হয়েছে।');}catch(error){status.textContent=error.message;}finally{save.disabled=false;}};
  }
 })();
-</script><script src="assets/hisab360-date-picker-v2.js"></script></body></html>
+</script><script src="assets/hisab360-date-picker-v3.js"></script></body></html>
