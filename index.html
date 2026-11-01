@@ -733,7 +733,7 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
         </div>
         <div class="filter-group range-filter">
           <label>DSO Range To</label>
-          <input type="number" id="filterDsoEnd" value="845" onchange="applyAdminFilters()">
+          <input type="number" id="filterDsoEnd" value="846" onchange="applyAdminFilters()">
         </div>
         
         <div class="filter-group dso-filter" style="flex: 2; min-width: 220px;">
@@ -763,7 +763,7 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
         <div class="missing-box" id="missingDsoBox">
           <h3>
             <span>⚠️ রিপোর্ট জমা দিতে বাকি আছে (<span id="missingCount">0</span> জন DSO)</span>
-            <span style="font-size: 11px; font-weight: normal; color: #555;" id="missingRangeText">Range: 801 to 845</span>
+            <span style="font-size: 11px; font-weight: normal; color: #555;" id="missingRangeText">Range: 801 to 846</span>
           </h3>
           <div class="missing-list" id="missingDsoList"></div>
         </div>
@@ -1740,7 +1740,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.01.02';
+    const APP_RELEASE_VERSION = '2026.11.01.03';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2067,8 +2067,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function getDsoOptionsHTML() {
-      let html = '<option value="">-- DSO (801-845) --</option>';
-      for (let i = 801; i <= 845; i++) {
+      let html = '<option value="">-- DSO (801-846) --</option>';
+      for (let i = 801; i <= 846; i++) {
         html += `<option value="${i}">DSO ${i}</option>`;
       }
       return html;
@@ -2091,7 +2091,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     // Restricted Group Admin groups: each account can VIEW ONLY the report of its assigned DSO IDs.
     const SUB_ADMIN_GROUPS = {
       adminSadar: new Set(["801","802","803","804","806","808","809","811","812","813","814","815"]),
-      adminSaturia: new Set(["805","807","816","817","818","819","820","821","822","823"]),
+      adminSaturia: new Set(["805","807","816","817","818","819","820","821","822","823","846"]),
       adminSingair: new Set(["810","835","836","837","838","839","840","841","842","843","844","845"]),
       adminGhior: new Set(["824","825","826","827","828","829","830","831","832","833","834"])
     };
@@ -2256,7 +2256,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if (!id || !pass) { alert("ইউজার আইডি এবং পাসওয়ার্ড লিখুন!"); return; }
       let userIdNum = parseInt(id, 10);
       const isPrivileged = id === "admin" || isGroupAdmin(id);
-      if (!isPrivileged && (isNaN(userIdNum) || userIdNum < 801 || userIdNum > 845)) {
+      if (!isPrivileged && (isNaN(userIdNum) || userIdNum < 801 || userIdNum > 846)) {
         alert("ইউজার আইডি অথবা পাসওয়ার্ড সঠিক নয়। আবার চেষ্টা করুন।"); return;
       }
       const wait=loginWaitMessage(id);if(wait){alert(wait);return;}
@@ -5128,7 +5128,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         // Group Admins can only see/filter their own assigned DSO IDs.
         SUB_ADMIN_GROUPS[currentUser].forEach(id => dsoSet.add(String(id)));
       } else {
-        for (let i = 801; i <= 845; i++) { dsoSet.add(String(i)); }
+        for (let i = 801; i <= 846; i++) { dsoSet.add(String(i)); }
         if (data) {
           Object.values(data).forEach(r => {
             if (/^(80[1-9]|8[1-3][0-9]|84[0-5])$/.test(String(r.userId))) dsoSet.add(String(r.userId));
@@ -5254,7 +5254,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let startRange = parseInt(document.getElementById("filterDsoStart").value, 10);
       let endRange = parseInt(document.getElementById("filterDsoEnd").value, 10);
       if (isNaN(startRange)) startRange = 801;
-      if (isNaN(endRange)) endRange = 845;
+      if (isNaN(endRange)) endRange = 846;
       if (startRange > endRange) [startRange, endRange] = [endRange, startRange];
 
       const ids = new Set();
@@ -5371,7 +5371,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         displayRange = "Selected: " + selectedDsos.join(", ");
       } else {
         let startRange = parseInt(document.getElementById("filterDsoStart").value, 10) || 801;
-        let endRange = parseInt(document.getElementById("filterDsoEnd").value, 10) || 845;
+        let endRange = parseInt(document.getElementById("filterDsoEnd").value, 10) || 846;
         if (startRange > endRange) [startRange, endRange] = [endRange, startRange];
         displayRange = `Range: ${startRange} to ${endRange}`;
       }
@@ -5402,7 +5402,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let today = getLocalDateString();
       document.getElementById("filterDate").value = today;
       document.getElementById("filterDsoStart").value = "801";
-      document.getElementById("filterDsoEnd").value = "845";
+      document.getElementById("filterDsoEnd").value = "846";
       const adminFilter = document.getElementById("filterAdmin");
       if (adminFilter) adminFilter.value = "";
       document.querySelectorAll(".dso-chk").forEach(chk => chk.checked = false);
