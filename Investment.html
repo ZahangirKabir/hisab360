@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.07">
+<meta name="investment-release-version" content="2026.11.03.08">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -828,6 +828,15 @@ function selectedDateDsoTotals(legacy,ledger,selectedDate){
 
 function selectedDateLiftingTotal(entries,date){return Object.values(entries||{}).filter(x=>x?.type==='withdrawal'&&x.scope==='company'&&x.date===date).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)?x.reasonAmounts.filter(r=>String(r.reason||'').trim().toLowerCase()==='for lifting').reduce((n,r)=>n+Math.round((Number(r.amount)||0)*100),0):String(x.purpose||'').trim().toLowerCase()==='for lifting'?Math.round((Number(x.amount)||0)*100):0),0)/100;}
 function selectedDateBankCashReceived(entries,date){const accepted=reason=>['for dso cash','refund','dh volt'].includes(String(reason||'').trim().toLowerCase().replace(/\s+/g,' '));const cents=value=>Math.round((Number(String(value??0).replace(/,/g,''))||0)*100);return Object.values(entries||{}).filter(x=>['withdrawal','cheque'].includes(x?.type)&&x.scope==='company'&&x.date===date).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)&&x.reasonAmounts.length?x.reasonAmounts.filter(r=>accepted(r.reason)).reduce((n,r)=>n+cents(r.amount),0):accepted(x.purpose)?cents(x.amount):0),0)/100;}
+function selectedDateMARefundTotal(entries,date){
+ const isRefund=value=>String(value||'').trim().toLowerCase()==='refund';
+ const cents=value=>Math.round((Number(String(value??0).replace(/,/g,''))||0)*100);
+ return Object.values(entries||{}).filter(row=>row?.scope==='company'&&row.date===date).reduce((sum,row)=>{
+  if(row.type==='deposit')return sum+(isRefund(row.depositType)?cents(row.amount):0);
+  if(row.type!=='withdrawal')return sum;
+  return sum+(Array.isArray(row.reasonAmounts)?row.reasonAmounts.filter(r=>isRefund(r.reason)).reduce((n,r)=>n+cents(r.amount),0):isRefund(row.purpose)?cents(row.amount):0);
+ },0)/100;
+}
 function selectedDateBankRefundDeposit(entries,date,bank,matches){
  const refund=reason=>String(reason||'').trim().toLowerCase()==='refund';
  return Object.values(entries||{}).filter(row=>row?.scope==='company'&&row.date===date).reduce((sum,row)=>{
@@ -919,7 +928,7 @@ function balanceCalculator(){
   finally{syncSavedCalculatorDelete();}
  };
  const numeric=x=>[netMA,cashHand,netCash,netBank,totalClosing].includes(x)?Number(String(x.value||'0').replace(/,/g,'')):amount(x.value);let refundManual=false,liftingManual=false;lifting.addEventListener('input',()=>{liftingManual=true;delete netMA.dataset.testManual;});maRefund.addEventListener('input',()=>{refundManual=true;delete netMA.dataset.testManual;});
- const refundTotal=()=>withdrawalRows.filter(x=>x?.type==='withdrawal'&&x.scope==='company'&&x.date===date.value).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)?x.reasonAmounts.filter(r=>r.reason==='Refund').reduce((n,r)=>n+Math.round(Number(r.amount||0)*100),0):x.purpose==='Refund'?Math.round(Number(x.amount||0)*100):0),0)/100;
+ const refundTotal=()=>selectedDateMARefundTotal(withdrawalRows,date.value);
 
  const prior=()=>Object.values(items).filter(x=>x?.scope==='company'&&x.type==='capital'&&x.date<date.value&&x.closing).sort((a,b)=>b.date.localeCompare(a.date))[0];
  const bankKey=x=>String(x||'').toLowerCase().replace(/[^a-z]/g,'');
