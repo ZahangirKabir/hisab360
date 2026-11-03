@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.01.12">
+<meta name="investment-release-version" content="2026.11.03.01">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -670,11 +670,11 @@ function installSubmissionDatePicker(input,type){
  yearChoice.onchange=()=>{month=String(yearChoice.value)+'-'+String(m).padStart(2,'0');redraw('[data-year-choice]');};
  header.append(previous,monthChoice,yearChoice,next);panel.append(header);
  const grid=node('div');grid.className='submission-calendar-grid';for(const day of ['Su','Mo','Tu','We','Th','Fr','Sa'])grid.append(node('span',day));const first=new Date(Date.UTC(year,m-1,1)).getUTCDay(),days=new Date(Date.UTC(year,m,0)).getUTCDate();for(let n=0;n<first;n++)grid.append(node('span'));
- for(let n=1;n<=days;n++){const value=month+'-'+String(n).padStart(2,'0'),button=node('button',String(n));button.type='button';button.disabled=!dataReady||hasSubmittedInvestmentDate(items,type,value);button.className=value===input.value?'selected':'';button.setAttribute('aria-label',value+(!dataReady?' — তথ্য যাচাই বাকি':hasSubmittedInvestmentDate(items,type,value)?' — রিপোর্ট জমা হয়েছে':''));button.title=!dataReady?'তারিখের তথ্য যাচাই শেষ হয়নি':hasSubmittedInvestmentDate(items,type,value)?'এই তারিখের রিপোর্ট আগে জমা হয়েছে':value;button.onclick=()=>{if(input.disabled||!dataReady||hasSubmittedInvestmentDate(items,type,value))return;input.value=value;selected();panel.hidden=true;trigger.setAttribute('aria-expanded','false');input.dispatchEvent(new Event('change',{bubbles:true}));};grid.append(button);}const note=node('small',dataLoadError||(dataReady?'জমা দেওয়া তারিখ নির্বাচন করা যাবে না।':'তারিখের তথ্য লোড হচ্ছে…'));note.setAttribute('role',dataLoadError?'alert':'status');panel.append(grid,note);if(dataLoadError&&!preview){const retry=node('button','↻ আবার চেষ্টা করুন');retry.type='button';retry.className='add-row';retry.onclick=()=>window.retryInvestmentData();panel.append(retry);}}
+ for(let n=1;n<=days;n++){const value=month+'-'+String(n).padStart(2,'0'),button=node('button',String(n));button.type='button';button.disabled=!dataReady;button.className=value===input.value?'selected':'';button.setAttribute('aria-label',value+(!dataReady?' — তথ্য যাচাই বাকি':hasSubmittedInvestmentDate(items,type,value)?' — রিপোর্ট জমা হয়েছে':''));button.title=!dataReady?'তারিখের তথ্য যাচাই শেষ হয়নি':hasSubmittedInvestmentDate(items,type,value)?'এই তারিখের রিপোর্ট আগে জমা হয়েছে':value;button.onclick=()=>{if(input.disabled||!dataReady)return;input.value=value;selected();panel.hidden=true;trigger.setAttribute('aria-expanded','false');input.dispatchEvent(new Event('change',{bubbles:true}));};grid.append(button);}const note=node('small',dataLoadError||(dataReady?'তারিখ নির্বাচন করুন।':'তারিখের তথ্য লোড হচ্ছে…'));note.setAttribute('role',dataLoadError?'alert':'status');panel.append(grid,note);if(dataLoadError&&!preview){const retry=node('button','↻ আবার চেষ্টা করুন');retry.type='button';retry.className='add-row';retry.onclick=()=>window.retryInvestmentData();panel.append(retry);}}
  trigger.onclick=()=>{if(input.disabled)return;panel.hidden=!panel.hidden;trigger.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){month=(input.value||today()).slice(0,7);draw();}};
  wrap.addEventListener('keydown',event=>{if(event.key==='Escape'){panel.hidden=true;trigger.setAttribute('aria-expanded','false');trigger.focus();}});
  wrap.addEventListener('focusout',event=>{if(event.relatedTarget&&!wrap.contains(event.relatedTarget)){panel.hidden=true;trigger.setAttribute('aria-expanded','false');}});
- input.addEventListener('change',()=>{if(hasSubmittedInvestmentDate(items,type,input.value)){input.value='';setTimeout(()=>{const status=document.getElementById('investMessage');if(status)status.textContent='এই তারিখের রিপোর্ট আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';},0);}selected();},true);
+ input.addEventListener('change',selected,true);
  input.addEventListener('submission-records-updated',()=>{selected();if(!panel.hidden)draw();});selected();return wrap;
 }
 
@@ -877,7 +877,6 @@ function balanceCalculator(){
  async function source(){
   window.stopCalculatorWithdrawalSync?.();withdrawalRows=[];
   if(!date.value){++sourceEpoch;loading=false;loaded=false;save.disabled=true;refresh.disabled=false;status.textContent='প্রথমে তারিখ নির্বাচন করুন।';return;}
-  if(hasSubmittedInvestmentDate(items,'calculator',date.value)){date.value='';date.dispatchEvent(new Event('submission-records-updated'));loading=false;loaded=false;save.disabled=true;refresh.disabled=false;status.textContent='এই তারিখের Calculator আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';return;}
   if(preview){loading=false;status.textContent='Admin হিসেবে Collection Portal-এর Investment menu থেকে খুলুন।';paint();return;}
   const selectedDate=date.value,epoch=++sourceEpoch;
   loading=true;loaded=false;save.disabled=true;refresh.disabled=true;status.textContent='Opening এবং দিনের হিসাব লোড হচ্ছে…';
@@ -885,7 +884,7 @@ function balanceCalculator(){
   try{
    const snapshots=await Promise.race([Promise.all([window.investmentAwaitData().then(value=>({val:()=>value})),Promise.resolve({val:()=>({})}),Promise.resolve({val:()=>({})}),window.investmentReadSnapshot(bridge,'ledgerAccounts',selectedDate),window.investmentReadSnapshot(bridge,'bankTrackerEntries',selectedDate)]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),22000);})]);
    if(epoch!==sourceEpoch||selectedDate!==date.value)return;if(!form.isConnected||String(bridge.getUser())!==owner){loading=false;loaded=false;return;}
-   items=snapshots[0].val()||{};if(hasSubmittedInvestmentDate(items,'calculator',selectedDate)){date.value='';date.dispatchEvent(new Event('submission-records-updated'));loading=false;loaded=false;save.disabled=true;status.textContent='এই তারিখের Calculator আগে জমা হয়েছে। অন্য তারিখ নির্বাচন করুন।';return;}withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
+   items=snapshots[0].val()||{};withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
    approved=totals.bankDeposits;
    const saved=items[date.value+'_calculator'];bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved?.bankCalculations?.[bank]||{})}]));
