@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.06">
+<meta name="investment-release-version" content="2026.11.03.07">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -496,7 +496,7 @@ window.investmentDeletedFormPages=function(record){
 };
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
- <details id="navWorkingCapital" class="module-dropdown"><summary><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v3h4v-3"/></svg></span> Working Capital <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Working Capital submenu"><button type="button" id="showWorkingCapital">Daily Working Capital</button><button type="button" id="showWorkingCapitalReport">Working Capital Report</button><button type="button" id="showBalanceCalculator">Working Balance Calculator</button></div></details>
+ <details id="navWorkingCapital" class="module-dropdown"><summary><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v3h4v-3"/></svg></span> Working Capital <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Working Capital submenu"><button type="button" id="showWorkingCapital">Daily Working Capital</button><button type="button" id="showWorkingCapitalReport">Working Capital Report</button><button type="button" id="showBalanceCalculator">Working Balance Calculator</button><button type="button" id="resetWorkingCapitalData" hidden>Working Capital Data Reset</button></div></details>
  <details id="navPettyCash" class="module-dropdown"><summary><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M16 13h5M7 15h3"/></svg></span> Petty Cash <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Petty Cash submenu"><button type="button" id="showPettyDeclaration">Petty Cash Balance Summary</button><button type="button" id="showPettyCash">Daily Expense</button><button type="button" id="showPettyCashReport">Petty Cash Report</button><button type="button" id="showExpenseTypes">Monthly Income Vs Expense</button></div></details>
  <button type="button" id="showHeadOfficeReport"><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5h10v16M14 11h6v10M2 21h20M7 8h4M7 12h4M7 16h4M17 14v3"/></svg></span> Head Office Received &amp; Transfer</button>
  <button type="button" id="showTotalInvestment"><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7"/></svg></span> Total Investment</button>
@@ -1480,5 +1480,57 @@ window.exportWorkingCapital=async function(mode,button,container=null,reportTitl
  function clean(){document.querySelectorAll('table').forEach(table=>{const row=table.tHead?.rows[table.tHead.rows.length-1],last=row?.cells[row.cells.length-1];if(last?.textContent.trim()==='Edit'){for(const r of [...table.rows])if(r.cells.length)r.deleteCell(r.cells.length-1);}});
  document.querySelectorAll('table button').forEach(button=>{if(['Edit','Delete'].includes(button.textContent.trim()))button.remove();});}
  new MutationObserver(clean).observe(document.body,{childList:true,subtree:true});clean();
+})();
+</script><script>
+(function(){
+ let bridge;try{bridge=parent!==window&&parent.location.origin===location.origin?parent.portalInvestmentContext:null;}catch{}
+ const button=document.getElementById('resetWorkingCapitalData');if(!button||bridge?.getUser?.()!=='admin')return;button.hidden=false;
+ const target=row=>row?.scope==='company'&&['capital','calculator'].includes(row.type);
+ window.investmentWorkingCapitalResetPlan=function(current,expected){
+  if(current===null)return null;
+  const selected=Object.fromEntries(Object.entries(current||{}).filter(([,row])=>target(row)));
+  if(window.investmentStableJSON(selected)!==window.investmentStableJSON(expected))throw Error('Working Capital-এর তথ্য পরিবর্তিত হয়েছে। বন্ধ করে আবার তালিকা দেখুন।');
+  return Object.fromEntries(Object.entries(current||{}).filter(([,row])=>!target(row)));
+ };
+ button.onclick=async()=>{
+  if(bridge.getUser()!=='admin'||button.disabled)return;button.disabled=true;
+  const el=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
+  const overlay=el('div');overlay.className='cheque-modal';const dialog=el('section');dialog.className='cheque-dialog';dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
+  dialog.append(el('h3','Working Capital Data Reset'),el('p','সব তারিখের Daily Working Capital এবং Working Balance Calculator-এর সেভ করা তথ্য মুছবে। Calculator-এর Bank Charge Expense ও Petty Cash Transfer-এর হিসাবও সরে যাবে।'));
+  const status=el('p','রেকর্ডের তালিকা প্রস্তুত হচ্ছে…');status.setAttribute('role','status');
+  const list=el('div');list.className='scroll';list.style.maxHeight='240px';
+  const backup=el('button','1. Backup Download');backup.type='button';backup.className='add-row';backup.disabled=true;
+  const confirmation=el('label');confirmation.style.cssText='display:flex;align-items:center;gap:8px;margin:14px 0';const check=el('input');check.type='checkbox';check.disabled=true;confirmation.append(check,el('span','ব্যাকআপ ডাউনলোড করেছি; তালিকার সব তথ্য মুছতে চাই।'));
+  const remove=el('button','2. Delete All Working Capital Data');remove.type='button';remove.className='investment-report-delete';remove.disabled=true;
+  const close=el('button','Cancel');close.type='button';close.className='add-row';let busy=false,expected={};
+  const finish=()=>{if(busy)return;overlay.remove();button.disabled=false;};close.onclick=finish;
+  dialog.append(status,list,backup,confirmation,remove,close);overlay.append(dialog);document.body.append(overlay);
+  check.onchange=()=>{remove.disabled=!check.checked;};
+  try{
+   const snap=await bridge.database.ref('investmentEntries').once('value');if(bridge.getUser()!=='admin')throw Error('Admin login প্রয়োজন।');
+   expected=Object.fromEntries(Object.entries(snap.val()||{}).filter(([,row])=>target(row)));
+   const records=Object.values(expected).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+   const table=el('table'),head=el('thead'),hr=el('tr');['Date','Report'].forEach(x=>hr.append(el('th',x)));head.append(hr);table.append(head);const body=el('tbody');for(const row of records){const tr=el('tr');tr.append(el('td',row.date),el('td',row.type==='capital'?'Daily Working Capital':'Working Balance Calculator'));body.append(tr);}table.append(body);list.append(table);
+   status.textContent=records.length+'টি সেভ করা রেকর্ড পাওয়া গেছে।';
+   backup.disabled=!records.length;
+  }catch(error){status.textContent=/permission.denied/i.test(String(error.code||'')+' '+String(error.message||''))?'Admin-এর তথ্য পড়ার অনুমতি পাওয়া যায়নি। Login ও Firebase Rules যাচাই করুন।':error.message;}
+  backup.onclick=()=>{
+   if(bridge.getUser()!=='admin')return;
+   const payload={format:'Hisab360WorkingCapitalBackup',version:1,createdAt:new Date().toISOString(),root:'investmentEntries',records:expected};
+   const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));const a=el('a');a.href=url;a.download='Hisab360_Working_Capital_Backup_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);check.disabled=false;
+  };
+  remove.onclick=async()=>{
+   if(busy||!check.checked||check.disabled||bridge.getUser()!=='admin')return;
+   if(!confirm(Object.keys(expected).length+'টি Working Capital ও Calculator record স্থায়ীভাবে মুছবেন?\nডাউনলোড করা ব্যাকআপ ছাড়া ফিরিয়ে আনা যাবে না।'))return;
+   busy=true;remove.disabled=backup.disabled=close.disabled=check.disabled=true;status.textContent='নির্বাচিত রেকর্ড মোছা হচ্ছে…';let problem='';
+   try{
+    const result=await bridge.database.ref('investmentEntries').transaction(current=>{try{if(bridge.getUser()!=='admin')throw Error('Admin login প্রয়োজন।');return window.investmentWorkingCapitalResetPlan(current,expected);}catch(error){problem=error.message;return;}},undefined,false);
+    if(!result.committed)throw Error(problem||'ডাটা মোছা হয়নি।');
+    if(Object.values(result.snapshot.val()||{}).some(target))throw Error('সব রেকর্ড মোছা হয়নি। আবার যাচাই করুন।');
+    try{sessionStorage.setItem('investmentLastPage','capital');}catch{}
+    alert('Working Capital ও Calculator-এর সব সেভ করা ডাটা মুছে গেছে।');location.reload();
+   }catch(error){status.textContent=/permission.denied/i.test(String(error.code||'')+' '+String(error.message||''))?'Delete-এর অনুমতি পাওয়া যায়নি। কোনো সফল Reset নিশ্চিত হয়নি; Admin Login ও Firebase Rules যাচাই করুন।':error.message;busy=false;close.disabled=false;}
+  };
+ };
 })();
 </script></body></html>
