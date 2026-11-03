@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.01">
+<meta name="investment-release-version" content="2026.11.03.02">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -760,21 +760,26 @@ function capitalForm(){
 }
 
 function selectedDateDsoTotals(legacy,ledger,selectedDate){
+ const teams={Sadar:['801','802','803','804','806','808','809','811','812','813','814','815'],Saturia:['805','807','816','817','818','819','820','821','822','823','846'],Singair:['810','835','836','837','838','839','840','841','842','843','844','845'],Shivalaya:['824','825','826','827','828','829','830','831','832','833','834']};
+ const groups=typeof bridge.getDsoGroups==='function'?bridge.getDsoGroups():null;
+ const groupTeams={adminSadar:'Sadar',adminSaturia:'Saturia',adminSingair:'Singair',adminGhior:'Shivalaya'};
+ for(const [group,team]of Object.entries(groupTeams))if(Array.isArray(groups?.[group]))teams[team]=groups[group].map(String);
+ const configuredIds=typeof bridge.getAllowedDsoIds==='function'?bridge.getAllowedDsoIds():null;
+ const dsoIds=new Set(Array.isArray(configuredIds)&&configuredIds.length?configuredIds.map(String):Object.values(teams).flat());
  const reports=new Map();
  for(const [key,report] of Object.entries(legacy||{})){
-  if(report?.date===selectedDate && /^(80[1-9]|8[1-3][0-9]|84[0-5])$/.test(String(report.userId||'')))reports.set(String(report.userId),report);
+  if(report?.date===selectedDate && dsoIds.has(String(report.userId||'')))reports.set(String(report.userId),report);
  }
  for(const account of Object.values(ledger||{})){
   if(account?.date!==selectedDate)continue;
   const uid=String(account.userId||account.report?.userId||'');
-  if(!/^(80[1-9]|8[1-3][0-9]|84[0-5])$/.test(uid))continue;
+  if(!dsoIds.has(uid))continue;
   // Canonical migration data replaces the archived legacy report, including deletion.
   reports.delete(uid);
   if(account.report)reports.set(uid,account.report);
  }
  const moneyValue=value=>{const n=Number(String(value??0).replace(/,/g,''));if(!Number.isFinite(n))throw Error('DSO B2B amount সঠিক নয়।');return Math.round(n*100);};
  let received=0,sent=0,cashIssued=0;for(const report of reports.values()){received+=moneyValue(report.emReturn);sent+=moneyValue(report.emReceived);cashIssued+=moneyValue(report.cashReceived);}
- const teams={Sadar:['801','802','803','804','806','808','809','811','812','813','814','815'],Saturia:['805','807','816','817','818','819','820','821','822','823'],Singair:['810','835','836','837','838','839','840','841','842','843','844','845'],Shivalaya:['824','825','826','827','828','829','830','831','832','833','834']};
  const marketCash=Object.fromEntries(Object.entries(teams).map(([team,ids])=>[team,ids.reduce((sum,id)=>sum+moneyValue(reports.get(id)?.cashReturn??reports.get(id)?.cashDeposit),0)/100]));
  const bankDeposits=[];for(const report of reports.values()){const slips=report.bankSlips||report.slips; if(Array.isArray(slips)&&slips.length){for(const slip of slips){if(slip.status==='rejected')continue;bankDeposits.push({bankName:slip.bankName||report.bankName,amount:moneyValue(slip.amt??slip.amount)/100});}}else if(Number(report.bankDeposit)>0)bankDeposits.push({bankName:report.bankName,amount:moneyValue(report.bankDeposit)/100});}
  return {receive:received/100,send:sent/100,count:reports.size,cashIssueDso:cashIssued/100,marketCash,bankDeposits};

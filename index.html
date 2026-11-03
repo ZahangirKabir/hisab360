@@ -1750,12 +1750,13 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       getRole: () => portalCurrentRole,
       isReportViewer: () => isPortalReportViewer(),
       getAllowedDsoIds: () => currentUser === 'admin'
-        ? Array.from({length:45},(_,i)=>String(i+801))
+        ? portalDsoIds()
         : [...(SUB_ADMIN_GROUPS[currentUser] || [])],
+      getDsoGroups: () => Object.fromEntries(Object.entries(SUB_ADMIN_GROUPS).map(([id,ids])=>[id,[...ids]])),
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.01.06';
+    const APP_RELEASE_VERSION = '2026.11.03.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5665,7 +5666,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const host=document.getElementById(kind==='received'?'editDsoReceivedRows':'editDsoTransferRows');
       const row=document.createElement('div');row.className='admin-dso-row';
       row.recordValue=JSON.parse(JSON.stringify(value));
-      row.innerHTML=`<div class="form-group"><label>DSO ID</label><select aria-label="DSO ID"><option value="">DSO ID</option>${Array.from({length:45},(_,i)=>`<option value="${801+i}">${801+i}</option>`).join('')}</select></div><div class="form-group"><label>Amount</label><input type="text" inputmode="decimal" class="amt-field" aria-label="Amount"></div><button type="button" aria-label="Remove DSO">×</button>`;
+      row.innerHTML=`<div class="form-group"><label>DSO ID</label><select aria-label="DSO ID"><option value="">DSO ID</option>${portalDsoIds().map(id=>`<option value="${id}">${id}</option>`).join('')}</select></div><div class="form-group"><label>Amount</label><input type="text" inputmode="decimal" class="amt-field" aria-label="Amount"></div><button type="button" aria-label="Remove DSO">×</button>`;
       row.querySelector('select').value=String(value.dsoId||'');
       const amount=row.querySelector('input');amount.value=Number(value.amount)?formatBD(value.amount):'';
       amount.oninput=()=>{handleAmountInput(amount);updateEditChangePreview();};
