@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.10">
+<meta name="investment-release-version" content="2026.11.03.11">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -569,7 +569,7 @@ window.investmentSyncCalculatorReports=function(entries,key,calculator,timestamp
 window.investmentCommitRecord=async function(bridge,root,key,record,{createOnly=true,expected=null,allowClosed=false}={}){
  if(bridge.getUser()!=='admin')throw Error('Admin Login প্রয়োজন।');const token=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x=>x.toString(16).padStart(2,'0')).join('');const next={...record,monthKey:record.date.slice(0,7),schemaVersion:2,writeToken:token,updatedAt:bridge.serverTimestamp};let problem='',replayed=false;
  const modify=current=>{problem='';if(!createOnly&&current===null&&expected!==null)return null;if(bridge.getUser()!=='admin'){problem='আবার Admin Login করুন।';return;}if(current&&record.submissionId&&current.submissionId===record.submissionId&&current.submissionFingerprint===record.submissionFingerprint){replayed=true;return current;}if(createOnly&&current){problem='এই হিসাব আগে জমা হয়েছে।';return;}if(!createOnly&&window.investmentStableJSON(current)!==window.investmentStableJSON(expected)){problem='অন্য জায়গায় হিসাব বদলেছে। Refresh করে আবার Edit করুন।';return;}return next;};
- const syncCalculator=root==='investmentEntries'&&record.type==='calculator'&&!createOnly;
+ const syncCalculator=root==='investmentEntries'&&record.type==='calculator';
  const fast=!syncCalculator&&((root==='bankTrackerEntries'&&record.type==='withdrawal'&&record.withdrawBy==='APP')||(root==='investmentEntries'&&await window.investmentCanWriteRecords(bridge)));let result,value;
  if(fast){if(root==='investmentEntries'&&!allowClosed){for(const date of new Set([record.date,expected?.date].filter(Boolean))){if((await bridge.database.ref(root+'/'+date.slice(0,7)+'_pettyMonthClosing').once('value')).exists())throw Error('মাস Close হয়েছে। এই হিসাব পরিবর্তন করা যাবে না।');}}result=await bridge.database.ref(root+'/'+key).transaction(modify,undefined,false);value=result.snapshot.val();}
  else{result=await bridge.database.ref(root).transaction(current=>{problem='';if(current===null&&!createOnly&&expected!==null)return null;const entries=current||{};if(!allowClosed&&[record.date,expected?.date].filter(Boolean).some(d=>entries[d.slice(0,7)+'_pettyMonthClosing'])){problem='মাস Close হয়েছে। এই হিসাব পরিবর্তন করা যাবে না।';return;}const value=modify(entries[key]??null);if(value===undefined)return;return syncCalculator?window.investmentSyncCalculatorReports(entries,key,value,bridge.serverTimestamp):{...entries,[key]:value};},undefined,false);value=result.snapshot.val()?.[key];}
@@ -785,14 +785,13 @@ function capitalForm(){
  const applyCalculator=()=>{
   if(!form.isConnected)return;
   const draft=items[selectedDate.value+'_calculator'];if(!draft||form.dataset.calculatorRevision===String(draft.updatedAt||draft.createdAt))return;
-  if(items[selectedDate.value+'_company']&&!editing)return;
   setAmount('closing_wallet',draft.netMA);form.dataset.cashIsNet='true';const charges=Object.fromEntries(Object.entries(draft.bankCalculations||{}).map(([bank,value])=>[bank,Number(value.bankCharge)||0]));form.dataset.bankCharges=JSON.stringify(charges);form.dataset.bankChargeTotal=String(Object.values(charges).reduce((n,x)=>n+x,0));
   const movements=draft.cashCalculation?.headOfficeMovements||[],routes=direction=>movements.filter(x=>x.direction===direction).map(x=>({amount:Number(x.amount)||0,via:x.balanceType==='bank'?'bank':'person',bankName:x.bankName||'',personName:x.personName||''}));populateRows(receipts,routes('received'),'received');populateRows(headTransfers,routes('transfer'),'received');const commissionType=commissions.querySelector('[name=commission_type]')?.value||'';populateRows(commissions,Number(draft.commissionReceived)>0?[{amount:Number(draft.commissionReceived),type:commissionType}]:[],'commission');
   if(draft.cashCalculation){const transfers=draft.cashCalculation.transfers||{};for(const [key,name]of [['salary','transfer_salary'],['routeConvence','transfer_route'],['petty','transfer_petty']])setAmount(name,transfers[key]||0);const sum=['salary','routeConvence','petty'].reduce((n,key)=>n+(Number(transfers[key])||0),0);setAmount('closing_cashHand',(Number(draft.cashCalculation.netCash??draft.cashCalculation.cashInHand)||0));setAmount('closing_cashOffice',0);}
   form.dataset.closingSource='calculator';delete closingSum.dataset.testManual;
   banks.forEach(bank=>setAmount('closingBank_'+bank,draft.bankCalculations?.[bank]?.net??0));
   form.dataset.calculatorRevision=String(draft.updatedAt||draft.createdAt);updateOpeningSum();updateClosingSum();
-  status.textContent='Calculator-এর MA ও Bank Balance Closing-এ বসেছে। অন্য ঘরগুলো পূরণ করে Submit করুন।';
+  status.textContent=selectedDate.value+' তারিখের Calculator-এর Net MA, Net Cash ও প্রতিটি Bank-এর Net Balance Closing Balance-এ দেখানো হচ্ছে।';
  };
  window.investmentSyncCalculatorClosing=applyCalculator;applyCalculator();
  selectedDate.onchange=()=>{const wasCalculator=form.dataset.closingSource==='calculator';editing=false;editRevision=null;delete form.dataset.calculatorRevision;delete form.dataset.closingSource;delete form.dataset.cashIsNet;form.dataset.bankCharges='{}';form.dataset.bankChargeTotal='0';for(const name of ['transfer_salary','transfer_route','transfer_petty'])setAmount(name,0);populateRows(headTransfers,[],'received');if(wasCalculator){populateRows(receipts,[],'received');populateRows(commissions,[],'commission');for(const name of ['closing_wallet','closing_cashHand',...banks.map(bank=>'closingBank_'+bank)])setAmount(name,0);}syncOpening();syncCapitalState();applyCalculator();if(!items[selectedDate.value+'_calculator'])status.textContent=selectedDate.value?'নির্বাচিত তারিখ: '+selectedDate.value:'তারিখ নির্বাচন করুন।';};
