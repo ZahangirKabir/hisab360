@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.11">
+<meta name="investment-release-version" content="2026.11.03.12">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1053,8 +1053,23 @@ function pettyDeclaration(){const box=card('Petty Cash Balance Summary'),form=no
  const grid=section(form,'Petty Cash Balance'),opening=field(grid,'Opening Balance','opening'),received=field(grid,'Received Balance','received'),totalInput=field(grid,'Total Balance','total');
  // A calculated total is always derived from the two balance inputs.
  totalInput.disabled=true;let busy=false;const {save,status}=submitTools(form,box);listBox();
+ const removeSummary=node('button','Delete Balance Summary');removeSummary.type='button';removeSummary.className='investment-report-delete';removeSummary.disabled=true;form.append(removeSummary);
+ const syncSummaryDelete=()=>{const record=items[form.elements.date.value+'_pettyDeclaration'];removeSummary.hidden=preview||readOnly||bridge.getUser()!=='admin';removeSummary.disabled=busy||!record;removeSummary.title=record?'নির্বাচিত তারিখের সেভ করা Balance Summary মুছুন':'এই তারিখে আলাদা Balance Summary সেভ করা নেই।';};
+ removeSummary.onclick=async()=>{
+  if(removeSummary.disabled||bridge.getUser()!=='admin')return;
+  const value=items[form.elements.date.value+'_pettyDeclaration'];if(!value)return;removeSummary.disabled=true;
+  try{
+   const record=await window.investmentFindRecord(bridge,'investmentEntries',value);
+   if(!confirm(record.value.date+' তারিখের Petty Cash Balance Summary মুছবেন?\nশুধু এই সেভ করা Summary মুছবে। Expense ও Calculator-এর Transfer আলাদাভাবে থাকবে।\nএটি ফিরিয়ে আনা যাবে না।'))return;
+   await window.investmentDeleteRecord(bridge,'investmentEntries',record);
+   window.dispatchEvent(new CustomEvent('investment-record-deleted',{detail:{root:'investmentEntries',key:record.key,value:record.value}}));
+   alert('Petty Cash Balance Summary মুছে গেছে।');
+  }catch(error){alert(/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))?'Delete-এর অনুমতি পাওয়া যায়নি। Admin Login ও Firebase Rules যাচাই করুন।':error.message);}
+  finally{syncSummaryDelete();}
+ };
+ syncSummaryDelete();
  let declarationDirty=false;form.addEventListener('input',()=>{declarationDirty=true;});const sum=()=>{try{totalInput.value=inputMoney(amount(opening.value)+amount(received.value));}catch{totalInput.value='';}};
- window.syncPettyDeclaration=()=>{const date=form.elements.date.value;if(!date)return;const existing=items[date+'_pettyDeclaration'],rows=pettyBalanceRows(items),current=rows.find(x=>x.date===date),prior=rows.filter(x=>x.date<date).at(-1);opening.value=inputMoney(current?.opening??prior?.balance??existing?.openingBalance);const transfer=pettyTransferForDate(items,date),manual=declarationDirty?(Number(received.value.replace(/,/g,''))||0)-Number(received.dataset.transfer||0):(Number(existing?.receivedBalance)||0);received.value=inputMoney(manual+transfer);received.dataset.transfer=String(transfer);sum();save.textContent=existing?'Update':'Submit';};
+ window.syncPettyDeclaration=()=>{syncSummaryDelete();const date=form.elements.date.value;if(!date)return;const existing=items[date+'_pettyDeclaration'],rows=pettyBalanceRows(items),current=rows.find(x=>x.date===date),prior=rows.filter(x=>x.date<date).at(-1);opening.value=inputMoney(current?.opening??prior?.balance??existing?.openingBalance);const transfer=pettyTransferForDate(items,date),manual=declarationDirty?(Number(received.value.replace(/,/g,''))||0)-Number(received.dataset.transfer||0):(Number(existing?.receivedBalance)||0);received.value=inputMoney(manual+transfer);received.dataset.transfer=String(transfer);sum();save.textContent=existing?'Update':'Submit';};
  form.elements.date.onchange=()=>{declarationDirty=false;window.syncPettyDeclaration();render();};opening.addEventListener('input',sum);received.addEventListener('input',sum);
  form.onsubmit=async e=>{e.preventDefault();if(busy||preview||!form.reportValidity()||bridge.getUser()!==owner)return;try{if(!dataReady)throw Error('ডাটা লোড শেষ হলে আবার চেষ্টা করুন।');const date=form.elements.date.value,initial=amount(opening.value),incoming=amount(received.value)-Number(received.dataset.transfer||0);if(incoming<0)throw Error('Received Balance Cash Transfer-এর Petty Cash Amount-এর কম হতে পারবে না।');busy=true;save.disabled=true;status.textContent='Saving…';const key=date+'_pettyDeclaration',old=items[key]||null,record={type:'pettyDeclaration',scope:'company',date,openingBalance:initial,receivedBalance:incoming,totalBalance:Math.round((initial+amount(received.value))*100)/100,createdBy:old?.createdBy||owner,createdAt:old?.createdAt||bridge.serverTimestamp};const result=await window.investmentCommitRecord(bridge,'investmentEntries',key,record,{createOnly:!old,expected:old});items[key]=result.value;declarationDirty=false;window.syncPettyDeclaration();render();status.textContent='✅ Petty Cash Balance Summary সেভ হয়েছে।';}catch(error){status.textContent='Submit হয়নি: '+error.message;}finally{busy=false;save.disabled=preview;}};
 }
