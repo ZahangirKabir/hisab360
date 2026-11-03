@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.03">
+<meta name="investment-release-version" content="2026.11.03.04">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1324,6 +1324,31 @@ window.exportWorkingCapital=async function(mode,button,container=null,reportTitl
   }
   return null;
  };
+ window.investmentDeleteRecord=async function(bridge,root,record,options={}){
+  if(bridge.getUser()!=='admin'||!['investmentEntries','bankTrackerEntries'].includes(root))throw Error('Admin login প্রয়োজন।');
+  const financialExpense=record.value.type==='petty'||record.value.type==='pettyDeclaration'||(record.value.type==='calculator'&&Object.values(record.value.bankCalculations||{}).some(x=>Number(x.bankCharge)>0));
+  const monthKey=record.value.date.slice(0,7)+'_pettyMonthClosing';
+  if(root==='investmentEntries'&&financialExpense&&(await bridge.database.ref(root+'/'+monthKey).once('value')).exists())throw Error('মাস Close হয়েছে। এই Expense-সংশ্লিষ্ট রিপোর্ট Delete করা যাবে না।');
+  let problem='';
+  const change=current=>{problem='';try{
+   if(bridge.getUser()!=='admin')throw Error('Admin login প্রয়োজন।');
+   const next=window.investmentDeleteChange(current,record.value,options);
+   // Preserve the existing write schema/token when removing one legacy expense.
+   // updatedAt still changes, and the expected-record check rejects stale edits.
+   if(next){next.updatedBy='admin';next.updatedAt=bridge.serverTimestamp;}
+   return next;
+  }catch(error){problem=error.message;return;}};
+  const fast=root==='bankTrackerEntries'||await window.investmentCanWriteRecords(bridge);
+  const result=fast?await bridge.database.ref(root+'/'+record.key).transaction(change,undefined,false):
+   await bridge.database.ref(root).transaction(current=>{
+    problem='';if(current===null)return null;
+    if(root==='investmentEntries'&&financialExpense&&current[monthKey]){problem='মাস Close হয়েছে। এই Expense-সংশ্লিষ্ট রিপোর্ট Delete করা যাবে না।';return;}
+    const next=change(current[record.key]??null);if(next===undefined)return;
+    const entries={...current};if(next===null)delete entries[record.key];else entries[record.key]=next;return entries;
+   },undefined,false);
+  if(!result.committed)throw Error(problem||'Delete হয়নি। আবার চেষ্টা করুন।');
+  return result;
+ };
  window.investmentDeleteButton=function(root,value,options={}){
   const button=el('button','Delete');button.type='button';button.className='investment-report-delete';button.disabled=!value;button.setAttribute('aria-label','Delete '+(value?.date||'')+' '+readable(value?.type||'report'));
   button.onclick=async()=>{
@@ -1335,14 +1360,9 @@ window.exportWorkingCapital=async function(mode,button,container=null,reportTitl
     const detail=!row&&record.value.type==='petty'&&record.value.expenses?.length>1?'\nএই রিপোর্টের সব Expense মুছে যাবে।':'';
     if(!confirm('Delete করবেন?\n'+record.value.date+' · '+title+detail+'\nএটি মুছে দিলে ফিরিয়ে আনা যাবে না।'))return;
     if(bridge.getUser()!=='admin')throw Error('Admin login প্রয়োজন।');
-    const financialExpense=record.value.type==='petty'||record.value.type==='pettyDeclaration'||(record.value.type==='calculator'&&Object.values(record.value.bankCalculations||{}).some(x=>Number(x.bankCharge)>0));
-    if(root==='investmentEntries'&&financialExpense){const closed=await bridge.database.ref('investmentEntries/'+record.value.date.slice(0,7)+'_pettyMonthClosing').once('value');if(closed.exists())throw Error('মাস Close হয়েছে। এই Expense-সংশ্লিষ্ট রিপোর্ট Delete করা যাবে না।');}
-    let problem='';const result=await bridge.database.ref(root+'/'+record.key).transaction(current=>{
-     problem='';try{if(bridge.getUser()!=='admin')throw Error('Admin login প্রয়োজন।');const next=window.investmentDeleteChange(current,record.value,options);if(next){next.updatedBy='admin';next.updatedAt=bridge.serverTimestamp;next.writeToken=window.investmentWriteToken();}return next;}catch(error){problem=error.message;return;}
-    },undefined,false);
-    if(!result.committed)throw Error(problem||'Delete হয়নি। আবার চেষ্টা করুন।');
+    await window.investmentDeleteRecord(bridge,root,record,options);
     alert('Delete সফল হয়েছে।');
-   }catch(error){alert(error.message);}finally{button.disabled=false;}
+   }catch(error){const denied=/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''));alert(denied?'Delete-এর অনুমতি পাওয়া যায়নি। Admin দিয়ে আবার Login করুন। এরপরও হলে Firebase Rules প্রকাশ করা প্রয়োজন।':error.message);}finally{button.disabled=false;}
   };
   return button;
  };
