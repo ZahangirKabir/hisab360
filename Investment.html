@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.08">
+<meta name="investment-release-version" content="2026.11.03.09">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -910,7 +910,7 @@ function balanceCalculator(){
  const closingArea=section(form,'Closing Working Capital');closingArea.parentElement.classList.add('calculator-closing');const totalClosing=field(closingArea,'Total Closing','calc_total_closing');totalClosing.disabled=true;
  const results=node('div');results.className='card bank-net-grid';form.append(results);
  const refresh=node('button','↻ Refresh Source Data');refresh.type='button';refresh.className='add-row';form.append(refresh);
- const {save,status}=submitTools(form,box);let loading=true,busy=false,loaded=false,sourceEpoch=0,bankDrafts={},previous=null,approved=[],withdrawalRows=[],maValue=0,bankValue=0;
+ const {save,status}=submitTools(form,box);let loading=true,busy=false,loaded=false,sourceEpoch=0,editExpected=null,bankDrafts={},previous=null,approved=[],withdrawalRows=[],maValue=0,bankValue=0;
  const removeSaved=node('button','Delete Saved Calculator');removeSaved.type='button';removeSaved.className='investment-report-delete';removeSaved.hidden=true;form.append(removeSaved);
  const syncSavedCalculatorDelete=()=>{if(!form.isConnected)return;const saved=items[date.value+'_calculator'];removeSaved.hidden=preview||bridge.getUser()!=='admin'||saved?.type!=='calculator';removeSaved.disabled=busy||loading;};
  date.addEventListener('change',syncSavedCalculatorDelete);date.addEventListener('submission-records-updated',syncSavedCalculatorDelete);
@@ -940,12 +940,12 @@ function balanceCalculator(){
  function syncWithdrawalDrafts(){Object.entries(bankDrafts).forEach(([b,x])=>{x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.fundTransfer=withdrawalTotal(b,'APP');x.chequeWithdrawal=withdrawalTotal(b,'Cheque');x.net=Math.round((Number(x.opening||0)+Number(x.deposit||0)-x.fundTransfer-x.chequeWithdrawal-Number(x.bankCharge||0))*100)/100;});}
  function watchWithdrawals(selectedDate,epoch){
   window.stopCalculatorWithdrawalSync?.();const ref=database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate);
-  const handler=snap=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}withdrawalRows=Object.values(snap.val()||{});delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));if(!liftingManual){lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));delete netMA.dataset.testManual;}if(!refundManual)maRefund.value=inputMoney(refundTotal());syncWithdrawalDrafts();choice.onchange();};
+  const handler=snap=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}withdrawalRows=Object.values(snap.val()||{});if(editExpected)return;delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));if(!liftingManual){lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));delete netMA.dataset.testManual;}if(!refundManual)maRefund.value=inputMoney(refundTotal());syncWithdrawalDrafts();choice.onchange();};
   let cancel=()=>{};const stop=()=>{cancel();if(window.stopCalculatorWithdrawalSync===stop)window.stopCalculatorWithdrawalSync=null;};
   window.stopCalculatorWithdrawalSync=stop;cancel=window.investmentWatchData(bridge,'bankTrackerEntries',handler,e=>{if(!form.isConnected||epoch!==sourceEpoch)return;loaded=false;status.textContent='Withdrawal হিসাব লোড হয়নি: '+e.message;paint();},selectedDate);
  }
  function paint(throwOnError=false){
-  save.disabled=preview||loading||busy||!loaded;
+  save.disabled=preview||loading||busy||!loaded;save.textContent=editExpected?'Update Submit':'Submit';
   if(loading)return;
   try{
    [netMA,cashHand,netCash,netBank,totalClosing].forEach(input=>delete input.dataset.testManual);
@@ -961,11 +961,26 @@ function balanceCalculator(){
  }
  choice.onchange=()=>{const b=choice.value;bankCharge.disabled=!b;delete bankCharge.dataset.testManual;[bankOpening,depositDso,depositRefund,transfer,withdraw,netBank].forEach(input=>delete input.dataset.testManual);if(b){const x=bankDrafts[b]||{};bankOpening.value=inputMoney(x.opening||0);depositDso.value=inputMoney(x.depositDso??x.deposit??0);depositRefund.value=inputMoney(x.depositRefund||0);transfer.value=inputMoney(x.fundTransfer||0);withdraw.value=inputMoney(x.chequeWithdrawal||0);bankCharge.value=inputMoney(x.bankCharge||0);}netBank.closest('.field').querySelector('label').textContent=b?'Net '+b+' Balance':'Net Bank Balance';paint();};
  form.addEventListener('input',event=>{if(event.target===choice||event.target===date)return;paint();});
- async function source(){
+ function restoreSavedCalculator(saved,liveSources=false){
+  commissionReceived.value=inputMoney(saved.commissionReceived);
+  const cash=saved.cashCalculation||{};
+  cashLifting.value=inputMoney(cash.cashDepositLifting);
+  cashSalary.value=inputMoney(cash.transfers?.salary);cashRoute.value=inputMoney(cash.transfers?.routeConvence);cashPetty.value=inputMoney(cash.transfers?.petty);
+  const movements=cash.headOfficeMovements||[];while(headOfficeRows.children.length>1)headOfficeRows.lastElementChild.remove();
+  while(headOfficeRows.children.length<Math.max(1,movements.length))headOfficeRows.nextElementSibling.click();
+  [...headOfficeRows.children].forEach((row,index)=>{const movement=movements[index]||{};for(const [name,value]of [['cash_ho_direction',movement.direction],['cash_ho_type',movement.balanceType??(movement.via==='bank'?'bank':'cash')],['cash_ho_bank',movement.bankName],['cash_ho_person',movement.personName],['cash_ho_amount',inputMoney(movement.amount)]]){
+   const input=row.querySelector('[name='+name+']');input.value=value||'';
+  }row.querySelector('[name=cash_ho_type]').dispatchEvent(new Event('change',{bubbles:true}));});
+  if(!liveSources){
+   for(const [input,value]of [[maOpening,saved.opening],[lifting,saved.lifting],[maRefund,saved.refund],[receive,saved.b2bReceive],[send,saved.b2bSend],[cashOpening,cash.openingCash],[cashBankReceived,cash.cashReceivedFromBank],[cashIssue,cash.cashIssueDso],[marketTeam,cash.marketCash?.total??Object.values(cash.marketCash||{}).reduce((n,x)=>n+(Number(x)||0),0)]]){delete input.dataset.testManual;input.value=inputMoney(value);}
+   bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved.bankCalculations?.[bank]||{})}]));
+  }
+ }
+ async function source(liveSources=false){
   window.stopCalculatorWithdrawalSync?.();withdrawalRows=[];
   if(!date.value){++sourceEpoch;loading=false;loaded=false;save.disabled=true;refresh.disabled=false;status.textContent='প্রথমে তারিখ নির্বাচন করুন।';return;}
   if(preview){loading=false;status.textContent='Admin হিসেবে Collection Portal-এর Investment menu থেকে খুলুন।';paint();return;}
-  const selectedDate=date.value,epoch=++sourceEpoch;
+  const selectedDate=date.value,epoch=++sourceEpoch;editExpected=null;
   loading=true;loaded=false;save.disabled=true;refresh.disabled=true;status.textContent='Opening এবং দিনের হিসাব লোড হচ্ছে…';
   let timer;
   try{
@@ -974,27 +989,27 @@ function balanceCalculator(){
    items=snapshots[0].val()||{};withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
    approved=totals.bankDeposits;
-   const saved=items[date.value+'_calculator'];bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved?.bankCalculations?.[bank]||{})}]));
+   const saved=items[date.value+'_calculator'];editExpected=saved?.type==='calculator'?JSON.parse(JSON.stringify(saved)):null;bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved?.bankCalculations?.[bank]||{})}]));
    maOpening.value=inputMoney(previous?.closing?.maWallet||0);lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));maRefund.value=inputMoney(saved?.refund??refundTotal());
    receive.value=inputMoney(totals.receive);send.value=inputMoney(totals.send);
    cashOpening.value=inputMoney(previous?.closing?.cashInHand);delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));delete cashIssue.dataset.testManual;cashIssue.value=inputMoney(totals.cashIssueDso);cashLifting.value=inputMoney(saved?.cashCalculation?.cashDepositLifting);
    delete marketTeam.dataset.testManual;marketTeam.value=inputMoney(Math.round((totals.marketCash.Sadar+totals.marketCash.Saturia+totals.marketCash.Singair+totals.marketCash.Shivalaya)*100)/100);
-   Object.entries(bankDrafts).forEach(([b,x])=>{x.opening=Number(previous?.closing?.banks?.[b]||0);x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.net=Math.round((x.opening+x.deposit-Number(x.fundTransfer||0)-Number(x.chequeWithdrawal||0)-Number(x.bankCharge||0))*100)/100;});syncWithdrawalDrafts();loaded=true;loading=false;syncSavedCalculatorDelete();choice.onchange();paint();watchWithdrawals(selectedDate,epoch);
-   status.textContent='';
+   Object.entries(bankDrafts).forEach(([b,x])=>{x.opening=Number(previous?.closing?.banks?.[b]||0);x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.net=Math.round((x.opening+x.deposit-Number(x.fundTransfer||0)-Number(x.chequeWithdrawal||0)-Number(x.bankCharge||0))*100)/100;});syncWithdrawalDrafts();if(editExpected)restoreSavedCalculator(editExpected,liveSources);loaded=true;loading=false;syncSavedCalculatorDelete();choice.onchange();paint();watchWithdrawals(selectedDate,epoch);
+   status.textContent=editExpected?'সেভ করা হিসাব লোড হয়েছে। সংশোধন করে Update Submit করুন।': '';
   }catch(e){if(epoch!==sourceEpoch)return;loading=false;status.textContent='ডাটা পাওয়া যায়নি: '+e.message;paint();}finally{clearTimeout(timer);if(epoch===sourceEpoch)refresh.disabled=false;}
  }
  form.addEventListener('investment-draft-resume',()=>{if(!date.value)return;if(loaded)watchWithdrawals(date.value,sourceEpoch);else if(!loading)source();});
- refresh.onclick=source;
- date.onchange=()=>{for(const input of [cashSalary,cashRoute,cashPetty])input.value='';refundManual=false;liftingManual=false;delete commissionReceived.dataset.testManual;commissionReceived.value='';choice.value='';bankDrafts={};source();};
+ refresh.onclick=()=>source(true);
+ date.onchange=()=>{editExpected=null;for(const input of [cashSalary,cashRoute,cashPetty])input.value='';refundManual=false;liftingManual=false;delete commissionReceived.dataset.testManual;commissionReceived.value='';choice.value='';bankDrafts={};source();};
  form.onsubmit=async event=>{
   event.preventDefault();if(busy||!loaded||loading||preview||!form.reportValidity()||String(bridge.getUser())!==owner)return;
   try{const headOfficeMovements=collectCashHeadOffice(headOfficeRows,true);paint(true);const ma={opening:numeric(maOpening),lifting:numeric(lifting),commissionReceived:numeric(commissionReceived),b2bReceive:numeric(receive),b2bSend:numeric(send),refund:numeric(maRefund)};
    const net=Math.round((ma.opening+ma.lifting+ma.commissionReceived+ma.b2bReceive-ma.b2bSend-ma.refund)*100)/100;
    if(!window.INVESTMENT_MANUAL_TEST&&(net<0||numeric(netCash)<0||numeric(cashHand)<0||Object.values(bankDrafts).some(x=>x.net<0)))throw Error('Net balance ঋণাত্মক। অঙ্কগুলো যাচাই করুন।');
    busy=true;date.disabled=true;paint();status.textContent='Saving…';
-   const record={type:'calculator',scope:'company',date:date.value,...ma,netMA:net,cashCalculation:{transfers:{salary:numeric(cashSalary),routeConvence:numeric(cashRoute),petty:numeric(cashPetty)},headOfficeMovements,openingCash:numeric(cashOpening),cashReceivedFromBank:numeric(cashBankReceived),cashReceivedFromHeadOffice:numeric(cashHeadOfficeReceived),cashIssueDso:numeric(cashIssue),cashDepositLifting:numeric(cashLifting),cashInHand:numeric(cashHand),marketCash:{total:numeric(marketTeam)},netCash:numeric(netCash)},totalClosing:numeric(totalClosing),bankCalculations:JSON.parse(JSON.stringify(bankDrafts)),updatedAt:bridge.serverTimestamp,updatedBy:owner};
-   const calculatorKey=date.value+'_calculator';await window.investmentCommitRecord(bridge,'investmentEntries',calculatorKey,record);
-   const submittedDate=record.date;items[submittedDate+'_calculator']={...record,updatedAt:Date.now()};show('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
+   const record={...(editExpected||{}),type:'calculator',scope:'company',date:date.value,...ma,netMA:net,cashCalculation:{transfers:{salary:numeric(cashSalary),routeConvence:numeric(cashRoute),petty:numeric(cashPetty)},headOfficeMovements,openingCash:numeric(cashOpening),cashReceivedFromBank:numeric(cashBankReceived),cashReceivedFromHeadOffice:numeric(cashHeadOfficeReceived),cashIssueDso:numeric(cashIssue),cashDepositLifting:numeric(cashLifting),cashInHand:numeric(cashHand),marketCash:{total:numeric(marketTeam)},netCash:numeric(netCash)},totalClosing:numeric(totalClosing),bankCalculations:JSON.parse(JSON.stringify(bankDrafts)),updatedAt:bridge.serverTimestamp,updatedBy:owner};
+   const calculatorKey=date.value+'_calculator';const result=await window.investmentCommitRecord(bridge,'investmentEntries',calculatorKey,record,{createOnly:!editExpected,expected:editExpected});
+   const submittedDate=record.date;items[submittedDate+'_calculator']=result.value;show('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
   }catch(e){status.textContent='Submit হয়নি: '+e.message;}finally{busy=false;date.disabled=false;paint();}
  };
  source();
