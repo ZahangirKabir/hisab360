@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.03.04">
+<meta name="investment-release-version" content="2026.11.03.05">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -490,6 +490,10 @@ window.investmentValidateBankDeposit=function(entry){
  if(entry.depositType==='Refund')delete entry.toBankName;
  return entry;
 };
+window.investmentDeletedFormPages=function(record){
+ const type=record?.type;
+ return type==='capital'?['capital']:type==='calculator'?['calculator','capital']:type==='pettyDeclaration'?['declaration']:[];
+};
 window.formatInvestmentAmount=function(input){const old=input.value,pos=input.selectionStart??old.length;const count=old.slice(0,pos).replace(/,/g,'').length;const raw=old.replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c))).replace(/,/g,'');if(!/^\d*(\.\d{0,2})?$/.test(raw))return;const parts=raw.split('.'),whole=parts[0];const formatted=whole.replace(/\B(?=(\d{2})*\d{3}(?!\d))/g,',')+(parts.length>1?'.'+parts[1]:'');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,formatted);let i=0,n=0;while(i<formatted.length&&n<count){if(formatted[i]!==',')n++;i++;}try{input.setSelectionRange(i,i);}catch{}};
 </script><p id="access" hidden></p><nav id="moduleMenu" class="menu" aria-label="Investment main navigation" hidden>
  <details id="navWorkingCapital" class="module-dropdown"><summary><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v3h4v-3"/></svg></span> Working Capital <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Working Capital submenu"><button type="button" id="showWorkingCapital">Daily Working Capital</button><button type="button" id="showWorkingCapitalReport">Working Capital Report</button><button type="button" id="showBalanceCalculator">Working Balance Calculator</button></div></details>
@@ -583,6 +587,35 @@ const money=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
 const inputMoney=n=>Number(n||0)===0?'':money(n);
 function today(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const part=key=>parts.find(x=>x.type===key).value;return `${part('year')}-${part('month')}-${part('day')}`;}
 function stop(){++dataLoadEpoch;clearTimeout(dataLoadTimer);if(stream){stream.cancelInvestmentRead?.();stream.off('value',handler);stream=null;handler=null;}}
+let observedInvestmentRecords={};
+function forgetDeletedInvestmentForms(records){
+ for(const record of records){
+  for(const key of window.investmentDeletedFormPages(record)){
+   const nodes=page===key?[...content.childNodes]:(formDrafts.get(key)||[]);
+   const form=nodes.map(n=>n.matches?.('form')?n:n.querySelector?.('form')).find(Boolean);
+   if(!form)continue;
+   const dateInput=form.querySelector('[name=capital_date],[name=calc_date],[name=date]');
+   if(dateInput?.value!==record.date)continue;
+   // A calculator deletion clears calculator-derived closing fields, not a
+   // separately saved Working Capital report or an unrelated manual draft.
+   if(record.type==='calculator'&&key==='capital'){
+    if(form.dataset.closingSource!=='calculator')continue;
+    if(page===key){dateInput.dispatchEvent(new Event('change',{bubbles:true}));continue;}
+   }
+   formDrafts.delete(key);
+   if(page===key){
+    window.stopCalculatorWithdrawalSync?.();content.replaceChildren();
+    if(key==='capital')capitalForm();else if(key==='calculator')balanceCalculator();else pettyDeclaration();
+    const input=content.querySelector('[name=capital_date],[name=calc_date],[name=date]');
+    if(input){input.value=record.date;input.dispatchEvent(new Event('change',{bubbles:true}));}
+   }
+  }
+ }
+}
+window.addEventListener('investment-record-deleted',event=>{
+ const {root,key,value}=event.detail||{};if(root!=='investmentEntries'||!key||!value)return;
+ delete items[key];delete observedInvestmentRecords[key];forgetDeletedInvestmentForms([value]);notifyInvestmentState();
+});
 function notifyInvestmentState(){
  document.querySelectorAll('[data-submission-date]').forEach(input=>input.dispatchEvent(new Event('submission-records-updated')));
  if(page==='declaration')window.syncPettyDeclaration?.();
@@ -595,7 +628,7 @@ function ensureInvestmentStream(force=false){
  if(stream&&!force&&!dataLoadError)return;
  stop();dataLoadError='';const epoch=dataLoadEpoch,ref=database.ref('investmentEntries');stream=ref;
  const failed=error=>{if(epoch!==dataLoadEpoch||stream!==ref)return;clearTimeout(dataLoadTimer);if(/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))||error?.httpStatus===401||error?.httpStatus===403){dataReady=false;items={};}dataLoadError=/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))?'Investment পড়ার অনুমতি পাওয়া যায়নি। Admin login/session যাচাই করে আবার চেষ্টা করুন।':'Investment-এর তথ্য লোড হয়নি। আবার চেষ্টা করুন।';notifyInvestmentState();};
- handler=snap=>{if(epoch!==dataLoadEpoch||stream!==ref||String(bridge.getUser())!==owner)return;clearTimeout(dataLoadTimer);items=snap.val()||{};dataReady=snap.complete!==false;dataLoadError='';notifyInvestmentState();};
+ handler=snap=>{if(epoch!==dataLoadEpoch||stream!==ref||String(bridge.getUser())!==owner)return;clearTimeout(dataLoadTimer);items=snap.val()||{};dataReady=snap.complete!==false;dataLoadError='';if(dataReady){const removed=Object.entries(observedInvestmentRecords).filter(([key])=>!Object.hasOwn(items,key)).map(([,record])=>record);observedInvestmentRecords={...items};forgetDeletedInvestmentForms(removed);}notifyInvestmentState();};
  dataLoadTimer=setTimeout(()=>{if(epoch!==dataLoadEpoch||dataReady)return;dataLoadError='Investment-এর তথ্য পেতে সময় লাগছে। আবার চেষ্টা করুন।';notifyInvestmentState();},12000);
  try{ref.cancelInvestmentRead=window.investmentWatchPagedData(bridge,'investmentEntries',handler,failed);}catch(error){failed(error);}
 }
@@ -1360,7 +1393,9 @@ window.exportWorkingCapital=async function(mode,button,container=null,reportTitl
     const detail=!row&&record.value.type==='petty'&&record.value.expenses?.length>1?'\nএই রিপোর্টের সব Expense মুছে যাবে।':'';
     if(!confirm('Delete করবেন?\n'+record.value.date+' · '+title+detail+'\nএটি মুছে দিলে ফিরিয়ে আনা যাবে না।'))return;
     if(bridge.getUser()!=='admin')throw Error('Admin login প্রয়োজন।');
-    await window.investmentDeleteRecord(bridge,root,record,options);
+    const deleted=await window.investmentDeleteRecord(bridge,root,record,options);
+    const current=root==='investmentEntries'&&!await window.investmentCanWriteRecords(bridge)?deleted.snapshot.child(record.key).val():deleted.snapshot.val();
+    if(current===null)window.dispatchEvent(new CustomEvent('investment-record-deleted',{detail:{root,key:record.key,value:record.value}}));
     alert('Delete সফল হয়েছে।');
    }catch(error){const denied=/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''));alert(denied?'Delete-এর অনুমতি পাওয়া যায়নি। Admin দিয়ে আবার Login করুন। এরপরও হলে Firebase Rules প্রকাশ করা প্রয়োজন।':error.message);}finally{button.disabled=false;}
   };
