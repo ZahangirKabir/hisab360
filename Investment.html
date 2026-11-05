@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.05.02">
+<meta name="investment-release-version" content="2026.11.05.03">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1040,7 +1040,7 @@ function balanceCalculator(){
    const input=row.querySelector('[name='+name+']');input.value=value||'';
   }row.querySelector('[name=cash_ho_type]').dispatchEvent(new Event('change',{bubbles:true}));});
   if(!liveSources){
-   for(const [input,value]of [[maOpening,saved.opening],[lifting,saved.lifting],[maRefund,saved.refund],[receive,saved.b2bReceive],[send,saved.b2bSend],[cashOpening,cash.openingCash],[cashBankReceived,cash.cashReceivedFromBank],[cashIssue,cash.cashIssueDso],[marketTeam,cash.marketCash?.total??Object.values(cash.marketCash||{}).reduce((n,x)=>n+(Number(x)||0),0)]]){delete input.dataset.testManual;input.value=inputMoney(value);}
+   for(const [input,value]of [[maOpening,saved.opening],[lifting,saved.lifting],[maRefund,saved.refund],[cashOpening,cash.openingCash],[cashBankReceived,cash.cashReceivedFromBank],[cashIssue,cash.cashIssueDso],[marketTeam,cash.marketCash?.total??Object.values(cash.marketCash||{}).reduce((n,x)=>n+(Number(x)||0),0)]]){delete input.dataset.testManual;input.value=inputMoney(value);}
    bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved.bankCalculations?.[bank]||{})}]));
   }
  }
