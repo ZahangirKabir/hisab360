@@ -688,6 +688,9 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
 #adminPageHeading:not([hidden]){display:flex;align-items:center;gap:12px;padding:6px 0;color:#17483d}
 #adminPageHeading button{min-height:44px;margin:0;padding:6px 13px;border:0;border-radius:9px;background:#e5f2ec;color:#145744;font-weight:700}
 @media print{#adminPageHeading{display:none!important}}
+</style><style>
+#adminFilterPanel.is-collapsed{display:none!important}
+#adminFilterToggle:not([hidden]){display:inline-flex;align-items:center;min-height:44px;margin:6px 0;padding:6px 14px;border:0;border-radius:9px;background:#e5f2ec;color:#145744;font-weight:700}
 </style></head>
 <body>
 
@@ -736,7 +739,8 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
     <div id="adminView" style="display: none;">
       
       <!-- GLOBAL FILTER PANEL WITH CHECKBOX MULTI-SELECT DSO -->
-      <div class="filter-panel" id="adminFilterPanel">
+      <button type="button" id="adminFilterToggle" aria-controls="adminFilterPanel" aria-expanded="false" hidden>Global Filter ▸</button>
+      <div class="filter-panel is-collapsed" id="adminFilterPanel">
         <div class="filter-group admin-filter-admin">
           <label>Admin নির্বাচন করুন</label>
           <select id="filterAdmin" onchange="applyAdminFilters()">
@@ -1776,7 +1780,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.06.02';
+    const APP_RELEASE_VERSION = '2026.11.07.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2044,7 +2048,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const previousTab=activeAdminTab;
       if(tab==='slipApproval'&&previousTab!=='slipApproval')slipReturnState={mode:masterAdminDataMode,date:document.getElementById('filterDate').value};
       const heading=document.getElementById('adminPageHeading');
-      heading.hidden=currentUser!=='admin'||tab==='home';
+      heading.hidden=currentUser!=='admin'||tab==='home'||tab==='investment';
       if(currentUser==='admin'){
         const nav=document.getElementById('adminTabNav');
         nav.style.display=tab==='home'?'flex':'none';
@@ -2064,7 +2068,16 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       });
       const investmentFrame=document.getElementById('investmentFrame');
       const filterPanel=document.getElementById('adminFilterPanel');
-      filterPanel.style.display=['home','investment','settings'].includes(tab)?'none':'flex';
+      const filterToggle=document.getElementById('adminFilterToggle');
+      filterToggle.hidden=!['report','bank','slipApproval','notes'].includes(tab);
+      const setFilterExpanded=expanded=>{
+        filterPanel.classList.toggle('is-collapsed',!expanded);
+        filterPanel.style.display=expanded?'flex':'none';
+        filterToggle.setAttribute('aria-expanded',String(expanded));
+        filterToggle.textContent=expanded?'Global Filter ▾':'Global Filter ▸';
+      };
+      setFilterExpanded(false);
+      filterToggle.onclick=()=>setFilterExpanded(filterPanel.classList.contains('is-collapsed'));
       filterPanel.classList.toggle('slip-approval-filter',tab==='slipApproval');
       // Keep the frame's live subscriptions and loaded data across tab changes.
       // A published version is handled by the release gate.
