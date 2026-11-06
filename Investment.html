@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.06.03">
+<meta name="investment-release-version" content="2026.11.06.04">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -485,6 +485,11 @@ html body #app #content .investment-form-card input[type=date],html body #app #c
 .investment-masthead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:14px 18px;border:1px solid #d7e7e2;border-radius:14px;background:#fff;color:#173e36}.investment-masthead:has(+ #moduleMenu[hidden]){display:none}.investment-masthead img{width:34px;height:34px;object-fit:contain}.investment-masthead strong{font-size:18px}.investment-masthead small{display:block;color:#47665e}.investment-masthead>div{display:flex;align-items:center;gap:12px}
 .investment-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}.investment-kpi{padding:16px;border:1px solid #d7e7e2;border-radius:14px;background:#f2faf7;color:#173e36}.investment-kpi:first-child{background:#16443a;color:#fff;border-color:#16443a}.investment-kpi strong{display:block;font-size:clamp(18px,3vw,29px);margin:6px 0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.investment-kpi small{display:block;font-size:12px}.investment-components td:last-child,.investment-components th:last-child{text-align:right}.investment-components tfoot th{background:#e1f1ec;color:#173e36}
 @media(max-width:620px){.investment-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.investment-kpi:first-child{grid-column:1/-1}.investment-masthead>span{display:none}}@media print{.investment-masthead{display:none}}
+</style><style>
+body.investment-menu-home #app,body.investment-menu-home #bankApp,#moduleMenu[hidden]{display:none!important}
+#investmentPageHeading:not([hidden]){display:flex;align-items:center;gap:12px;margin:0 0 10px;color:#17483d}
+#investmentPageHeading button{min-height:44px;border:0;border-radius:9px;padding:6px 13px;background:#e5f2ec;color:#145744;font-weight:700}
+@media print{#investmentPageHeading{display:none!important}}
 </style></head><body><script>
 window.investmentValidateBankDeposit=function(entry){
  const banks=['Islami','Pubali','City','DBBL','Agroni','UCB','Sonali'];
@@ -1091,7 +1096,7 @@ function balanceCalculator(){
    busy=true;date.disabled=true;paint();status.textContent='Saving…';
    const record={...(editExpected||{}),type:'calculator',scope:'company',date:date.value,...ma,netMA:net,cashCalculation:{transfers:{salary:numeric(cashSalary),routeConvence:numeric(cashRoute),petty:numeric(cashPetty),pettySource:pettySource.value||"Cash"},headOfficeMovements,openingCash:numeric(cashOpening),cashReceivedFromBank:numeric(cashBankReceived),cashReceivedFromHeadOffice:numeric(cashHeadOfficeReceived),cashIssueDso:numeric(cashIssue),cashDepositLifting:numeric(cashLifting),cashInHand:numeric(cashHand),marketCash:{total:numeric(marketTeam)},netCash:numeric(netCash)},totalClosing:numeric(totalClosing),bankCalculations:JSON.parse(JSON.stringify(bankDrafts)),updatedAt:bridge.serverTimestamp,updatedBy:owner};
    const calculatorKey=date.value+'_calculator';const result=await window.investmentCommitRecord(bridge,'investmentEntries',calculatorKey,record,{createOnly:!editExpected,expected:editExpected});
-   const submittedDate=record.date;items[submittedDate+'_calculator']=result.value;show('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
+   const submittedDate=record.date;items[submittedDate+'_calculator']=result.value;(window.openInvestmentPage||show)('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
   }catch(e){status.textContent='Submit হয়নি: '+e.message;}finally{busy=false;date.disabled=false;paint();}
  };
  source();
@@ -1432,6 +1437,9 @@ window.bankNavigate=show;show('range');
 
  }
  const ids={headOfficeReport:'showHeadOfficeReport',capital:'showWorkingCapital',capitalReport:'showWorkingCapitalReport',calculator:'showBalanceCalculator',declaration:'showPettyDeclaration',petty:'showPettyCash',pettyReport:'showPettyCashReport',pettyTypeReport:'showExpenseTypes',total:'showTotalInvestment',bankRange:'showChequeEntry',bankWithdraw:'showBankWithdraw',bankDeposit:'showBankDeposit',bankCheque:'showBankCheque',bankDebit:'showBankDebit'};
+ const heading=document.createElement('div');heading.id='investmentPageHeading';heading.hidden=true;
+ const back=document.createElement('button');back.type='button';back.textContent='← Back';back.setAttribute('aria-label','Back to Investment menu');
+ const title=document.createElement('strong');title.tabIndex=-1;heading.append(back,title);tabs.after(heading);
  const groups=[...tabs.querySelectorAll('.module-dropdown')];
  const closeDropdowns=except=>groups.forEach(group=>{if(group!==except)group.open=false;});
  groups.forEach(group=>{
@@ -1443,9 +1451,18 @@ window.bankNavigate=show;show('range');
  document.addEventListener('keydown',event=>{if(event.key==='Escape'){const openGroup=groups.find(group=>group.open);closeDropdowns();openGroup?.querySelector('summary')?.focus();}});
  const reportViewer=!!bridge?.isReportViewer?.();
  function open(which){
+  if(which==='home'){
+   window.stopCalculatorWithdrawalSync?.();closeDropdowns();
+   document.body.classList.add('investment-menu-home');heading.hidden=true;tabs.hidden=false;
+   try{sessionStorage.setItem('investmentLastPage','home');}catch(e){}
+   tabs.querySelector('summary,button')?.focus({preventScroll:true});window.scrollTo(0,0);return;
+  }
   if(reportViewer&&!['capitalReport','pettyReport','headOfficeReport','total','bankCheque'].includes(which))which='capitalReport';
   if(which==='bankDebit')which='bankWithdraw';
   try{sessionStorage.setItem('investmentLastPage',which);}catch(e){}
+  document.body.classList.remove('investment-menu-home');tabs.hidden=true;heading.hidden=false;
+  title.textContent=document.getElementById(ids[which])?.textContent.trim()||'Investment';
+  title.focus({preventScroll:true});window.scrollTo(0,0);
   const isBank=['bankRange','bankWithdraw','bankDeposit','bankCheque','bankDebit'].includes(which);
   investment.hidden=isBank;bank.hidden=!isBank;
   Object.entries(ids).forEach(([key,id])=>document.getElementById(id).classList.toggle('active',key===which));
@@ -1456,7 +1473,8 @@ window.bankNavigate=show;show('range');
   else window.investmentNavigate(which);
  }
  Object.entries(ids).forEach(([key,id])=>document.getElementById(id).onclick=()=>open(key));
- let lastPage='capital';try{const saved=sessionStorage.getItem('investmentLastPage');if(Object.prototype.hasOwnProperty.call(ids,saved))lastPage=saved;}catch(e){}
+ back.onclick=()=>open('home');window.openInvestmentPage=open;
+ let lastPage='home';try{const saved=sessionStorage.getItem('investmentLastPage');if(Object.prototype.hasOwnProperty.call(ids,saved))lastPage=saved;}catch(e){}
  open(lastPage);
 })();
 </script><script>
