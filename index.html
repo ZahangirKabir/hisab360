@@ -1780,7 +1780,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.07.01';
+    const APP_RELEASE_VERSION = '2026.11.07.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2196,7 +2196,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
     function getRememberedPortalPage(id){
       let page;try{page=sessionStorage.getItem('collectionPortalPage:'+id);}catch(error){}
-      const allowed=id==='admin'?['home','report','bank','slipApproval','notes','settings','investment']:isGroupAdmin(id)?['report']:['form','slip','report','settings'];
+      const allowed=id==='admin'?['report','home','bank','slipApproval','notes','settings','investment']:isGroupAdmin(id)?['report']:['form','slip','report','settings'];
       return allowed.includes(page)?page:allowed[0];
     }
 
@@ -2264,7 +2264,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         document.getElementById("dsoTabNav").style.display = "none";
         slipApprovalViewMode='date';
         document.getElementById("filterDate").value = getLocalDateString();
-        switchAdminTab(currentUser==='admin'?'home':'report');
+        switchAdminTab(rememberedPage||'report');
       } else {
         document.getElementById('adminPageHeading').hidden=true;
         document.getElementById("portalTitle").innerText = "DSO Entry Portal (ID: " + currentUser + ")";
