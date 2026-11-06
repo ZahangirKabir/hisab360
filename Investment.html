@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.06.04">
+<meta name="investment-release-version" content="2026.11.07.01">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1450,10 +1450,12 @@ window.bankNavigate=show;show('range');
  document.addEventListener('click',event=>{if(!tabs.contains(event.target))closeDropdowns();});
  document.addEventListener('keydown',event=>{if(event.key==='Escape'){const openGroup=groups.find(group=>group.open);closeDropdowns();openGroup?.querySelector('summary')?.focus();}});
  const reportViewer=!!bridge?.isReportViewer?.();
+ const canReturnToAdmin=()=>parent!==window&&bridge?.getUser?.()==='admin'&&typeof parent.switchAdminTab==='function';
  function open(which){
   if(which==='home'){
    window.stopCalculatorWithdrawalSync?.();closeDropdowns();
-   document.body.classList.add('investment-menu-home');heading.hidden=true;tabs.hidden=false;
+   document.body.classList.add('investment-menu-home');heading.hidden=!canReturnToAdmin();title.textContent='Investment';tabs.hidden=false;
+   back.setAttribute('aria-label','Back to Admin Home');
    try{sessionStorage.setItem('investmentLastPage','home');}catch(e){}
    tabs.querySelector('summary,button')?.focus({preventScroll:true});window.scrollTo(0,0);return;
   }
@@ -1461,6 +1463,7 @@ window.bankNavigate=show;show('range');
   if(which==='bankDebit')which='bankWithdraw';
   try{sessionStorage.setItem('investmentLastPage',which);}catch(e){}
   document.body.classList.remove('investment-menu-home');tabs.hidden=true;heading.hidden=false;
+  back.setAttribute('aria-label','Back to Investment menu');
   title.textContent=document.getElementById(ids[which])?.textContent.trim()||'Investment';
   title.focus({preventScroll:true});window.scrollTo(0,0);
   const isBank=['bankRange','bankWithdraw','bankDeposit','bankCheque','bankDebit'].includes(which);
@@ -1473,7 +1476,7 @@ window.bankNavigate=show;show('range');
   else window.investmentNavigate(which);
  }
  Object.entries(ids).forEach(([key,id])=>document.getElementById(id).onclick=()=>open(key));
- back.onclick=()=>open('home');window.openInvestmentPage=open;
+ back.onclick=()=>{if(document.body.classList.contains('investment-menu-home')&&canReturnToAdmin())parent.switchAdminTab('home');else open('home');};window.openInvestmentPage=open;
  let lastPage='home';try{const saved=sessionStorage.getItem('investmentLastPage');if(Object.prototype.hasOwnProperty.call(ids,saved))lastPage=saved;}catch(e){}
  open(lastPage);
 })();
