@@ -669,7 +669,22 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
 #adminTabNav button:focus-visible,#dsoTabNav button:focus-visible{outline:2px solid #2c946e!important;outline-offset:2px}
 @media(max-width:600px){#adminTabNav,#dsoTabNav{gap:6px!important;padding:6px!important;border-radius:13px!important}#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu,#dsoTabNav>.tab-btn{min-height:50px!important;padding:9px!important;gap:8px!important;font-size:11.5px!important;border-radius:10px!important}#adminTabNav .main-menu-icon,#dsoTabNav .dso-menu-icon{width:29px!important;height:29px!important;flex-basis:29px!important}}
 @media(prefers-reduced-motion:reduce){#adminTabNav>button,#dsoTabNav>button{transition:none!important}}
-</style><style id="user-management-design">.portal-user-management{width:100%;box-sizing:border-box;margin-top:18px;padding:20px;background:#fff;border:1px solid #dbe8e0;border-radius:14px}.user-management-heading{display:flex;align-items:center;gap:12px;margin-bottom:18px}.user-management-badge{display:grid;place-items:center;flex:0 0 38px;height:38px;background:#e6f3ed;border-radius:11px;color:#167154;font-size:25px}.user-management-heading h3{margin:0 0 4px;font-size:17px;color:#1d5b43}.user-management-heading p{margin:0;font-size:12px;color:#75867a}.user-management-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.user-management-grid label{display:flex;flex-direction:column;gap:7px;color:#405e4b;font-size:12px;font-weight:600}.user-management-grid input,.user-management-grid select{box-sizing:border-box;width:100%;min-height:43px;border:1px solid #ccdcd2;border-radius:8px;background:white;padding:10px 11px;font:inherit;font-weight:400}.portal-user-management #createDsoUserButton{width:auto;margin-top:18px;padding:11px 18px;border-radius:9px;background:#167453;font-size:13px}.portal-user-management p[role=status]{font-size:12px;white-space:pre-line;line-height:1.6}.portal-user-management [hidden]{display:none!important}#userManagementRulesHelp{padding:12px;background:#fff5df;color:#6b572e;border-radius:8px;font-size:12px;line-height:1.7}@media(max-width:650px){.user-management-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-user-management{padding:15px}}@media(max-width:400px){.user-management-grid{grid-template-columns:1fr}}</style><style id="report-viewer-shell">body.report-viewer-session #adminTabNav>button:not(#tabAdminInvestmentBtn),body.report-viewer-session #adminFilterPanel,body.report-viewer-session #dsoView,body.report-viewer-session #dsoTabNav{display:none!important}#portalUserManagement label[hidden]{display:none!important}</style></head>
+</style><style id="user-management-design">.portal-user-management{width:100%;box-sizing:border-box;margin-top:18px;padding:20px;background:#fff;border:1px solid #dbe8e0;border-radius:14px}.user-management-heading{display:flex;align-items:center;gap:12px;margin-bottom:18px}.user-management-badge{display:grid;place-items:center;flex:0 0 38px;height:38px;background:#e6f3ed;border-radius:11px;color:#167154;font-size:25px}.user-management-heading h3{margin:0 0 4px;font-size:17px;color:#1d5b43}.user-management-heading p{margin:0;font-size:12px;color:#75867a}.user-management-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.user-management-grid label{display:flex;flex-direction:column;gap:7px;color:#405e4b;font-size:12px;font-weight:600}.user-management-grid input,.user-management-grid select{box-sizing:border-box;width:100%;min-height:43px;border:1px solid #ccdcd2;border-radius:8px;background:white;padding:10px 11px;font:inherit;font-weight:400}.portal-user-management #createDsoUserButton{width:auto;margin-top:18px;padding:11px 18px;border-radius:9px;background:#167453;font-size:13px}.portal-user-management p[role=status]{font-size:12px;white-space:pre-line;line-height:1.6}.portal-user-management [hidden]{display:none!important}#userManagementRulesHelp{padding:12px;background:#fff5df;color:#6b572e;border-radius:8px;font-size:12px;line-height:1.7}@media(max-width:650px){.user-management-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-user-management{padding:15px}}@media(max-width:400px){.user-management-grid{grid-template-columns:1fr}}</style><style id="report-viewer-shell">body.report-viewer-session #adminTabNav>button:not(#tabAdminInvestmentBtn),body.report-viewer-session #adminFilterPanel,body.report-viewer-session #dsoView,body.report-viewer-session #dsoTabNav{display:none!important}#portalUserManagement label[hidden]{display:none!important}</style><style id="admin-mobile-report-layout">
+@media screen and (max-width:600px){
+  .portal-sticky-top:has(#adminTabNav:not([style*="display: none"]):not([style*="display:none"])){position:relative;top:auto;z-index:auto}
+  #adminTabNav{gap:4px!important;padding:4px!important;margin-top:4px!important}
+  #adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu{
+    flex:0 0 calc((100% - 4px)/2)!important;box-sizing:border-box;
+    grid-template-columns:22px minmax(0,1fr)!important;min-height:44px!important;
+    padding:5px 7px!important;gap:6px!important;line-height:1.2!important;white-space:normal!important
+  }
+  #adminTabNav>#deviceAdminButton.device-approval-menu{margin-left:0!important}
+  #adminTabNav .main-menu-icon{width:22px!important;height:22px!important;border-radius:6px!important}
+  #adminTabNav .main-menu-icon svg{width:15px!important;height:15px!important}
+  #adminFilterPanel{margin-top:8px!important}
+}
+</style>
+</head>
 <body>
 
 
@@ -1756,7 +1771,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.03.02';
+    const APP_RELEASE_VERSION = '2026.11.06.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
