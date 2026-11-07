@@ -1591,7 +1591,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         let remembered='';try{remembered=localStorage.getItem('collectionDeviceUid:'+key)||'';}catch{}
         if(!restored&&remembered){
           const recovered=await new Promise(resolve=>{let stop=null;const timer=setTimeout(()=>{stop?.();resolve(null);},2500);stop=auth.onAuthStateChanged(user=>{if(user){clearTimeout(timer);stop?.();resolve(user);}});});
-          if(!recovered){const error=Error('এই browser-এর আগের device session পাওয়া যায়নি। পেজ Refresh করে আবার চেষ্টা করুন। Browser-এর site data মুছে গেলে Admin-এর অনুমোদন আবার প্রয়োজন হবে।');error.code='portal/device-restore';throw error;}
+          // A remembered UID without its Firebase credentials cannot restore approval.
+          // Continue with a new identity and require a fresh Admin-approved request.
+          if(!recovered)console.warn('Device credentials unavailable; requesting approval for a new identity.');
         }
         if(!auth.currentUser)await auth.signInAnonymously();
         if(!isPortalDeviceIdentity(auth.currentUser))throw Error('Device identity সঠিক নয়। আগের ডিভাইস পুনরুদ্ধার করুন।');
@@ -1684,7 +1686,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(access?.status==='blocked')throw Error('Admin এই device ব্লক করেছেন। Admin-কে জানান।');
       if(access&&access.status==='approved'&&(access.userId!==id||access.credentialUid!==credentialUid))throw Error('Device-এর অনুমোদন এই account-এর সঙ্গে মিলছে না। Admin-কে জানান।');
       if(access?.status!=='approved'||access.userId!==id||access.credentialUid!==credentialUid){
-        const current=await timedLoginStep(prepared.trace,'ডিভাইসের আবেদন',()=>readLoginServer(app,'deviceRequests/'+uid));
+        const current=await timedLoginStep(prepared.trace,'ডিভাইসের আবেদন',()=>readLoginREST(credentialApp,'deviceRequests/'+uid));
         if(!current)await writeLoginServer(credentialApp,'deviceRequests/'+uid,{userId:id,credentialUid,deviceUid:uid,name:(navigator.userAgent||'Browser').slice(0,160),installationId:portalBrowserInstallation(),requestedAt:firebase.database.ServerValue.TIMESTAMP});
         showPendingDevice();const error=new Error('আপনার ডিভাইসে লগইন করার জন্য অনুমতি প্রয়োজন');error.code='portal/device-permission-required';throw error;
       }
@@ -1787,7 +1789,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.07.06';
+    const APP_RELEASE_VERSION = '2026.11.07.07';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
