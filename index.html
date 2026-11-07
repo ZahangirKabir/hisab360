@@ -1635,7 +1635,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(showAll)return rows;
       const groups=new Map();
       for(const row of rows){const [uid,item]=row,status=permissions[uid]?.status||'pending';
-        const identity=item.installationId?'installation:'+item.installationId:'browser:'+String(item.name||'')+':'+status;
+        const identity=status==='pending'?'request:'+uid:item.installationId?'installation:'+item.installationId:'browser:'+String(item.name||'')+':'+status;
         const key=JSON.stringify([String(item.userId||''),item.credentialUid||'',identity,status]);
         const group=groups.get(key);if(!group){groups.set(key,{row,count:1});continue;}group.count++;
         const rank=entry=>(entry[0]===currentUid?10:0)+(permissions[entry[0]]?.status==='approved'?3:permissions[entry[0]]?.status==='blocked'?2:0);
@@ -1741,13 +1741,20 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(currentUser!=='admin'||document.getElementById('deviceAdminButton'))return;
       const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.innerHTML='<span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4m-5-8 2 2 4-4"/></svg></span><span>Device Permision</span>';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
     }
-    async function openFirebaseDeviceAdmin(){
+    async function openFirebaseDeviceAdmin(liveValues=null){
       if(currentUser!=='admin')return;
-      let modal=document.getElementById('deviceAdminModal');if(!modal){modal=document.createElement('div');modal.id='deviceAdminModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:#0008;display:flex;align-items:center;justify-content:center;padding:12px';const card=document.createElement('div');card.className='device-admin-card';card.style.cssText='width:min(1100px,100%);max-height:90vh;overflow:auto;background:white;color:#173b45;border-radius:16px;padding:20px';const title=document.createElement('h3');title.textContent='Device Permision';const header=document.createElement('div');header.className='device-admin-header';header.appendChild(title);card.appendChild(header);const close=document.createElement('button');close.textContent='বন্ধ করুন';close.className='device-close';close.onclick=()=>modal.remove();header.appendChild(close);const refresh=document.createElement('button');refresh.textContent='↻ তালিকা আপডেট';refresh.className='device-refresh';refresh.onclick=openFirebaseDeviceAdmin;card.appendChild(refresh);const status=document.createElement('p');status.id='deviceAdminStatus';card.appendChild(status);const content=document.createElement('div');content.id='deviceAdminContent';content.style.overflowX='auto';card.appendChild(content);modal.appendChild(card);document.body.appendChild(modal);}
-      const status=document.getElementById('deviceAdminStatus');status.textContent='তালিকা আসছে…';
+      let modal=document.getElementById('deviceAdminModal');if(!modal){modal=document.createElement('div');modal.id='deviceAdminModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:#0008;display:flex;align-items:center;justify-content:center;padding:12px';const card=document.createElement('div');card.className='device-admin-card';card.style.cssText='width:min(1100px,100%);max-height:90vh;overflow:auto;background:white;color:#173b45;border-radius:16px;padding:20px';const title=document.createElement('h3');title.textContent='Device Permision';const header=document.createElement('div');header.className='device-admin-header';header.appendChild(title);card.appendChild(header);const close=document.createElement('button');close.textContent='বন্ধ করুন';close.className='device-close';close.onclick=()=>{modal.deviceSyncStop?.();modal.remove();};header.appendChild(close);const refresh=document.createElement('button');refresh.textContent='↻ তালিকা আপডেট';refresh.className='device-refresh';refresh.onclick=openFirebaseDeviceAdmin;card.appendChild(refresh);const status=document.createElement('p');status.id='deviceAdminStatus';card.appendChild(status);const content=document.createElement('div');content.id='deviceAdminContent';content.style.overflowX='auto';card.appendChild(content);modal.appendChild(card);document.body.appendChild(modal);}
+      const status=document.getElementById('deviceAdminStatus');if(!liveValues?.requests)status.textContent='তালিকা আসছে…';
+      const requestEpoch=(modal.deviceRenderEpoch||0)+1;modal.deviceRenderEpoch=requestEpoch;
+      if(!modal.deviceSyncStop){
+        const refs=['deviceRequests','deviceAccess'].map(path=>portalFinancialApp.database().ref(path)),values={},seen=new Set();let timer,stopped=false;
+        const handlers=refs.map((ref,index)=>snap=>{if(stopped||!modal.isConnected||currentUser!=='admin')return;values[index===0?'requests':'access']=snap.val()||{};seen.add(index);if(seen.size===2){clearTimeout(timer);timer=setTimeout(()=>{if(!stopped&&modal.isConnected&&currentUser==='admin')openFirebaseDeviceAdmin({...values});},80);}});
+        modal.deviceSyncStop=()=>{stopped=true;clearTimeout(timer);refs.forEach((ref,index)=>ref.off('value',handlers[index]));};
+        refs.forEach((ref,index)=>ref.on('value',handlers[index],error=>{if(!stopped&&modal.isConnected)status.textContent='ডিভাইসের তালিকা সিঙ্ক হয়নি: '+error.message;}));
+      }
       try{
-        const db=portalFinancialApp.database(),[requests,access]=await Promise.all([db.ref('deviceRequests').once('value'),db.ref('deviceAccess').once('value')]);
-        if(!modal.isConnected||currentUser!=='admin')return;
+        const db=portalFinancialApp.database(),[requests,access]=liveValues?.requests&&liveValues?.access?[{val:()=>liveValues.requests},{val:()=>liveValues.access}]:await Promise.all(['deviceRequests','deviceAccess'].map(path=>readLoginREST(portalFinancialApp,path).then(value=>({val:()=>value}))));
+        if(!modal.isConnected||currentUser!=='admin'||requestEpoch!==modal.deviceRenderEpoch)return;
         const permissions=access.val()||{},items=requests.val()||{},table=document.createElement('table');table.style.cssText='width:100%;min-width:650px;border-collapse:collapse';const head=document.createElement('tr');for(const label of ['User ID','Device UID','ডিভাইস / ব্রাউজার','অবস্থা','অনুমতি']){const th=document.createElement('th');th.textContent=label;th.style.cssText='padding:10px;background:#e6f3f4;text-align:left';head.appendChild(th);}table.appendChild(head);
         let duplicateToggle=modal.querySelector('#deviceShowSimilar');
         if(!duplicateToggle){const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:8px;margin:12px 0;font-size:13px';duplicateToggle=document.createElement('input');duplicateToggle.type='checkbox';duplicateToggle.id='deviceShowSimilar';duplicateToggle.style.width='auto';duplicateToggle.onchange=openFirebaseDeviceAdmin;label.append(duplicateToggle,document.createTextNode('পুনরাবৃত্তি / অনুরূপ ব্রাউজারগুলো দেখুন'));document.getElementById('deviceAdminContent').before(label);}
@@ -1780,7 +1787,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.07.05';
+    const APP_RELEASE_VERSION = '2026.11.07.06';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2495,7 +2502,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(devicePermissionRef&&devicePermissionHandler)devicePermissionRef.off('value',devicePermissionHandler);
       if(deviceSessionRef&&deviceSessionHandler)deviceSessionRef.off('value',deviceSessionHandler);
       deviceSessionRef=null;deviceSessionHandler=null;devicePermissionRef=null;devicePermissionHandler=null;
-      document.getElementById('deviceAdminModal')?.remove();document.getElementById('pendingDeviceModal')?.remove();document.getElementById('deviceAdminButton')?.remove();
+      document.getElementById('deviceAdminModal')?.deviceSyncStop?.();document.getElementById('deviceAdminModal')?.remove();document.getElementById('pendingDeviceModal')?.remove();document.getElementById('deviceAdminButton')?.remove();
       const investmentFrame=document.getElementById('investmentFrame');
       if(investmentFrame) investmentFrame.removeAttribute('src');
       detachRealtimeDataListeners();
