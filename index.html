@@ -739,7 +739,7 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
     <div id="adminView" style="display: none;">
       
       <!-- GLOBAL FILTER PANEL WITH CHECKBOX MULTI-SELECT DSO -->
-      <button type="button" id="adminFilterToggle" aria-controls="adminFilterPanel" aria-expanded="false" hidden>Global Filter ▸</button>
+      <button type="button" id="adminFilterToggle" aria-controls="adminFilterPanel" aria-expanded="false" hidden>Filter ▸</button>
       <div class="filter-panel is-collapsed" id="adminFilterPanel">
         <div class="filter-group admin-filter-admin">
           <label>Admin নির্বাচন করুন</label>
@@ -1802,7 +1802,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.08.03';
+    const APP_RELEASE_VERSION = '2026.11.08.04';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2095,7 +2095,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         filterPanel.classList.toggle('is-collapsed',!expanded);
         filterPanel.style.display=expanded?'flex':'none';
         filterToggle.setAttribute('aria-expanded',String(expanded));
-        filterToggle.textContent=expanded?'Global Filter ▾':'Global Filter ▸';
+        filterToggle.textContent=expanded?'Filter ▾':'Filter ▸';
       };
       setFilterExpanded(false);
       filterToggle.onclick=()=>setFilterExpanded(filterPanel.classList.contains('is-collapsed'));
