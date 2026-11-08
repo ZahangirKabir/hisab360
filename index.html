@@ -1802,7 +1802,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.08.02';
+    const APP_RELEASE_VERSION = '2026.11.08.03';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -1909,8 +1909,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       try{return await releaseCheckPromise;}finally{releaseCheckPromise=null;}
     }
     function applyRequiredUpdate() {
-      // Updating the application always returns to the explicit login screen.
-      try { sessionStorage.removeItem(PORTAL_SESSION_KEY); } catch (_) {}
+      // Keep the authenticated tab session and its original idle deadline on update.
       const u = new URL(window.location.href);
       u.searchParams.set('release', String(Date.now()));
       window.location.replace(u.toString());
@@ -2222,7 +2221,29 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       return allowed.includes(page)?page:allowed[0];
     }
 
-    async function rememberPortalSession(id,password){try{sessionStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({id}));}catch(_){} }
+    const PORTAL_IDLE_MS=30*60*1000;
+    let portalIdleStop=null,portalLastActivity=0;
+    function readPortalSavedSession(){try{return JSON.parse(sessionStorage.getItem(PORTAL_SESSION_KEY)||'null');}catch(_){return null;}}
+    function portalSessionIsIdle(saved,now=Date.now()){return Number.isFinite(saved?.lastActivity)&&now-saved.lastActivity>=PORTAL_IDLE_MS;}
+    function persistPortalActivity(id){try{sessionStorage.setItem(PORTAL_SESSION_KEY,JSON.stringify({id,lastActivity:portalLastActivity}));}catch(_){}}
+    function startPortalIdle(id,fresh=false){
+      portalIdleStop?.();const saved=readPortalSavedSession();
+      portalLastActivity=fresh?Date.now():saved?.id===id&&Number.isFinite(saved.lastActivity)?saved.lastActivity:Date.now();
+      if(Date.now()-portalLastActivity>=PORTAL_IDLE_MS){logout();return false;}
+      let timer=null,lastWrite=0,frameDoc=null;const events=['pointerdown','pointermove','keydown','touchstart','wheel'];
+      const expired=()=>{if(currentUser!==id)return true;if(Date.now()-portalLastActivity<PORTAL_IDLE_MS)return false;logout();window.portalBootNotice?.('৩০ মিনিট কোনো কাজ না করায় লগআউট হয়েছে। আবার Log in করুন।');return true;};
+      const schedule=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(!expired())schedule();},Math.max(1,PORTAL_IDLE_MS-(Date.now()-portalLastActivity)));};
+      const activity=event=>{if(!event.isTrusted||expired())return;const now=Date.now();portalLastActivity=now;if(now-lastWrite>=1000){lastWrite=now;persistPortalActivity(id);schedule();}};
+      const resume=()=>{if(!expired())schedule();};
+      const frame=document.getElementById('investmentFrame');
+      const attach=()=>{if(frameDoc)events.forEach(type=>frameDoc.removeEventListener(type,activity,true));frameDoc=null;try{frameDoc=frame?.contentDocument;if(frameDoc)events.forEach(type=>frameDoc.addEventListener(type,activity,{capture:true,passive:true}));}catch(_){}};
+      events.forEach(type=>document.addEventListener(type,activity,{capture:true,passive:true}));
+      document.addEventListener('visibilitychange',resume);window.addEventListener('pageshow',resume);window.addEventListener('focus',resume);frame?.addEventListener('load',attach);attach();
+      portalIdleStop=()=>{clearTimeout(timer);events.forEach(type=>document.removeEventListener(type,activity,true));if(frameDoc)events.forEach(type=>frameDoc.removeEventListener(type,activity,true));document.removeEventListener('visibilitychange',resume);window.removeEventListener('pageshow',resume);window.removeEventListener('focus',resume);frame?.removeEventListener('load',attach);portalIdleStop=null;};
+      persistPortalActivity(id);schedule();return true;
+    }
+    async function rememberPortalSession(id,password){if(currentUser===id)persistPortalActivity(id);}
+
     let portalLoginInteractionEpoch=0,lastLoginFieldEdit=-Infinity;
     for(const name of ['loginId','loginPass'])for(const type of ['input','change'])document.getElementById(name)?.addEventListener(type,()=>{portalLoginInteractionEpoch++;lastLoginFieldEdit=performance.now();});
     function explicitLoginGesture(event){return !!event&&event.isTrusted===true&&event.type==='click'&&event.currentTarget===document.getElementById('loginBtn');}
@@ -2230,6 +2251,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const interactionEpoch=portalLoginInteractionEpoch;
       let saved;try{saved=JSON.parse(sessionStorage.getItem(PORTAL_SESSION_KEY)||'null');}catch(e){document.documentElement.classList.remove('portal-session-restoring');return;}
       if(!saved?.id){document.documentElement.classList.remove('portal-session-restoring');return;}
+      if(portalSessionIsIdle(saved)){logout();document.documentElement.classList.remove('portal-session-restoring');return;}
       const id=normalizeLoginId(saved.id);
       if(id!=='admin'&&!isGroupAdmin(id)&&!(/^[a-z][a-z0-9_]{2,31}$/.test(id)||(/^\d{3,6}$/.test(id)&&Number(id)>=801))){document.documentElement.classList.remove('portal-session-restoring');return;}
       try{
@@ -2252,6 +2274,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(restoreEpoch!==null&&(restoreEpoch!==portalLoginInteractionEpoch||loginInProgress))return;
       currentUser = String(id || '').trim();
       if (!currentUser) return;
+      if(!startPortalIdle(currentUser,freshLogin))return;
       installFirebaseDeviceMenu();installFinancialBackupMenu();installPortalDeviceRecovery();watchPortalRecoverySession(currentUser);watchDevicePermission(currentUser);
       const rememberedPage=freshLogin?null:getRememberedPortalPage(currentUser);
       if(currentUser==='admin'&&freshLogin&&!hostedReleaseMismatch){database.ref('appConfig/releaseVersion').transaction(current=>{
@@ -2475,6 +2498,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const btn=document.getElementById('refreshDataBtn');
       if(btn){btn.disabled=true;btn.textContent='⟳ Loading...';}
       try{
+        await checkHostedRelease(true);
+        if(hostedReleaseMismatch||firebaseReleaseMismatch){applyRequiredUpdate();return;}
         if((currentUser==='admin'||isPortalReportViewer())&&activeAdminTab==='investment'){
           const frame=document.getElementById('investmentFrame');
           if(!frame)throw Error('Investment page পাওয়া যায়নি।');
@@ -2507,6 +2532,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function logout() {
+      portalIdleStop?.();portalLastActivity=0;
       clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();document.getElementById('deviceRecoveryButton')?.remove();document.getElementById('financialBackupButton')?.remove();document.getElementById('financialBackupSettingsSection')?.remove();document.getElementById('financialBackupModal')?.remove();deviceRecoveryBackup=null;stopPortalRecoveryWatcher();
       clearTimeout(deviceSessionExpiryTimer);portalLedger.reset();
       accountDeviceCleanup?.();accountDeviceCleanup=null;if(accountDeviceRef&&accountDeviceHandler)accountDeviceRef.off('value',accountDeviceHandler);accountDeviceRef=null;accountDeviceHandler=null;portalAccountDeviceEnforced=false;
