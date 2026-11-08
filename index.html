@@ -743,7 +743,7 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
       <div class="filter-panel is-collapsed" id="adminFilterPanel">
         <div class="filter-group admin-filter-admin">
           <label>Admin নির্বাচন করুন</label>
-          <select id="filterAdmin" onchange="applyAdminFilters()">
+          <select id="filterAdmin" onchange="onAdminGroupFilterChange()">
             <option value="">All Admins</option>
           </select>
         </div>
@@ -1802,7 +1802,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.08.01';
+    const APP_RELEASE_VERSION = '2026.11.08.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5212,6 +5212,14 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       });
     }
 
+    function getAvailableDsoFilterIds(){
+      const group=isGroupAdmin(currentUser)?currentUser:getSelectedAdminGroup();
+      return group&&group!=='admin'&&SUB_ADMIN_GROUPS[group]?Array.from(SUB_ADMIN_GROUPS[group],String):portalDsoIds().map(String);
+    }
+    function onAdminGroupFilterChange(){
+      document.querySelectorAll('#filterDsoCheckboxContainer .dso-chk').forEach(input=>input.checked=false);
+      populateDsoDropdown(globalAllData);applyAdminFilters(true);
+    }
     function populateDsoDropdown(data) {
       const checkboxContainer = document.getElementById("filterDsoCheckboxContainer");
       const targetUserSelect = document.getElementById("targetUserSelect");
@@ -5252,7 +5260,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
       let sortedDsos = Array.from(dsoSet).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
+      const visibleDsoIds=new Set(getAvailableDsoFilterIds());
       sortedDsos.forEach(dso => {
+        if(visibleDsoIds.has(dso)){
         let isChecked = currentlyChecked.includes(dso);
         let label = document.createElement("label");
         label.className = "dso-checkbox-item";
@@ -5261,7 +5271,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           ${dso}
         `;
         grid.appendChild(label);
-
+        }
         let opt = document.createElement("option"); opt.value = dso; opt.textContent = `DSO ${dso}`;
         targetUserSelect.appendChild(opt);
       });
@@ -5313,7 +5323,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     function updateDsoDropdownText() {
       const toggle=document.getElementById('dsoMultiSelectToggle');if(!toggle)return;
       const selected=getSelectedDsoValues(),total=document.querySelectorAll('.dso-chk').length;toggle.replaceChildren();
-      if(!selected.length){const label=document.createElement('span');label.textContent=isGroupAdmin(currentUser)?'All Assigned DSO(s)':'All DSO(s)';toggle.append(label);}
+      if(!selected.length){const label=document.createElement('span');label.textContent=isGroupAdmin(currentUser)||getSelectedAdminGroup()&&getSelectedAdminGroup()!=='admin'?'All Assigned DSO(s)':'All DSO(s)';toggle.append(label);}
       else{selected.slice(0,3).forEach(id=>{const chip=document.createElement('span');chip.className='dso-summary-chip';chip.textContent=id;toggle.append(chip);});const count=document.createElement('span');count.className='dso-summary-count';count.textContent=selected.length>3?'+'+(selected.length-3):selected.length+' DSO';toggle.append(count);}
       toggle.title=selected.length?selected.map(id=>'DSO '+id).join(', '):'সকল DSO';
       document.querySelectorAll('.dso-checkbox-item').forEach(row=>row.classList.toggle('is-selected',row.querySelector('.dso-chk')?.checked===true));
@@ -5355,7 +5365,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     function getActiveDsoFilterSet() {
       const adminGroup = getSelectedAdminGroup();
       if (adminGroup && adminGroup !== "admin" && SUB_ADMIN_GROUPS[adminGroup]) {
-        return new Set(Array.from(SUB_ADMIN_GROUPS[adminGroup]).map(String));
+        const assigned=new Set(Array.from(SUB_ADMIN_GROUPS[adminGroup],String));
+        const selected=getSelectedDsoValues().map(String).filter(id=>assigned.has(id));
+        return selected.length?new Set(selected):assigned;
       }
       if (isGroupAdmin(currentUser)) {
         const assigned = new Set(Array.from(SUB_ADMIN_GROUPS[currentUser]).map(String));
@@ -5519,6 +5531,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       document.getElementById("filterDsoEnd").value = portalDsoIds().at(-1);
       const adminFilter = document.getElementById("filterAdmin");
       if (adminFilter) adminFilter.value = "";
+      populateDsoDropdown(globalAllData);
       document.querySelectorAll(".dso-chk").forEach(chk => chk.checked = false);
       updateDsoDropdownText();
       if(activeAdminTab==='slipApproval'){
