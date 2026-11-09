@@ -702,7 +702,7 @@ body.login-design-visible::before,body.login-design-visible::after{display:none}
 #loginSection .login-field>input:focus{border-color:#23866a!important;box-shadow:0 0 0 3px #23866a10!important;outline:none!important}
 #loginSection .login-field-icon{left:14px;width:18px;height:18px;color:#6a8c7e}
 #loginSection .login-field-icon svg{width:18px;height:18px}
-#loginSection #loginBtn{min-height:44px;height:44px;margin:19px 0 0!important;padding:8px 16px;border-radius:10px;font-size:14px;font-weight:600;background:linear-gradient(110deg,#155f4d,#118160);box-shadow:0 5px 12px #126d5417}
+#loginSection #loginBtn{width:88%!important;max-width:280px!important;box-sizing:border-box;min-height:44px;height:44px;margin:19px auto 0!important;padding:8px 16px;border-radius:10px;font-size:14px;font-weight:600;background:linear-gradient(110deg,#155f4d,#118160);box-shadow:0 5px 12px #126d5417}
 #loginSection #loginBtn:hover{background:#146c54}
 #loginSection #loginBtn:active{transform:translateY(1px)}
 body.login-design-visible>.portal-footer{max-width:380px;color:#809088;font-size:10px;line-height:1.8}
@@ -1824,7 +1824,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.09.07';
+    const APP_RELEASE_VERSION = '2026.11.09.08';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
