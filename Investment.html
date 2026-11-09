@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.07.01">
+<meta name="investment-release-version" content="2026.11.09.02">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -490,6 +490,32 @@ body.investment-menu-home #app,body.investment-menu-home #bankApp,#moduleMenu[hi
 #investmentPageHeading:not([hidden]){display:flex;align-items:center;gap:12px;margin:0 0 10px;color:#17483d}
 #investmentPageHeading button{min-height:44px;border:0;border-radius:9px;padding:6px 13px;background:#e5f2ec;color:#145744;font-weight:700}
 @media print{#investmentPageHeading{display:none!important}}
+</style><style id="hisab360-investment-polish">
+@media screen{
+body{color:#203d35}
+#moduleMenu:not([hidden]){gap:9px!important;padding:8px!important;background:#f4f8f6!important;border-radius:15px!important}
+#moduleMenu>details>summary,#moduleMenu>button{min-height:52px!important;padding:11px 14px!important;border-radius:11px!important;font-size:13px!important;line-height:1.4!important}
+#moduleMenu .module-dropdown-panel{padding:7px!important;border:1px solid #e1eae5!important;border-radius:12px!important;box-shadow:0 14px 35px #163c3220!important;background:#fff!important}
+#moduleMenu .module-dropdown-panel button{min-height:42px!important;border-radius:8px!important;text-align:left!important}
+#moduleMenu .module-dropdown-panel button:hover{background:#edf7f1!important;color:#126448!important}
+#content>.card,#bankContent>.card{border-radius:15px!important;box-shadow:0 4px 18px #193e3206!important}
+#content h2,#bankContent h2{font-size:18px;line-height:1.45;color:#214a3e}
+.investment-kpis,.petty-summary-cards{gap:10px!important}
+.investment-kpi,.petty-summary-card,.bank-net-card{border:0!important;border-radius:13px!important;background:#eff7f3!important;padding:15px!important;box-shadow:none!important;min-width:0;overflow-wrap:anywhere}
+.investment-kpi strong,.petty-summary-card strong,.bank-net-card strong{display:block;font-size:23px!important;line-height:1.35;font-variant-numeric:tabular-nums;color:#175e47}
+.investment-kpi span,.petty-summary-card span,.bank-net-card span{font-size:12px!important;line-height:1.5;color:#557468}
+.investment-kpi small{display:block;font-size:11px;line-height:1.6;color:#6e837a;margin-top:5px}
+.investment-kpi:nth-child(2),.petty-summary-card:nth-child(2){background:#f2f0f8!important}
+.investment-kpi:nth-child(3),.petty-summary-card:nth-child(3){background:#edf4fa!important}
+.scroll{border:1px solid #e1e9e5;border-radius:12px;scrollbar-width:thin;scrollbar-color:#bacfc5 #f5f8f6}
+table{font-variant-numeric:tabular-nums}
+td{border-color:#e3ebe6}
+#investmentPageHeading:not([hidden]){padding:8px 0 12px}
+#investmentPageHeading strong{font-size:16px;color:#214a3e}
+.report-actions{gap:8px}
+button:focus-visible,summary:focus-visible{outline:2px solid #178267;outline-offset:3px}
+@media(max-width:640px){#moduleMenu:not([hidden]){gap:7px!important}#moduleMenu>details,#moduleMenu>button{min-width:0;flex:1 1 calc(50% - 7px)}#moduleMenu>details>summary,#moduleMenu>button{padding:10px!important;font-size:12px!important;min-height:52px!important}.investment-kpi,.petty-summary-card,.bank-net-card{padding:12px!important}.investment-kpi strong,.petty-summary-card strong,.bank-net-card strong{font-size:20px!important}#investmentPageHeading strong{font-size:14px}}
+}
 </style></head><body><script>
 window.investmentValidateBankDeposit=function(entry){
  const banks=['Islami','Pubali','City','DBBL','Agroni','UCB','Sonali'];

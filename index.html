@@ -715,6 +715,35 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 @media(max-width:480px){#loginSection.login-box{padding:33px 24px 28px!important;border-radius:21px!important}#loginSection .hisab-login-stage{margin-bottom:28px!important}}
 @media(max-height:560px){body.login-design-visible{padding-top:14px!important}#loginSection.login-box{margin-top:0!important;padding-top:25px!important;padding-bottom:24px!important}#loginSection .hisab-login-stage{margin-bottom:22px!important}}
 @media(prefers-reduced-motion:reduce){#loginSection .login-field>input,#loginSection #loginBtn,#loginSection .login-field-icon{transition:none}}
+</style><style id="hisab360-dashboard-polish">
+@media screen{
+#appContainer{color:#203d35;background:#fff;border-radius:18px;box-shadow:0 8px 32px #183e3208}
+#appContainer .header-bar{padding:14px 4px 16px;border-bottom:1px solid #edf2ef;margin-bottom:12px}
+#adminPageHeading:not([hidden]){padding:10px 0 12px;gap:12px}
+#adminPageTitle{font-size:17px;letter-spacing:-.2px}
+#adminTabNav,#dsoTabNav{background:#f4f8f6!important;border-radius:16px!important;padding:8px!important;gap:7px!important}
+#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu,#dsoTabNav>.tab-btn{min-height:48px!important;border-radius:11px!important;padding:9px 12px!important;line-height:1.35!important}
+#adminTabNav>.tab-btn.active,#dsoTabNav>.tab-btn.active{background:linear-gradient(115deg,#164b3e,#138466)!important;color:#fff!important}
+#appContainer .summary-cards{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))!important;gap:10px!important;margin:14px 0!important}
+#appContainer .summary-cards>.card{position:relative;background:#f4f8f7!important;padding:13px 14px!important;border:0!important;border-radius:13px!important;box-shadow:none!important;text-align:left;min-width:0;overflow-wrap:anywhere}
+#appContainer .summary-cards>.card.green{background:#edf8f1!important;color:#216347}
+#appContainer .summary-cards>.card.red{background:#fff2ef!important;color:#9a4236}
+#appContainer .summary-cards>.card.cyan{background:#eef7f9!important;color:#235f6c}
+#appContainer .summary-cards>.card.purple{background:#f3f0fa!important;color:#625185}
+#appContainer .summary-cards>.card.diff{background:#fff8e9!important;color:#825c20}
+#appContainer .summary-cards>.card h3{font-size:11px!important;line-height:1.5!important;margin:0 0 7px!important;font-weight:600!important;color:inherit}
+#appContainer .summary-cards>.card p{font-size:21px!important;line-height:1.3!important;margin:0!important;font-weight:700!important;letter-spacing:-.35px;font-variant-numeric:tabular-nums}
+#appContainer .table-container{border:1px solid #e2eae6;border-radius:12px;box-shadow:0 3px 12px #173e3204;scrollbar-width:thin;scrollbar-color:#bacfc5 #f5f8f6}
+#appContainer .table-container table{font-variant-numeric:tabular-nums}
+#appContainer .table-container td{border-color:#e4ebe7}
+#appContainer .table-container tbody tr:hover td:not([style*="background"]){box-shadow:inset 0 0 0 9999px #18785a05}
+#appContainer .table-container tfoot td{font-weight:700}
+#appContainer #adminFilterToggle{border-radius:9px;box-shadow:none}
+#appContainer #adminFilterPanel{border:0!important;background:#f4f8f6!important;border-radius:13px!important}
+#appContainer button:focus-visible{outline:2px solid #178267;outline-offset:3px}
+@media(max-width:760px){#appContainer .summary-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}#appContainer .summary-cards>.card{padding:11px 12px!important}#appContainer .summary-cards>.card p{font-size:19px!important}#adminPageTitle{font-size:15px}}
+@media(max-width:360px){#appContainer .summary-cards>.card h3{font-size:10px!important}#appContainer .summary-cards>.card p{font-size:17px!important}}
+}
 </style></head>
 <body>
 
@@ -1831,7 +1860,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.09.13';
+    const APP_RELEASE_VERSION = '2026.11.09.14';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
