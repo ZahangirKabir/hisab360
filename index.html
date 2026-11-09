@@ -692,15 +692,22 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
 #adminFilterPanel.is-collapsed{display:none!important}
 #adminFilterToggle:not([hidden]){display:inline-flex;align-items:center;min-height:44px;margin:6px 0;padding:6px 14px;border:0;border-radius:9px;background:#e5f2ec;color:#145744;font-weight:700}
 </style><style id="login-fields-refined">
-#loginSection.login-box{max-width:400px;border:0!important;border-radius:22px!important;padding:32px 28px!important;box-shadow:0 14px 46px rgba(21,69,54,.09)!important}
-#loginSection .login-field{margin-bottom:16px}
-#loginSection .login-field>input{height:54px!important;min-height:54px!important;border:1px solid #dce6e2!important;border-radius:12px!important;background:#fff!important;padding:14px 16px 14px 49px!important;color:#173f34;font-size:16px!important;transition:border-color .15s,box-shadow .15s}
-#loginSection .login-field>input::placeholder{color:#7c8f87;font-size:14px}
-#loginSection .login-field>input:focus{border-color:#178366!important;box-shadow:0 0 0 3px #17836614!important;outline:none!important}
-#loginSection .login-field-icon{left:17px;color:#65877a}
-#loginSection #loginBtn{min-height:51px;border-radius:12px;font-size:16px;background:linear-gradient(110deg,#126d54,#099365);box-shadow:0 5px 14px #126d541a}
+body.login-design-visible{background:#f5f8f7;background-image:radial-gradient(ellipse at 15% 0%,#e0f1eb 0,transparent 55%),radial-gradient(ellipse at 100% 100%,#e8eff8 0,transparent 50%);padding:24px 16px!important}
+body.login-design-visible::before,body.login-design-visible::after{display:none}
+#loginSection.login-box{max-width:380px;margin:clamp(28px,13vh,130px) auto 22px!important;padding:32px 28px 28px!important;border:1px solid #fff!important;border-radius:20px!important;background:#fff!important;box-shadow:0 18px 55px #183f3210,0 2px 6px #183f3205!important}
+#loginSection .hisab-login-stage{margin:0 auto 27px!important;width:210px!important;max-width:90%!important}
+#loginSection .login-field{margin:0 0 12px}
+#loginSection .login-field>input{height:44px!important;min-height:44px!important;border:1px solid #dce6e1!important;border-radius:10px!important;background:#fff!important;padding:9px 13px 9px 43px!important;color:#193e33;font-size:16px!important;line-height:24px!important;transition:border-color .15s,box-shadow .15s}
+#loginSection .login-field>input::placeholder{color:#80948b;font-size:13px}
+#loginSection .login-field>input:focus{border-color:#23866a!important;box-shadow:0 0 0 3px #23866a10!important;outline:none!important}
+#loginSection .login-field-icon{left:14px;width:18px;height:18px;color:#6a8c7e}
+#loginSection .login-field-icon svg{width:18px;height:18px}
+#loginSection #loginBtn{min-height:44px;height:44px;margin:19px 0 0!important;padding:8px 16px;border-radius:10px;font-size:14px;font-weight:600;background:linear-gradient(110deg,#155f4d,#118160);box-shadow:0 5px 12px #126d5417}
+#loginSection #loginBtn:hover{background:#146c54}
 #loginSection #loginBtn:active{transform:translateY(1px)}
-@media(max-width:480px){#loginSection.login-box{padding:28px 22px!important;max-width:370px}}
+body.login-design-visible>.portal-footer{max-width:380px;color:#809088;font-size:10px;line-height:1.8}
+@media(max-width:480px){#loginSection.login-box{padding:29px 23px 25px!important;margin-top:clamp(28px,10svh,82px)!important;border-radius:18px!important}}
+@media(max-height:560px){#loginSection.login-box{margin-top:12px!important;padding-top:22px!important}#loginSection .hisab-login-stage{margin-bottom:18px!important}}
 @media(prefers-reduced-motion:reduce){#loginSection .login-field>input,#loginSection #loginBtn{transition:none}}
 </style></head>
 <body>
@@ -1817,7 +1824,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.09.03';
+    const APP_RELEASE_VERSION = '2026.11.09.04';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
