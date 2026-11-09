@@ -693,22 +693,25 @@ body.login-design-visible>.portal-footer strong{font-weight:400}
 #adminFilterPanel.is-collapsed{display:none!important}
 #adminFilterToggle:not([hidden]){display:inline-flex;align-items:center;min-height:44px;margin:6px 0;padding:6px 14px;border:0;border-radius:9px;background:#e5f2ec;color:#145744;font-weight:700}
 </style><style id="login-fields-refined">
-body.login-design-visible{background:#f5f8f7;background-image:radial-gradient(ellipse at 15% 0%,#e0f1eb 0,transparent 55%),radial-gradient(ellipse at 100% 100%,#e8eff8 0,transparent 50%);padding:24px 16px!important}
+body.login-design-visible{background:#f4f7f6;background-image:radial-gradient(ellipse at 20% 0%,#e1f0ea 0,transparent 55%),radial-gradient(ellipse at 100% 100%,#e7edf5 0,transparent 50%);padding:24px 16px!important}
 body.login-design-visible::before,body.login-design-visible::after{display:none}
-#loginSection.login-box{max-width:380px;margin:clamp(28px,13vh,130px) auto 22px!important;padding:32px 28px 28px!important;border:1px solid #fff!important;border-radius:20px!important;background:#fff!important;box-shadow:0 18px 55px #183f3210,0 2px 6px #183f3205!important}
-#loginSection .hisab-login-stage{margin:0 auto 27px!important;width:210px!important;max-width:90%!important}
-#loginSection .login-field{width:88%;max-width:280px;margin:0 auto 12px}
-#loginSection .login-field>input{height:44px!important;min-height:44px!important;border:1px solid #dce6e1!important;border-radius:10px!important;background:#fff!important;padding:9px 13px 9px 43px!important;color:#193e33;font-size:16px!important;line-height:24px!important;transition:border-color .15s,box-shadow .15s}
-#loginSection .login-field>input::placeholder{color:#80948b;font-size:13px}
-#loginSection .login-field>input:focus{border-color:#23866a!important;box-shadow:0 0 0 3px #23866a10!important;outline:none!important}
-#loginSection .login-field-icon{left:14px;width:18px;height:18px;color:#6a8c7e}
+#loginSection.login-box{width:100%;max-width:372px;margin:clamp(24px,12svh,112px) auto 20px!important;padding:32px 28px 28px!important;box-sizing:border-box;border:1px solid #ffffff!important;border-radius:20px!important;background:#fff!important;box-shadow:0 16px 50px #153e3210,0 2px 5px #153e3205!important}
+#loginSection .hisab-login-stage{margin:0 auto 28px!important;width:210px!important;max-width:90%!important}
+#loginSection .login-field{width:100%!important;max-width:280px!important;margin:0 auto 13px!important;text-align:left}
+#loginSection .login-field>input{width:100%!important;height:44px!important;min-height:44px!important;box-sizing:border-box;border:1px solid #d9e4df!important;border-radius:10px!important;background:#fff!important;padding:9px 13px 9px 43px!important;color:#173b32;font-family:inherit;font-size:16px!important;line-height:24px!important;transition:border-color .15s,box-shadow .15s}
+#loginSection .login-field>input::placeholder{color:#7b8c84;font-size:13px}
+#loginSection .login-field>input:focus{border-color:#1d8063!important;box-shadow:0 0 0 3px #1d806314!important;outline:none!important}
+#loginSection .login-field-icon{left:14px;width:18px;height:18px;color:#618074}
 #loginSection .login-field-icon svg{width:18px;height:18px}
-#loginSection #loginBtn{width:88%!important;max-width:280px!important;box-sizing:border-box;min-height:44px;height:44px;margin:19px auto 0!important;padding:8px 16px;border-radius:10px;font-size:14px;font-weight:600;background:linear-gradient(110deg,#155f4d,#118160);box-shadow:0 5px 12px #126d5417}
-#loginSection #loginBtn:hover{background:#146c54}
+#loginSection #loginPass::-ms-reveal,#loginSection #loginPass::-ms-clear{display:none}
+#loginSection #loginBtn{display:flex;width:100%!important;max-width:280px!important;box-sizing:border-box;min-height:44px;height:44px;margin:19px auto 0!important;padding:8px 16px;border-radius:10px;font-size:14px;font-weight:600;background:linear-gradient(110deg,#153e36,#117b5d);box-shadow:0 5px 12px #126d5417}
+#loginSection #loginBtn:hover{background:#14674f}
 #loginSection #loginBtn:active{transform:translateY(1px)}
-body.login-design-visible>.portal-footer{max-width:380px;color:#809088;font-size:10px;line-height:1.8}
-@media(max-width:480px){#loginSection.login-box{padding:29px 23px 25px!important;margin-top:clamp(28px,10svh,82px)!important;border-radius:18px!important}}
-@media(max-height:560px){#loginSection.login-box{margin-top:12px!important;padding-top:22px!important}#loginSection .hisab-login-stage{margin-bottom:18px!important}}
+#loginSection #loginBtn:focus-visible{outline:2px solid #168161;outline-offset:3px}
+#loginSection .login-inline-error:not([hidden]){max-width:280px;margin:0 auto 8px;padding:9px 11px;box-sizing:border-box;border-radius:8px;background:#fff4f1;color:#a33f30;font-size:12px;line-height:1.7;text-align:left;overflow-wrap:anywhere}
+body.login-design-visible>.portal-footer{max-width:372px;color:#819188;font-size:10px;line-height:1.8}
+@media(max-width:480px){#loginSection.login-box{padding:28px 23px 25px!important;margin-top:clamp(24px,9svh,74px)!important;border-radius:18px!important}}
+@media(max-height:560px){body.login-design-visible{padding-top:12px!important}#loginSection.login-box{margin-top:0!important;padding-top:21px!important}#loginSection .hisab-login-stage{margin-bottom:18px!important}}
 @media(prefers-reduced-motion:reduce){#loginSection .login-field>input,#loginSection #loginBtn{transition:none}}
 </style></head>
 <body>
@@ -717,8 +720,9 @@ body.login-design-visible>.portal-footer{max-width:380px;color:#809088;font-size
   <!-- LOGIN SECTION -->
   <div id="loginSection" class="login-box">
     <span class="hisab-logo-stage hisab-login-stage"><img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-logo-v8.png" alt="Hisab360"></span>
-    <div class="login-field"><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span><input type="text" id="loginId" aria-label="User ID" placeholder="User ID" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+    <div class="login-field"><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span><input type="text" id="loginId" aria-label="User ID" placeholder="User ID" enterkeyhint="next" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
     <div class="login-field"><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></span><input type="password" id="loginPass" aria-label="Password" placeholder="Password" autocomplete="current-password"></div>
+    <p id="loginInlineError" class="login-inline-error" role="alert" aria-live="polite" hidden></p>
     <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Log in</button>
   </div>
 
@@ -1825,7 +1829,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.09.09';
+    const APP_RELEASE_VERSION = '2026.11.09.10';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2402,23 +2406,30 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if(code==='auth/operation-not-allowed')return 'Firebase-এর প্রয়োজনীয় Login provider চালু নেই। Admin-কে জানান।';
       return 'লগইন করা যায়নি। আবার চেষ্টা করুন। সমস্যা থাকলে Admin-কে এই code জানান: '+(code||'UNKNOWN');
     }
+    function showLoginInlineError(message){
+      const error=document.getElementById('loginInlineError');if(!error)return;
+      error.textContent=message||'';error.hidden=!message;
+      for(const id of ['loginId','loginPass'])document.getElementById(id)?.setAttribute('aria-describedby','loginInlineError');
+    }
+    for(const id of ['loginId','loginPass'])document.getElementById(id)?.addEventListener('input',()=>showLoginInlineError(''));
     async function handleLogin(event) {
       if(!explicitLoginGesture(event))return;
       portalLoginInteractionEpoch++;
+      showLoginInlineError("");
       if (loginInProgress) return;
       const id = normalizeLoginId(document.getElementById("loginId").value);
       const pass = document.getElementById("loginPass").value;
       const btn = document.getElementById("loginBtn");
-      if (!id || !pass) { alert("ইউজার আইডি এবং পাসওয়ার্ড লিখুন!"); return; }
+      if (!id || !pass) { showLoginInlineError("ইউজার আইডি এবং পাসওয়ার্ড লিখুন!"); return; }
       let userIdNum = parseInt(id, 10);
       const isPrivileged = id === "admin" || isGroupAdmin(id) || /^[a-z][a-z0-9_]{2,31}$/.test(id);
       if (!isPrivileged && (isNaN(userIdNum) || userIdNum < 801 || !/^\d{3,6}$/.test(id))) {
-        alert("ইউজার আইডি অথবা পাসওয়ার্ড সঠিক নয়। আবার চেষ্টা করুন।"); return;
+        showLoginInlineError("ইউজার আইডি অথবা পাসওয়ার্ড সঠিক নয়। আবার চেষ্টা করুন।"); return;
       }
-      const wait=loginWaitMessage(id);if(wait){alert(wait);return;}
-      if(credentialLoginTask){const button=document.getElementById('loginBtn');if(button){button.disabled=true;button.textContent='Please wait…';}credentialLoginTask.finally(()=>{if(button&&!loginInProgress){button.disabled=false;button.textContent='Log in';}}).catch(()=>{});alert('আগের Login যাচাই শেষ হচ্ছে। শেষ হলে আবার Login চাপুন।');return;}
+      const wait=loginWaitMessage(id);if(wait){showLoginInlineError(wait);return;}
+      if(credentialLoginTask){const button=document.getElementById('loginBtn');if(button){button.disabled=true;button.textContent='Please wait…';}credentialLoginTask.finally(()=>{if(button&&!loginInProgress){button.disabled=false;button.textContent='Log in';}}).catch(()=>{});showLoginInlineError('আগের Login যাচাই শেষ হচ্ছে। শেষ হলে আবার Login চাপুন।');return;}
       credentialActionEpoch++;loginInProgress = true;
-      if(btn){btn.disabled=true;btn.classList.add('is-loading');btn.textContent='Checking…';}
+      if(btn){btn.disabled=true;btn.classList.add('is-loading');btn.setAttribute('aria-busy','true');btn.textContent='Checking…';}
       const trace=startLoginTiming();let devicePermissionPending=false;
       let devicePreparation=null;
       try {
@@ -2440,11 +2451,11 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         await trace.run('পেজ খোলা',()=>openPortalForUser(id, {freshLogin:true,meta,app,approval,trace}));await rememberPortalSession(id,pass);
       } catch (e) {
         devicePermissionPending=e.code==='portal/device-permission-required';
-        if(!devicePermissionPending){const wait=isWrongLogin(e)?recordWrongLogin(id):'';alert(wait||loginErrorMessage(e));}
+        if(!devicePermissionPending){const wait=isWrongLogin(e)?recordWrongLogin(id):'';showLoginInlineError(wait||loginErrorMessage(e));}
       } finally {
         trace.finish(devicePermissionPending);
         loginInProgress = false;
-        if(btn){btn.classList.remove('is-loading');btn.disabled=!!credentialLoginTask;btn.textContent=credentialLoginTask?'Please wait…':'Log in';if(credentialLoginTask){const pending=credentialLoginTask;pending.finally(()=>{if(credentialLoginTask===null&&!loginInProgress){btn.disabled=false;btn.textContent='Log in';}}).catch(()=>{});}}updateReleaseGate();
+        if(btn){btn.classList.remove('is-loading');btn.removeAttribute('aria-busy');btn.disabled=!!credentialLoginTask;btn.textContent=credentialLoginTask?'Please wait…':'Log in';if(credentialLoginTask){const pending=credentialLoginTask;pending.finally(()=>{if(credentialLoginTask===null&&!loginInProgress){btn.disabled=false;btn.textContent='Log in';}}).catch(()=>{});}}updateReleaseGate();
       }
     }
 
