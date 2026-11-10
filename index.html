@@ -844,7 +844,16 @@ body #moduleMenu .module-dropdown-panel button:hover{background:#edf7f2!importan
 @media(prefers-reduced-motion:reduce){body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{transition:none}}
 </style><style id="menu-icons-no-background">
 html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html body #moduleMenu .investment-nav-icon,html body #adminTabNav>.tab-btn.active .main-menu-icon,html body #dsoTabNav>.tab-btn.active .dso-menu-icon{background:none!important;box-shadow:none!important;border:0!important}
-</style><style id="mobile-menu-beside-logo">@media(max-width:760px){body.has-icon-sidebar .header-bar{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;column-gap:8px!important}body.has-icon-sidebar #hisabMobileMenuBar{margin:0!important;padding:0!important;border:0!important;min-height:0!important;gap:0!important}#hisabMobileMenuBar>span{display:none!important}#hisabMobileMenuBar>button{padding:8px 9px!important;gap:5px!important;min-height:40px!important;font-size:11px!important}#hisabMobileMenuBar svg{width:18px!important;height:18px!important}body.has-icon-sidebar .hisab-header-brand{min-width:0!important}body.has-icon-sidebar .hisab-header-brand .hisab-header-stage{max-width:100%!important}}@media(max-width:360px){#hisabMobileMenuBar>button>span{display:none}#hisabMobileMenuBar>button{width:38px;justify-content:center}body.has-icon-sidebar .header-bar{column-gap:5px!important}}</style><style id="menu-logo-alignment">body.has-icon-sidebar .header-bar{align-items:center!important}body.has-icon-sidebar .hisab-header-brand{align-items:center!important}body.has-icon-sidebar #hisabHeaderLogo{display:block!important}#hisabSideMenu>button{align-self:flex-start}@media(max-width:760px){body.has-icon-sidebar .header-bar{align-items:start!important}body.has-icon-sidebar #hisabMobileMenuBar{align-self:start!important;display:flex!important;align-items:center!important;min-height:40px!important}body.has-icon-sidebar .hisab-header-brand .hisab-header-stage{display:flex!important;align-items:center!important;height:40px!important}body.has-icon-sidebar #hisabHeaderLogo{max-height:34px!important;object-fit:contain;object-position:left center}body.has-icon-sidebar .hisab-header-brand #portalTitle{margin-top:0!important}}</style></head>
+</style><style id="mobile-menu-beside-logo">@media(max-width:760px){body.has-icon-sidebar .header-bar{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;column-gap:8px!important}body.has-icon-sidebar #hisabMobileMenuBar{margin:0!important;padding:0!important;border:0!important;min-height:0!important;gap:0!important}#hisabMobileMenuBar>span{display:none!important}#hisabMobileMenuBar>button{padding:8px 9px!important;gap:5px!important;min-height:40px!important;font-size:11px!important}#hisabMobileMenuBar svg{width:18px!important;height:18px!important}body.has-icon-sidebar .hisab-header-brand{min-width:0!important}body.has-icon-sidebar .hisab-header-brand .hisab-header-stage{max-width:100%!important}}@media(max-width:360px){#hisabMobileMenuBar>button>span{display:none}#hisabMobileMenuBar>button{width:38px;justify-content:center}body.has-icon-sidebar .header-bar{column-gap:5px!important}}</style><style id="menu-logo-alignment">body.has-icon-sidebar .header-bar{align-items:center!important}body.has-icon-sidebar .hisab-header-brand{align-items:center!important}body.has-icon-sidebar #hisabHeaderLogo{display:block!important}#hisabSideMenu>button{align-self:flex-start}@media(max-width:760px){body.has-icon-sidebar .header-bar{align-items:start!important}body.has-icon-sidebar #hisabMobileMenuBar{align-self:start!important;display:flex!important;align-items:center!important;min-height:40px!important}body.has-icon-sidebar .hisab-header-brand .hisab-header-stage{display:flex!important;align-items:center!important;height:40px!important}body.has-icon-sidebar #hisabHeaderLogo{max-height:34px!important;object-fit:contain;object-position:left center}body.has-icon-sidebar .hisab-header-brand #portalTitle{margin-top:0!important}}</style><style id="single-line-report-controls">
+@media screen{
+#adminPageHeading>button,#investmentPageHeading>button,button[aria-label^="Back to"]{display:none!important}
+.report-page-controls{display:flex;align-items:center;gap:14px;flex-wrap:nowrap;overflow-x:auto;max-width:100%;margin:8px 0 12px;-webkit-overflow-scrolling:touch}
+.report-page-controls #adminPageHeading:not([hidden]){display:flex!important;flex:0 0 auto;margin:0!important;padding:0!important;white-space:nowrap;min-height:40px}
+.report-page-controls #adminReportToolbar:not([hidden]){flex-wrap:nowrap!important;flex:0 0 auto;margin:0!important}
+#adminReportToolbar>button:not([hidden]){flex:0 0 auto!important;white-space:nowrap!important;margin:0!important;min-height:40px!important}
+#adminReportToolbar:not([hidden]){flex-wrap:nowrap!important;overflow-x:auto;max-width:100%}
+}
+</style></head>
 <body>
 
 
@@ -1962,7 +1971,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.02';
+    const APP_RELEASE_VERSION = '2026.11.11.03';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6821,5 +6830,5 @@ body.has-icon-sidebar #hisabMobileMenuBar{display:flex;align-items:center;gap:12
  new MutationObserver(schedule).observe(app,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden','disabled']});sync();
 })();
 </script>
-</body>
+<script>(()=>{const heading=document.getElementById('adminPageHeading'),toolbar=document.getElementById('adminReportToolbar');if(heading&&toolbar){const row=document.createElement('div');row.className='report-page-controls';heading.before(row);row.append(heading,toolbar);}})();</script></body>
 </html>
