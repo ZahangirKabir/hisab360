@@ -844,7 +844,7 @@ body #moduleMenu .module-dropdown-panel button:hover{background:#edf7f2!importan
 @media(prefers-reduced-motion:reduce){body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{transition:none}}
 </style><style id="menu-icons-no-background">
 html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html body #moduleMenu .investment-nav-icon,html body #adminTabNav>.tab-btn.active .main-menu-icon,html body #dsoTabNav>.tab-btn.active .dso-menu-icon{background:none!important;box-shadow:none!important;border:0!important}
-</style></head>
+</style><style id="mobile-menu-beside-logo">@media(max-width:760px){body.has-icon-sidebar .header-bar{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;column-gap:8px!important}body.has-icon-sidebar #hisabMobileMenuBar{margin:0!important;padding:0!important;border:0!important;min-height:0!important;gap:0!important}#hisabMobileMenuBar>span{display:none!important}#hisabMobileMenuBar>button{padding:8px 9px!important;gap:5px!important;min-height:40px!important;font-size:11px!important}#hisabMobileMenuBar svg{width:18px!important;height:18px!important}body.has-icon-sidebar .hisab-header-brand{min-width:0!important}body.has-icon-sidebar .hisab-header-brand .hisab-header-stage{max-width:100%!important}}@media(max-width:360px){#hisabMobileMenuBar>button>span{display:none}#hisabMobileMenuBar>button{width:38px;justify-content:center}body.has-icon-sidebar .header-bar{column-gap:5px!important}}</style></head>
 <body>
 
 
@@ -1962,7 +1962,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.25';
+    const APP_RELEASE_VERSION = '2026.11.11.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6790,7 +6790,7 @@ body.has-icon-sidebar #hisabMobileMenuBar{display:flex;align-items:center;gap:12
  const rail=document.createElement('nav');rail.id='hisabSideMenu';rail.hidden=true;rail.setAttribute('aria-label','App menu');
  const toggle=document.createElement('button');toggle.type='button';toggle.title='মেনু খুলুন বা স্থির রাখুন';toggle.setAttribute('aria-label','মেনু খুলুন বা স্থির রাখুন');toggle.innerHTML='<span class="rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m4 7 4 5-4 5M11 6h9M11 12h9M11 18h9"/></svg></span><span class="rail-label">Hisab360 Menu</span>';
  const list=document.createElement('div');list.className='rail-items';rail.append(toggle,list);const backdrop=document.createElement('div');backdrop.id='hisabMenuBackdrop';backdrop.hidden=true;backdrop.setAttribute('aria-hidden','true');document.body.append(backdrop,rail);
- const mobileBar=document.createElement('div');mobileBar.id='hisabMobileMenuBar';const mobileOpen=document.createElement('button');mobileOpen.type='button';mobileOpen.setAttribute('aria-label','মেনু খুলুন');mobileOpen.setAttribute('aria-controls','hisabSideMenu');mobileOpen.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menu</span>';const mobileTitle=document.createElement('span');mobileTitle.textContent='Hisab360';mobileBar.append(mobileOpen,mobileTitle);app.prepend(mobileBar);mobileOpen.onclick=()=>{pinned=true;expand();};
+ const mobileBar=document.createElement('div');mobileBar.id='hisabMobileMenuBar';const mobileOpen=document.createElement('button');mobileOpen.type='button';mobileOpen.setAttribute('aria-label','মেনু খুলুন');mobileOpen.setAttribute('aria-controls','hisabSideMenu');mobileOpen.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menu</span>';const mobileTitle=document.createElement('span');mobileTitle.textContent='Hisab360';mobileBar.append(mobileOpen,mobileTitle);(app.querySelector('.header-bar')||app).prepend(mobileBar);mobileOpen.onclick=()=>{pinned=true;expand();};
  let pinned=false,hovered=false,focused=false,investmentOpen=false,queued=false,signature='',frameDoc=null,frameObserver=null;const groups=new Set();
  const compactMenu=()=>matchMedia('(max-width:760px)').matches;
  const closeMenu=()=>{pinned=hovered=focused=false;expand();};backdrop.addEventListener('click',closeMenu);
