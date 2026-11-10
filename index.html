@@ -759,6 +759,13 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 #appContainer #dsoReportSummary[hidden]{display:none!important}
 }
 @media print{#dsoSummaryToggle{display:none!important}#appContainer #dsoReportSummary[hidden]{display:grid!important}}
+</style><style id="collapsible-missing-dso">
+@media screen{
+#missingDsoToggle{display:inline-flex;align-items:center;min-height:40px;margin:5px 7px 8px 0;padding:7px 14px;border:0;border-radius:9px;background:#fff4e2;color:#855f21;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+#missingDsoToggle:focus-visible{outline:2px solid #a87c30;outline-offset:3px}
+#missingDsoBox[hidden]{display:none!important}
+}
+@media print{#missingDsoToggle{display:none!important}#missingDsoBox[hidden]{display:block!important}}
 </style></head>
 <body>
 
@@ -853,7 +860,8 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 
       <!-- ADMIN PAGE 1: MAIN REPORT TABLE -->
       <div id="adminPageReport">
-        <div class="missing-box" id="missingDsoBox">
+        <button type="button" id="missingDsoToggle" aria-controls="missingDsoBox" aria-expanded="false" onclick="toggleMissingDsoReport()">রিপোর্ট জমা দিতে বাকি আছে ▸</button>
+        <div class="missing-box" id="missingDsoBox" hidden>
           <h3>
             <span>⚠️ রিপোর্ট জমা দিতে বাকি আছে (<span id="missingCount">0</span> জন DSO)</span>
             <span style="font-size: 11px; font-weight: normal; color: #555;" id="missingRangeText">Range: 801 to 846</span>
@@ -1876,7 +1884,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.02';
+    const APP_RELEASE_VERSION = '2026.11.10.03';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5653,6 +5661,10 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       }
     }
 
+    function toggleMissingDsoReport(){
+      const box=document.getElementById('missingDsoBox'),button=document.getElementById('missingDsoToggle');
+      box.hidden=!box.hidden;button.setAttribute('aria-expanded',String(!box.hidden));button.textContent=box.hidden?'রিপোর্ট জমা দিতে বাকি আছে ▸':'রিপোর্ট জমা দিতে বাকি আছে ▾';
+    }
     function toggleDsoReportSummary(){
       const cards=document.getElementById('dsoReportSummary'),button=document.getElementById('dsoSummaryToggle');
       cards.hidden=!cards.hidden;button.setAttribute('aria-expanded',String(!cards.hidden));button.textContent=cards.hidden?'Summary ▸':'Summary ▾';
