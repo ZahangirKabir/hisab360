@@ -27,7 +27,14 @@
   }
   trigger.onclick=open;input.addEventListener('input',update);input.addEventListener('change',update);input.addEventListener('invalid',event=>{event.preventDefault();trigger.focus();open();});controls.set(input,{update});update();
  });}
- document.addEventListener('pointerdown',event=>{if(active&&!active.panel.contains(event.target)&&!active.trigger.contains(event.target))close();});
+ function dismissOutside(event){
+  if(active&&!active.panel.contains(event.target)&&!active.trigger.contains(event.target))close();
+  document.querySelectorAll('.submission-date-picker').forEach(wrap=>{if(wrap.contains(event.target))return;const panel=wrap.querySelector('.submission-calendar');if(panel&&!panel.hidden){panel.hidden=true;wrap.querySelector('.submission-date-trigger')?.setAttribute('aria-expanded','false');}});
+ }
+ document.addEventListener('pointerdown',dismissOutside,true);
+ // Capture taps even when controls stop bubbling; header taps live in the parent document.
+ try{if(parent!==window&&parent.location.origin===location.origin){parent.document.addEventListener('pointerdown',dismissOutside,true);window.addEventListener('pagehide',()=>parent.document.removeEventListener('pointerdown',dismissOutside,true),{once:true});}}catch(_){}
+
  document.addEventListener('keydown',event=>{if(!active)return;if(event.key==='Escape'){event.preventDefault();close(true);}if(event.key==='Tab'){const focusable=[...active.panel.querySelectorAll('button:not(:disabled),select:not(:disabled)')],first=focusable[0],last=focusable.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}});
  window.addEventListener('resize',()=>close());document.addEventListener('scroll',event=>{if(active&&!active.panel.contains(event.target))close();},true);
  new MutationObserver(sync).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','disabled','readonly','type']});sync();
