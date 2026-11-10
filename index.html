@@ -1962,7 +1962,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.21';
+    const APP_RELEASE_VERSION = '2026.11.10.22';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6767,5 +6767,25 @@ global.PortalLedger={create,sync,balance,same,snapshot};
  const schedule=()=>{if(!queued){queued=true;requestAnimationFrame(sync);}};
  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});sync();
 })();
-</script></body>
+</script><style id="icon-sidebar-layout">
+#hisabSideMenu{position:fixed;inset:0 auto 0 0;width:52px;padding:12px 7px;box-sizing:border-box;background:#cee7eb;border-right:1px solid #badbe0;z-index:900;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden}#hisabSideMenu[hidden]{display:none!important}#hisabSideMenu.expanded{width:206px}#hisabSideMenu button{display:flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;width:38px;min-height:40px;padding:8px;border:0;border-radius:10px;background:transparent;color:#284e59;font:600 12px/1.4 'Segoe UI',sans-serif;text-align:left;cursor:pointer;box-shadow:none}#hisabSideMenu.expanded button{width:100%;justify-content:flex-start}#hisabSideMenu button:hover,#hisabSideMenu button.active{background:#e6fbff;color:#087e96}#hisabSideMenu button:focus-visible{outline:2px solid #137d94;outline-offset:-2px}#hisabSideMenu .rail-icon{display:flex;align-items:center;justify-content:center;width:22px;height:22px;flex:0 0 22px;background:none!important}#hisabSideMenu svg{width:20px;height:20px;stroke-width:1.8}#hisabSideMenu .rail-label{display:none}#hisabSideMenu.expanded .rail-label{display:block}#hisabSideMenu .rail-items{display:flex;flex-direction:column;gap:3px;padding-top:9px;border-top:1px solid #a6d1da}body.has-icon-sidebar{padding-left:64px!important}body.has-icon-sidebar.sidebar-expanded{padding-left:218px!important}body.has-icon-sidebar #adminTabNav,body.has-icon-sidebar #dsoTabNav{display:none!important}body.has-icon-sidebar #appContainer{width:100%;max-width:100%;box-sizing:border-box}body.has-icon-sidebar .portal-sticky-top{position:relative!important;top:auto!important}@media(max-width:600px){#hisabSideMenu{width:48px;padding:10px 5px}body.has-icon-sidebar{padding-left:56px!important}body.has-icon-sidebar.sidebar-expanded{padding-left:56px!important}#hisabSideMenu.expanded{width:min(206px,80vw);box-shadow:8px 0 25px #14383b26}body.has-icon-sidebar #appContainer{padding:8px!important}body.has-icon-sidebar .header-bar{gap:5px!important}}@media print{#hisabSideMenu{display:none!important}body.has-icon-sidebar,body.has-icon-sidebar.sidebar-expanded{padding-left:0!important}}
+</style><script>
+(function(){
+ const app=document.getElementById('appContainer');if(!app)return;
+ const rail=document.createElement('nav');rail.id='hisabSideMenu';rail.hidden=true;rail.setAttribute('aria-label','App menu');
+ const toggle=document.createElement('button');toggle.type='button';toggle.title='মেনুর নাম দেখান';toggle.setAttribute('aria-label','মেনুর নাম দেখান');toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<span class="rail-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m4 7 4 5-4 5M11 6h9M11 12h9M11 18h9"/></svg></span><span class="rail-label">Menu</span>';
+ const list=document.createElement('div');list.className='rail-items';rail.append(toggle,list);document.body.append(rail);
+ toggle.onclick=()=>{const expanded=rail.classList.toggle('expanded');document.body.classList.toggle('sidebar-expanded',expanded);toggle.setAttribute('aria-expanded',String(expanded));toggle.setAttribute('aria-label',expanded?'মেনুর নাম লুকান':'মেনুর নাম দেখান');};
+ let queued=false,signature='';
+ function sync(){queued=false;const visible=getComputedStyle(app).display!=='none';rail.hidden=!visible;document.body.classList.toggle('has-icon-sidebar',visible);if(!visible){document.body.classList.remove('sidebar-expanded');signature='';return;}
+ document.body.classList.toggle('sidebar-expanded',rail.classList.contains('expanded'));
+ const isDso=/DSO Entry Portal/.test(document.getElementById('portalTitle')?.textContent||'');const nav=document.getElementById(isDso?'dsoTabNav':'adminTabNav');if(!nav)return;
+ const buttons=[...nav.children].filter(button=>button.tagName==='BUTTON'&&!button.hidden&&getComputedStyle(button).display!=='none');const next=buttons.map(button=>[button.id,button.textContent.trim(),button.classList.contains('active'),button.disabled].join(':')).join('|');if(next===signature)return;signature=next;list.replaceChildren();
+ for(const original of buttons){const label=original.textContent.trim();const button=document.createElement('button');button.type='button';button.title=label;button.setAttribute('aria-label',label);button.disabled=original.disabled;button.classList.toggle('active',original.classList.contains('active'));if(original.classList.contains('active'))button.setAttribute('aria-current','page');const icon=document.createElement('span');icon.className='rail-icon';icon.setAttribute('aria-hidden','true');const svg=original.querySelector('svg');if(svg)icon.append(svg.cloneNode(true));else icon.textContent='▦';const text=document.createElement('span');text.className='rail-label';text.textContent=label;button.append(icon,text);button.onclick=()=>{original.click();if(matchMedia('(max-width:600px)').matches){rail.classList.remove('expanded');document.body.classList.remove('sidebar-expanded');toggle.setAttribute('aria-expanded','false');}schedule();};list.append(button);}
+ }
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(sync);}}
+ new MutationObserver(schedule).observe(app,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden','disabled']});sync();
+})();
+</script>
+</body>
 </html>
