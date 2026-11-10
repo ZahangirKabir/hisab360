@@ -1201,9 +1201,10 @@ function pettyReportBalances(entries,through){const rows=pettyBalanceRows(entrie
 window.investmentPettyReportBalances=pettyReportBalances;
 
 window.investmentIncomeMonthVisible=(entries,month,explicit=false)=>explicit||!entries?.[month+'_pettyMonthClosing'];
+window.investmentCommissionIncomeMonth=function(receivedDate){const match=String(receivedDate||'').match(/^(\d{4})-(0[1-9]|1[0-2])-\d{2}$/);if(!match)return '';return new Date(Date.UTC(Number(match[1]),Number(match[2])-2,1)).toISOString().slice(0,7);};
 function monthlyIncomeExpense(entries,month,date='',expenseType=''){
  const cents=x=>Math.round((Number(x)||0)*100),income=[];
- const records=Object.values(entries||{}).filter(x=>x?.scope==='company'&&String(x.date||'').startsWith(month)&&(!date||x.date===date));
+ const records=Object.values(entries||{}).filter(x=>x?.scope==='company'&&window.investmentCommissionIncomeMonth(x.date)===month&&(!date||x.date===date));
  const labels={'1st pase':'Transaction Commission (Fixed) 1st Part','2nd pase':'Transaction Commission (Fixed) 2nd Part','Variable':'Transaction Commission (Variable)'};
  const dates=[...new Set(records.map(x=>x.date))].sort();
  for(const day of dates){const capital=records.find(x=>x.date===day&&x.type==='capital'),calculator=records.find(x=>x.date===day&&x.type==='calculator');
