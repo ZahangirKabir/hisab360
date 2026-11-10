@@ -1658,7 +1658,7 @@ window.exportWorkingCapital=async function(mode,button,container=null,reportTitl
  }catch(error){problem=error.message;return;}},undefined,false);if(!result.committed||!result.snapshot.child(newKey).exists())throw Error(problem||'হিসাবটি বদলেছে বা পাওয়া যাচ্ছে না। Refresh করে আবার Edit করুন।');overlay.remove();await done();alert('সংশোধন সেভ হয়েছে।');}catch(error){status.textContent=error.message;}finally{save.disabled=false;}};
  }
 })();
-</script><script src="assets/hisab360-date-picker-v3.js"></script><script>
+</script><script src="assets/hisab360-date-picker-v3.js?v=2026111106"></script><script>
 (function(){let context;try{context=parent.portalInvestmentContext;}catch{}if(!context?.isReportViewer?.())return;
  function clean(){document.querySelectorAll('table').forEach(table=>{const row=table.tHead?.rows[table.tHead.rows.length-1],last=row?.cells[row.cells.length-1];if(last?.textContent.trim()==='Edit'){for(const r of [...table.rows])if(r.cells.length)r.deleteCell(r.cells.length-1);}});
  document.querySelectorAll('table button').forEach(button=>{if(['Edit','Delete'].includes(button.textContent.trim()))button.remove();});}
