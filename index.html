@@ -844,7 +844,7 @@ body #moduleMenu .module-dropdown-panel button:hover{background:#edf7f2!importan
 @media(prefers-reduced-motion:reduce){body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{transition:none}}
 </style><style id="menu-icons-no-background">
 html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html body #moduleMenu .investment-nav-icon,html body #adminTabNav>.tab-btn.active .main-menu-icon,html body #dsoTabNav>.tab-btn.active .dso-menu-icon{background:none!important;box-shadow:none!important;border:0!important}
-</style><style id="hide-copyright">html body .portal-footer,html body #investmentCopyright{display:none!important}</style></head>
+</style></head>
 <body>
 
 
@@ -1355,7 +1355,7 @@ html body #adminPageSlipApproval .slip-filter-field select:focus{outline:0;borde
     </div>
   </div>
 
-  <footer class="portal-footer">Copyright © 2026 <strong>Zahangir Kabir</strong>. All rights reserved.</footer>
+  <footer class="portal-footer">© 2026 <strong>Zahangir Kabir</strong>. All rights reserved.</footer>
 
   <div id="releaseGate" role="alertdialog" aria-modal="true" aria-labelledby="releaseGateTitle" aria-describedby="releaseGateMessage" style="display:none;position:fixed;inset:0;background:rgba(9,39,35,.76);z-index:999999;padding:18px;align-items:center;justify-content:center;text-align:center;backdrop-filter:blur(4px);">
     <div style="width:min(100%,420px);background:#fff;border-radius:18px;padding:28px 22px;box-shadow:0 25px 70px rgba(0,0,0,.25);border-top:5px solid #00695c"><div style="font-size:39px" aria-hidden="true">🔄</div><h2 id="releaseGateTitle" style="margin:7px 0;color:#004d40">নতুনে স্বাগতম!</h2><p id="releaseGateMessage" style="margin:12px 0 20px;line-height:1.6">আপনার অভিজ্ঞতা আরও চমৎকার করতে আমরা অ্যাপটি আপডেট করেছি।</p><button class="btn" style="width:100%;min-height:46px" onclick="applyRequiredUpdate()">এখনই আপডেট করুন</button></div>
@@ -1962,7 +1962,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.20';
+    const APP_RELEASE_VERSION = '2026.11.10.21';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;

@@ -554,7 +554,7 @@ body #moduleMenu .module-dropdown-panel button:hover{background:#edf7f2!importan
 @media(prefers-reduced-motion:reduce){body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{transition:none}}
 </style><style id="menu-icons-no-background">
 html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html body #moduleMenu .investment-nav-icon,html body #adminTabNav>.tab-btn.active .main-menu-icon,html body #dsoTabNav>.tab-btn.active .dso-menu-icon{background:none!important;box-shadow:none!important;border:0!important}
-</style><style id="hide-copyright">html body .portal-footer,html body #investmentCopyright{display:none!important}</style></head><body><script>
+</style></head><body><script>
 window.investmentValidateBankDeposit=function(entry){
  const banks=['Islami','Pubali','City','DBBL','Agroni','UCB','Sonali'];
  if(entry.type!=='deposit'||entry.scope!=='company'||!banks.includes(entry.bankName)||!['Refund','Internal Bank Transfer'].includes(entry.depositType))throw Error('সঠিক Bank ও Type নির্বাচন করুন।');
@@ -585,7 +585,7 @@ window.formatInvestmentAmount=function(input){const old=input.value,pos=input.se
  <button type="button" id="showTotalInvestment"><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7"/></svg></span> Total Investment</button>
  <details id="navBank" class="module-dropdown"><summary><span class="investment-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 9-5 9 5H3ZM5 11v7M10 11v7M14 11v7M19 11v7M3 21h18"/></svg></span> Bank <span aria-hidden="true" class="dropdown-arrow">⌄</span></summary><div class="module-dropdown-panel" role="group" aria-label="Bank submenu"><button type="button" id="showChequeEntry">Cheque Number Entry</button><button type="button" id="showBankWithdraw"> Withdraw</button><button type="button" id="showBankDeposit">Deposit</button><button type="button" id="showBankCheque">Withdraw Report</button><button type="button" id="showBankDebit" hidden style="display:none">Bank Debit</button></div></details>
  
-</nav><main id="app" hidden><nav id="menu" class="menu" aria-label="Investment submenu"></nav><section id="content"></section></main><p id="bankAccess" hidden></p><main id="bankApp" hidden><nav id="bankMenu" class="menu"></nav><section id="bankContent"></section></main><footer id="investmentCopyright" class="investment-footer" hidden>Copyright © 2026 <strong>Zahangir Kabir</strong>. All rights reserved.</footer>
+</nav><main id="app" hidden><nav id="menu" class="menu" aria-label="Investment submenu"></nav><section id="content"></section></main><p id="bankAccess" hidden></p><main id="bankApp" hidden><nav id="bankMenu" class="menu"></nav><section id="bankContent"></section></main><footer id="investmentCopyright" class="investment-footer" hidden>© 2026 <strong>Zahangir Kabir</strong>. All rights reserved.</footer>
 <script>
 // Keep the authenticated SDK stream; use HTTP only if that connection stalls.
 window.investmentWatchData=function(bridge,root,onValue,onError,date=''){
