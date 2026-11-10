@@ -2446,7 +2446,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       if (!currentUser) return;
       if(!startPortalIdle(currentUser,freshLogin))return;
       installFirebaseDeviceMenu();installFinancialBackupMenu();installPortalDeviceRecovery();watchPortalRecoverySession(currentUser);watchDevicePermission(currentUser);
-      const rememberedPage=freshLogin?null:getRememberedPortalPage(currentUser);
+      const rememberedPage=getRememberedPortalPage(currentUser);
       if(currentUser==='admin'&&freshLogin&&!hostedReleaseMismatch){database.ref('appConfig/releaseVersion').transaction(current=>{
         const previous=String(current||'');return !previous||APP_RELEASE_VERSION.localeCompare(previous,undefined,{numeric:true})>0?APP_RELEASE_VERSION:undefined;
       },undefined,false).catch(error=>console.warn('Release broadcast failed:',error));}
