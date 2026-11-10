@@ -554,7 +554,7 @@ body #moduleMenu .module-dropdown-panel button:hover{background:#edf7f2!importan
 @media(prefers-reduced-motion:reduce){body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{transition:none}}
 </style><style id="menu-icons-no-background">
 html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html body #moduleMenu .investment-nav-icon,html body #adminTabNav>.tab-btn.active .main-menu-icon,html body #dsoTabNav>.tab-btn.active .dso-menu-icon{background:none!important;box-shadow:none!important;border:0!important}
-</style></head><body><script>
+</style><style id="hide-copyright">html body .portal-footer,html body #investmentCopyright{display:none!important}</style></head><body><script>
 window.investmentValidateBankDeposit=function(entry){
  const banks=['Islami','Pubali','City','DBBL','Agroni','UCB','Sonali'];
  if(entry.type!=='deposit'||entry.scope!=='company'||!banks.includes(entry.bankName)||!['Refund','Internal Bank Transfer'].includes(entry.depositType))throw Error('সঠিক Bank ও Type নির্বাচন করুন।');
