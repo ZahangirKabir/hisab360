@@ -1624,4 +1624,12 @@ window.exportWorkingCapital=async function(mode,button,container=null,reportTitl
  document.querySelectorAll('table button').forEach(button=>{if(['Edit','Delete'].includes(button.textContent.trim()))button.remove();});}
  new MutationObserver(clean).observe(document.body,{childList:true,subtree:true});clean();
 })();
+</script><style>@media screen{[data-duplicate-page-heading]{display:none!important}}</style><script>
+(function(){
+ const normalize=text=>String(text||'').normalize('NFKC').replace(/[^\p{L}\p{N}]/gu,'').toLowerCase();
+ let queued=false;
+ function sync(){queued=false;const bar=document.getElementById('investmentPageHeading')||document.getElementById('adminPageHeading');const title=bar?.querySelector('strong');const active=bar&&!bar.hidden&&normalize(title?.textContent);document.querySelectorAll('#content h2,#bankContent h2,#adminView h2,#adminView h3').forEach(heading=>{const duplicate=!!active&&normalize(heading.textContent)===active;if(duplicate)heading.setAttribute('data-duplicate-page-heading','');else heading.removeAttribute('data-duplicate-page-heading');});}
+ const schedule=()=>{if(!queued){queued=true;requestAnimationFrame(sync);}};
+ new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});sync();
+})();
 </script></body></html>
