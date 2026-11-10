@@ -835,7 +835,14 @@ function submitTools(form,card){const save=node('button','Submit');save.classNam
  if(preview){save.disabled=true;save.title='Collection Portal-এ Admin login করে Investment menu খুললে Submit চালু হবে।';}
  form.append(save);card.append(form);const status=node('p');status.id='investMessage';card.append(status);return {save,status};}
 function hasSubmittedInvestmentDate(records,type,date){return !!date&&Object.values(records||{}).some(row=>row?.scope==='company'&&row.type===type&&row.date===date);}
+const workingDateStorageKey='hisab360:working-date:'+owner;
+let workingDateMemory='';
+function validWorkingDate(value){return /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(value||'');}
+function rememberedWorkingDate(){try{const stored=localStorage.getItem(workingDateStorageKey);if(validWorkingDate(stored))return stored;}catch(_){}return workingDateMemory;}
+function rememberWorkingDate(value){if(!validWorkingDate(value))return;workingDateMemory=value;try{localStorage.setItem(workingDateStorageKey,value);}catch(_){}}
+function latestWorkingDate(){return Object.values(items||{}).filter(row=>row?.scope==='company'&&['calculator','capital'].includes(row.type)&&validWorkingDate(row.date)).sort((a,b)=>(Number(b.updatedAt||b.createdAt)||0)-(Number(a.updatedAt||a.createdAt)||0)||b.date.localeCompare(a.date))[0]?.date||today();}
 function installSubmissionDatePicker(input,type){
+ const keepWorkingDate=['capital','calculator'].includes(type);let restorePending=keepWorkingDate&&!rememberedWorkingDate()&&!dataReady;if(keepWorkingDate)input.value=rememberedWorkingDate()||(dataReady?latestWorkingDate():today());
  input.hidden=true;input.required=false;input.dataset.submissionDate=type;
  const wrap=node('div');wrap.className='submission-date-picker';const trigger=node('button');trigger.type='button';trigger.className='submission-date-trigger';trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');
  const panel=node('div');panel.className='submission-calendar';panel.hidden=true;panel.setAttribute('role','dialog');panel.setAttribute('aria-label','তারিখ নির্বাচন');wrap.append(trigger,panel);input.after(wrap);
@@ -857,8 +864,8 @@ function installSubmissionDatePicker(input,type){
  trigger.onclick=()=>{if(input.disabled)return;panel.hidden=!panel.hidden;trigger.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){month=(input.value||today()).slice(0,7);draw();}};
  wrap.addEventListener('keydown',event=>{if(event.key==='Escape'){panel.hidden=true;trigger.setAttribute('aria-expanded','false');trigger.focus();}});
  wrap.addEventListener('focusout',event=>{if(event.relatedTarget&&!wrap.contains(event.relatedTarget)){panel.hidden=true;trigger.setAttribute('aria-expanded','false');}});
- input.addEventListener('change',selected,true);
- input.addEventListener('submission-records-updated',()=>{selected();if(!panel.hidden)draw();});selected();return wrap;
+ input.addEventListener('change',()=>{if(keepWorkingDate){input.value=validWorkingDate(input.value)?input.value:rememberedWorkingDate()||today();restorePending=false;rememberWorkingDate(input.value);}selected();},true);
+ input.addEventListener('submission-records-updated',()=>{if(restorePending&&dataReady){restorePending=false;const value=rememberedWorkingDate()||latestWorkingDate();if(value!==input.value){input.value=value;input.dispatchEvent(new Event('change',{bubbles:true}));}else rememberWorkingDate(value);}selected();if(!panel.hidden)draw();});selected();return wrap;
 }
 
 function capitalCashCalculation(cash,headOfficeTransfer,transfers={},cashIsNet=false,bankCharges=0){const sum=rows=>Array.isArray(rows)?rows.reduce((n,r)=>n+Math.round((Number(r.amount)||0)*100),0):Math.round((Number(rows?.amount)||0)*100);const transferCents=sum(headOfficeTransfer)+['salary','routeConvence','petty'].reduce((n,key)=>n+Math.round((Number(transfers[key])||0)*100),0)+Math.round((Number(bankCharges)||0)*100);return {cashBeforeTransfer:Number(cash)||0,cashTransferTotal:transferCents/100,closingCash:cashIsNet?(Number(cash)||0):(Math.round((Number(cash)||0)*100)-transferCents)/100};}
@@ -933,7 +940,7 @@ function capitalForm(){
    if(editing){record.createdBy=capitalEditExpected.createdBy||owner;record.createdAt=capitalEditExpected.createdAt||record.createdAt;}
    const result=await window.investmentCommitRecord(bridge,'investmentEntries',date+'_company',record,{createOnly:!editing,expected:editing?capitalEditExpected:null});
    status.textContent=editing?`✅ ${date} তারিখের Working Capital সংশোধন হয়েছে।`:`✅ ${date} তারিখের Working Capital রিপোর্টে জমা হয়েছে। Petty Cash Received Balance-এ ${money(transfers.petty)} যোগ হয়েছে।`;
-   editing=false;capitalEditExpected=null;items[date+'_company']=result.value;syncCapitalState();
+   editing=false;capitalEditExpected=null;items[date+'_company']=result.value;rememberWorkingDate(date);syncCapitalState();
   }catch(err){status.textContent='Submit হয়নি: '+err.message;}finally{saving=false;selectedDate.disabled=false;syncCapitalState();}
  };
 }
@@ -1146,7 +1153,7 @@ function balanceCalculator(){
    busy=true;date.disabled=true;paint();status.textContent='Saving…';
    const record={...(editExpected||{}),type:'calculator',scope:'company',date:date.value,...ma,netMA:net,cashCalculation:{transfers:{salary:numeric(cashSalary),routeConvence:numeric(cashRoute),petty:numeric(cashPetty),pettySource:pettySource.value||"Cash"},headOfficeMovements,openingCash:numeric(cashOpening),cashReceivedFromBank:numeric(cashBankReceived),cashReceivedFromHeadOffice:numeric(cashHeadOfficeReceived),cashIssueDso:numeric(cashIssue),cashDepositLifting:numeric(cashLifting),cashInHand:numeric(cashHand),marketCash:{total:numeric(marketTeam)},netCash:numeric(netCash)},totalClosing:numeric(totalClosing),bankCalculations:JSON.parse(JSON.stringify(bankDrafts)),updatedAt:bridge.serverTimestamp,updatedBy:owner};
    const calculatorKey=date.value+'_calculator';const result=await window.investmentCommitRecord(bridge,'investmentEntries',calculatorKey,record,{createOnly:!editExpected,expected:editExpected});
-   const submittedDate=record.date;items[submittedDate+'_calculator']=result.value;(window.openInvestmentPage||show)('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
+   const submittedDate=record.date;rememberWorkingDate(submittedDate);items[submittedDate+'_calculator']=result.value;(window.openInvestmentPage||show)('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
   }catch(e){status.textContent='Submit হয়নি: '+e.message;}finally{busy=false;date.disabled=false;paint();}
  };
  source();
