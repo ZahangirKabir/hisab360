@@ -71,13 +71,13 @@ function create(raw,options={}){
     const next=pathSet(clone(old)||{},this.parts.slice(2),value);
     if(this.root==='collections'){
      if(a.reportKey&&a.reportKey!==key&&a.report&&next!==null)throw Error('একই দিনের দ্বিতীয় রিপোর্ট গ্রহণযোগ্য নয়।');
-     const isNew=!old;a.reportKey=key;a.report=next;
+     if(next===null)throw Error('ডেটা মোছার ব্যবস্থা বন্ধ আছে।');const isNew=!old;a.reportKey=key;a.report=next;
      const beforeBank=cents(next?.bankDeposit);sync(a);
      if(next&&isNew){a.report.initialSlipRequestsKnown=true;a.report.initialSlipRequests=clone(a.report.submittedSlipRequests||{});if(balance(a.report)!==0)throw Error('স্লিপের টাকা পরিবর্তিত হয়েছে; নতুন হিসাব মিলিয়ে Submit করুন।');}
      if(next&&!isNew&&this.parts.length===2&&cents(a.report.bankDeposit)!==beforeBank)throw Error('Bank Slip-এর টাকার সঙ্গে রিপোর্টের Amount মেলেনি।');
      if(next?.approvalStatus==='approved'&&(balance(a.report)!==0||Object.values(a.requests||{}).some(r=>r.status!=='approved'&&r.status!=='rejected')))throw Error('সব Slip Approved ও হিসাব সমান না হলে রিপোর্ট Approved হবে না।');
     }else{
-     if(next===null)delete a.requests[key];else{
+     if(next===null)throw Error('ডেটা মোছার ব্যবস্থা বন্ধ আছে।');else{
       if(String(next.userId)!==userId||next.date!==date)throw Error('স্লিপের DSO/তারিখ মেলেনি।');
       if(!old&&next.status!=='rejected'&&Object.values(a.requests||{}).some(r=>r.status!=='rejected'&&(r.slips||[]).some(s=>(next.slips||[]).some(t=>same(s,t)))))throw Error('এই ছবি বা Transaction ID আগে জমা হয়েছে।');
       next.slips=(next.slips||[]).map(s=>({...s,requestKey:key}));next.amount=next.slips.reduce((n,s)=>n+cents(s.amt??s.amount),0)/100;a.requests[key]=next;
@@ -90,7 +90,7 @@ function create(raw,options={}){
   }catch(e){complete?.(e,false,null);throw e;}}
   async set(v){return this.transaction(()=>v);}
   async update(v){return this.transaction(old=>{const out=clone(old)||{};for(const [k,x] of Object.entries(v))pathSet(out,k.split('/'),x);return out;});}
-  async remove(){return this.set(null);}
+  async remove(){throw Error('ডেটা মোছার ব্যবস্থা বন্ধ আছে।');}
  }
  const db={ref(path=''){const root=path.split('/')[0];return root==='collections'||root==='bankSlipRequests'?new Ref(path):raw.ref(path);}};
  async function thumbnail(data){if(!global.document?.createElement)return '';return new Promise(resolve=>{let done=false;const img=new Image();const finish=v=>{if(done)return;done=true;clearTimeout(timer);resolve(v);};const timer=setTimeout(()=>finish(''),8000);img.onerror=()=>finish('');img.onload=()=>{try{const scale=Math.min(1,160/img.naturalWidth,160/img.naturalHeight);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));const context=c.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,c.width,c.height);context.drawImage(img,0,0,c.width,c.height);finish(c.toDataURL('image/jpeg',0.65));}catch(_){finish('');}};img.src=data;});}

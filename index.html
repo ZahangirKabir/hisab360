@@ -1430,13 +1430,13 @@ function create(raw,options={}){
     const next=pathSet(clone(old)||{},this.parts.slice(2),value);
     if(this.root==='collections'){
      if(a.reportKey&&a.reportKey!==key&&a.report&&next!==null)throw Error('একই দিনের দ্বিতীয় রিপোর্ট গ্রহণযোগ্য নয়।');
-     const isNew=!old;a.reportKey=key;a.report=next;
+     if(next===null)throw Error('ডেটা মোছার ব্যবস্থা বন্ধ আছে।');const isNew=!old;a.reportKey=key;a.report=next;
      const beforeBank=cents(next?.bankDeposit);sync(a);
      if(next&&isNew){a.report.initialSlipRequestsKnown=true;a.report.initialSlipRequests=clone(a.report.submittedSlipRequests||{});if(balance(a.report)!==0)throw Error('স্লিপের টাকা পরিবর্তিত হয়েছে; নতুন হিসাব মিলিয়ে Submit করুন।');}
      if(next&&!isNew&&this.parts.length===2&&cents(a.report.bankDeposit)!==beforeBank)throw Error('Bank Slip-এর টাকার সঙ্গে রিপোর্টের Amount মেলেনি।');
      if(next?.approvalStatus==='approved'&&(balance(a.report)!==0||Object.values(a.requests||{}).some(r=>r.status!=='approved'&&r.status!=='rejected')))throw Error('সব Slip Approved ও হিসাব সমান না হলে রিপোর্ট Approved হবে না।');
     }else{
-     if(next===null)delete a.requests[key];else{
+     if(next===null)throw Error('ডেটা মোছার ব্যবস্থা বন্ধ আছে।');else{
       if(String(next.userId)!==userId||next.date!==date)throw Error('স্লিপের DSO/তারিখ মেলেনি।');
       if(!old&&next.status!=='rejected'&&Object.values(a.requests||{}).some(r=>r.status!=='rejected'&&(r.slips||[]).some(s=>(next.slips||[]).some(t=>same(s,t)))))throw Error('এই ছবি বা Transaction ID আগে জমা হয়েছে।');
       next.slips=(next.slips||[]).map(s=>({...s,requestKey:key}));next.amount=next.slips.reduce((n,s)=>n+cents(s.amt??s.amount),0)/100;a.requests[key]=next;
@@ -1449,7 +1449,7 @@ function create(raw,options={}){
   }catch(e){complete?.(e,false,null);throw e;}}
   async set(v){return this.transaction(()=>v);}
   async update(v){return this.transaction(old=>{const out=clone(old)||{};for(const [k,x] of Object.entries(v))pathSet(out,k.split('/'),x);return out;});}
-  async remove(){return this.set(null);}
+  async remove(){throw Error('ডেটা মোছার ব্যবস্থা বন্ধ আছে।');}
  }
  const db={ref(path=''){const root=path.split('/')[0];return root==='collections'||root==='bankSlipRequests'?new Ref(path):raw.ref(path);}};
  async function thumbnail(data){if(!global.document?.createElement)return '';return new Promise(resolve=>{let done=false;const img=new Image();const finish=v=>{if(done)return;done=true;clearTimeout(timer);resolve(v);};const timer=setTimeout(()=>finish(''),8000);img.onerror=()=>finish('');img.onload=()=>{try{const scale=Math.min(1,160/img.naturalWidth,160/img.naturalHeight);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));const context=c.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,c.width,c.height);context.drawImage(img,0,0,c.width,c.height);finish(c.toDataURL('image/jpeg',0.65));}catch(_){finish('');}};img.src=data;});}
@@ -1898,7 +1898,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(!duplicateToggle){const label=document.createElement('label');label.style.cssText='display:flex;align-items:center;gap:8px;margin:12px 0;font-size:13px';duplicateToggle=document.createElement('input');duplicateToggle.type='checkbox';duplicateToggle.id='deviceShowSimilar';duplicateToggle.style.width='auto';duplicateToggle.onchange=openFirebaseDeviceAdmin;label.append(duplicateToggle,document.createTextNode('পুনরাবৃত্তি / অনুরূপ ব্রাউজারগুলো দেখুন'));document.getElementById('deviceAdminContent').before(label);}
         const displayed=portalDeviceDisplayRows(items,permissions,portalDeviceUid,duplicateToggle.checked);
         for(const [uid,item] of displayed){const row=document.createElement('tr');for(const value of [item.userId,uid,item.name,permissions[uid]?.status||'pending']){const td=document.createElement('td');td.dataset.label=['User ID','Device UID','Browser','Status'][row.children.length];if(row.children.length===3){td.dataset.status=value;const badge=document.createElement('span');badge.className='device-status-badge';badge.textContent=({approved:'অনুমোদিত',pending:'অপেক্ষমাণ',blocked:'ব্লক করা'})[value]||value;td.appendChild(badge);}else if(row.children.length===2){const ua=String(value||'');td.title=ua;const os=/Android/i.test(ua)?'Android':/iPhone|iPad/i.test(ua)?'iPhone / iPad':/Windows/i.test(ua)?'Windows':/Macintosh/i.test(ua)?'Mac':/Linux/i.test(ua)?'Linux':'ডিভাইস';const browser=/Edg/i.test(ua)?'Edge':/Firefox/i.test(ua)?'Firefox':/Chrome|CriOS/i.test(ua)?'Chrome':/Safari/i.test(ua)?'Safari':'Browser';td.textContent=os+' · '+browser+(item.hiddenSimilar?' · আরও '+item.hiddenSimilar+'টি লুকানো':'');}else td.textContent=value;td.style.cssText='padding:10px;border-bottom:1px solid #ddd;max-width:280px;overflow-wrap:anywhere';row.appendChild(td);}const actions=document.createElement('td');actions.className='device-actions';actions.dataset.label='অনুমতি';
-          for(const [action,label] of [['approve','অনুমোদন'],['block','ব্লক'],['unblock','আনব্লক'],['delete','মুছুন']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.action=action;b.style.margin='3px';b.onclick=async()=>{if(uid===portalDeviceUid&&['block','delete'].includes(action)){alert('নিজের চলমান Admin ডিভাইস Block/Delete করবেন না।');return;}if(!confirm(item.userId+' — '+label+' করবেন?'))return;b.disabled=true;try{const patch={};if(action==='delete'){patch['deviceAccess/'+uid]=null;patch['deviceRequests/'+uid]=null;}else patch['deviceAccess/'+uid]={userId:item.userId,credentialUid:item.credentialUid,status:action==='block'?'blocked':'approved',updatedBy:portalDeviceUid,updatedAt:firebase.database.ServerValue.TIMESTAMP};await db.ref().update(patch);await openFirebaseDeviceAdmin();}catch(e){status.textContent=e.message;b.disabled=false;}};actions.appendChild(b);}row.appendChild(actions);table.appendChild(row);}
+          for(const [action,label] of [['approve','অনুমোদন'],['block','ব্লক'],['unblock','আনব্লক']]){const b=document.createElement('button');b.type='button';b.textContent=label;b.dataset.action=action;b.style.margin='3px';b.onclick=async()=>{if(uid===portalDeviceUid&&action==='block'){alert('নিজের চলমান Admin ডিভাইস Block করবেন না।');return;}if(!confirm(item.userId+' — '+label+' করবেন?'))return;b.disabled=true;try{const patch={};patch['deviceAccess/'+uid]={userId:item.userId,credentialUid:item.credentialUid,status:action==='block'?'blocked':'approved',updatedBy:portalDeviceUid,updatedAt:firebase.database.ServerValue.TIMESTAMP};await db.ref().update(patch);await openFirebaseDeviceAdmin();}catch(e){status.textContent=e.message;b.disabled=false;}};actions.appendChild(b);}row.appendChild(actions);table.appendChild(row);}
         const summary=document.createElement('div');summary.className='device-summary';for(const [key,label]of [['pending','অপেক্ষমাণ'],['approved','অনুমোদিত'],['blocked','ব্লক করা']]){const tile=document.createElement('div');tile.dataset.status=key;const number=document.createElement('strong');number.textContent=Object.keys(items).filter(uid=>(permissions[uid]?.status||'pending')===key).length;const caption=document.createElement('span');caption.textContent=label;tile.append(number,caption);summary.appendChild(tile);}const content=document.getElementById('deviceAdminContent');let oldSummary=modal.querySelector('.device-summary');if(oldSummary)oldSummary.replaceWith(summary);else content.before(summary);if(Object.keys(items).length)content.replaceChildren(table);else{const empty=document.createElement('p');empty.className='device-empty';empty.textContent='এখন কোনো ডিভাইসের আবেদন নেই';content.replaceChildren(empty);}status.textContent='';
       }catch(e){status.textContent=e.message;}
     }
@@ -1925,7 +1925,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.10';
+    const APP_RELEASE_VERSION = '2026.11.10.11';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5814,7 +5814,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
             ${editRequestBtn}
             <button class="btn-edit" onclick="openEditModal('${key}')">✏️ Admin Edit</button>
             <button class="btn-details" onclick="showDetailsModal('${key}')">ℹ️ Details</button>
-            <button class="btn-delete" onclick="deleteEntry('${key}')">🗑️ Delete</button>
           `;
         }
 
@@ -6040,34 +6039,6 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         closeEditModal();
       } catch (err) {
         alert("আপডেট করতে সমস্যা হয়েছে: " + err.message);
-      }
-    }
-
-    async function deleteEntry(key) {
-      if (currentUser !== "admin") { alert("❌ Delete শুধুমাত্র Master Admin করতে পারবেন।"); return; }
-      if (!globalAllData || !globalAllData[key]) return;
-      const item = globalAllData[key];
-      const dsoId = item.userId;
-      const previousRecord = { ...item };
-
-      const confirmPass = prompt(`ডিলেট নিশ্চিত করতে Admin Password প্রদান করুন (DSO ID: ${dsoId}):`);
-      if (confirmPass === null) return;
-
-      try {
-        await credentialAuth.currentUser.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(accountEmail('admin'),confirmPass.trim()));
-
-        pendingOptimisticDeletes.add(key);
-        delete globalAllData[key];
-        scheduleDataUiUpdate();
-
-        await database.ref('collections/' + key).remove();
-        pendingOptimisticDeletes.delete(key);
-        alert(`DSO ID: ${dsoId} এর রেকর্ড সফলভাবে ডিলেট করা হয়েছে।`);
-      } catch (err) {
-        pendingOptimisticDeletes.delete(key);
-        globalAllData[key] = previousRecord;
-        scheduleDataUiUpdate();
-        alert("ডিলেট করতে সমস্যা হয়েছে: " + err.message);
       }
     }
 
