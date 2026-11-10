@@ -1141,7 +1141,7 @@ function balanceCalculator(){
  form.onsubmit=async event=>{
   event.preventDefault();if(busy||!loaded||loading||dsoSyncError||preview||!form.reportValidity()||String(bridge.getUser())!==owner)return;
   try{const headOfficeMovements=collectCashHeadOffice(headOfficeRows,true);paint(true);const ma={opening:numeric(maOpening),lifting:numeric(lifting),commissionReceived:numeric(commissionReceived),b2bReceive:numeric(receive),b2bSend:numeric(send),refund:numeric(maRefund)};
-   const net=Math.round((ma.opening+ma.lifting+ma.commissionReceived+ma.b2bReceive-ma.b2bSend-ma.refund-pettyDebit("MA"))*100)/100;
+   const net=window.investmentMATotal({...ma,cashCalculation:{cashDepositLifting:numeric(cashLifting),transfers:{petty:numeric(cashPetty),pettySource:pettySource.value||"Cash"}}});
    if(!window.INVESTMENT_MANUAL_TEST&&(net<0||numeric(netCash)<0||numeric(cashHand)<0||Object.values(bankDrafts).some(x=>x.net<0)))throw Error('Net balance ঋণাত্মক। অঙ্কগুলো যাচাই করুন।');
    busy=true;date.disabled=true;paint();status.textContent='Saving…';
    const record={...(editExpected||{}),type:'calculator',scope:'company',date:date.value,...ma,netMA:net,cashCalculation:{transfers:{salary:numeric(cashSalary),routeConvence:numeric(cashRoute),petty:numeric(cashPetty),pettySource:pettySource.value||"Cash"},headOfficeMovements,openingCash:numeric(cashOpening),cashReceivedFromBank:numeric(cashBankReceived),cashReceivedFromHeadOffice:numeric(cashHeadOfficeReceived),cashIssueDso:numeric(cashIssue),cashDepositLifting:numeric(cashLifting),cashInHand:numeric(cashHand),marketCash:{total:numeric(marketTeam)},netCash:numeric(netCash)},totalClosing:numeric(totalClosing),bankCalculations:JSON.parse(JSON.stringify(bankDrafts)),updatedAt:bridge.serverTimestamp,updatedBy:owner};
