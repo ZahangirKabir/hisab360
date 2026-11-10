@@ -1971,7 +1971,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.03';
+    const APP_RELEASE_VERSION = '2026.11.11.04';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6832,3 +6832,17 @@ body.has-icon-sidebar #hisabMobileMenuBar{display:flex;align-items:center;gap:12
 </script>
 <script>(()=>{const heading=document.getElementById('adminPageHeading'),toolbar=document.getElementById('adminReportToolbar');if(heading&&toolbar){const row=document.createElement('div');row.className='report-page-controls';heading.before(row);row.append(heading,toolbar);}})();</script></body>
 </html>
+<style id="mobile-menu-row-alignment">
+@media screen and (max-width:760px){
+#hisabSideMenu{padding:12px!important;gap:8px!important;align-items:stretch!important}
+#hisabSideMenu button,#hisabSideMenu.expanded button{display:grid!important;grid-template-columns:24px minmax(0,1fr) 16px!important;align-items:center!important;justify-content:initial!important;column-gap:12px!important;width:100%!important;min-height:44px!important;padding:10px 12px!important;margin:0!important;line-height:1.4!important;text-align:left!important}
+#hisabSideMenu>button{min-height:48px!important;align-self:stretch!important;margin-top:0!important}
+#hisabSideMenu .rail-icon{grid-column:1;width:24px!important;height:24px!important;min-width:24px;justify-self:center;align-self:center}
+#hisabSideMenu .rail-icon svg{display:block;width:21px!important;height:21px!important;margin:0!important}
+#hisabSideMenu .rail-label{grid-column:2;display:block!important;align-self:center;min-width:0;line-height:1.4!important;padding:0!important;margin:0!important;overflow-wrap:normal;word-break:normal}
+#hisabSideMenu .rail-arrow{grid-column:3;justify-self:center;align-self:center;margin:0!important;line-height:1!important}
+#hisabSideMenu .rail-items{gap:2px!important;padding-top:8px!important}
+#hisabSideMenu .rail-subtree{margin:2px 0 4px 12px!important;padding-left:8px!important;gap:2px!important}
+#hisabSideMenu .rail-subtree button{grid-template-columns:24px minmax(0,1fr) 16px!important;padding:9px 8px!important;min-height:42px!important}
+}
+</style>
