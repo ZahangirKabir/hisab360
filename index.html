@@ -752,6 +752,13 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 #adminTabNav .main-menu-icon svg,#dsoTabNav .dso-menu-icon svg{width:18px!important;height:18px!important}
 #adminTabNav>.tab-btn.active,#dsoTabNav>.tab-btn.active{background:linear-gradient(115deg,#174c3e,#138466)!important;color:#fff!important}
 }
+</style><style id="collapsible-dso-summary">
+@media screen{
+#dsoSummaryToggle{display:inline-flex;align-items:center;min-height:40px;margin:5px 0 8px;padding:7px 14px;border:0;border-radius:9px;background:#e5f2ec;color:#145744;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+#dsoSummaryToggle:focus-visible{outline:2px solid #168161;outline-offset:3px}
+#appContainer #dsoReportSummary[hidden]{display:none!important}
+}
+@media print{#dsoSummaryToggle{display:none!important}#appContainer #dsoReportSummary[hidden]{display:grid!important}}
 </style></head>
 <body>
 
@@ -854,7 +861,8 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
           <div class="missing-list" id="missingDsoList"></div>
         </div>
 
-        <div class="summary-cards">
+        <button type="button" id="dsoSummaryToggle" aria-controls="dsoReportSummary" aria-expanded="false" onclick="toggleDsoReportSummary()">Summary ▸</button>
+        <div class="summary-cards" id="dsoReportSummary" hidden>
           <div class="card"><h3>মোট এন্ট্রি সংখ্যা</h3><p id="totalEntriesCount">0</p></div>
           <div class="card green"><h3>মোট রিসিভড</h3><p> <span id="totalReceivedAllSum">0</span></p></div>
           <div class="card red"><h3>মোট রিটার্ন</h3><p> <span id="totalReturnAllSum">0</span></p></div>
@@ -1868,7 +1876,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.01';
+    const APP_RELEASE_VERSION = '2026.11.10.02';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5645,6 +5653,10 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       }
     }
 
+    function toggleDsoReportSummary(){
+      const cards=document.getElementById('dsoReportSummary'),button=document.getElementById('dsoSummaryToggle');
+      cards.hidden=!cards.hidden;button.setAttribute('aria-expanded',String(!cards.hidden));button.textContent=cards.hidden?'Summary ▸':'Summary ▾';
+    }
     function updateSummaryCards(count, totalRecSum, totalRetSum, totalDiffSum, totalDsoRecSum, totalDsoTransSum, totalDsoDiffSum, totalBankDepSum, totalSlipOcrSum) {
       document.getElementById("totalEntriesCount").innerText = count;
       document.getElementById("totalReceivedAllSum").innerText = formatBD(totalRecSum);
