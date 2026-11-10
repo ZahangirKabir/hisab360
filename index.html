@@ -777,6 +777,26 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 @media(max-width:600px){#adminReportToolbar{gap:6px}#adminReportToolbar>button:not([hidden]){flex:1 1 auto;font-size:11.5px!important;padding:8px 10px!important}}
 }
 @media print{#adminReportToolbar{display:none!important}}
+</style><style id="compact-mobile-home">
+@media screen and (max-width:700px){
+#appContainer{padding:12px!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important}
+#appContainer>.portal-sticky-top{margin-left:0!important;margin-right:0!important;padding:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important}
+#appContainer .header-bar{overflow:visible;gap:8px!important;padding:5px 0 13px!important;margin-bottom:10px!important;align-items:center!important;border-bottom:1px solid #eaf0ec}
+#appContainer .hisab-header-brand{gap:6px!important;min-width:0;flex:1 1 auto}
+#appContainer .hisab-header-brand .hisab-header-stage{width:128px!important;max-width:100%!important}
+#appContainer .hisab-header-brand #portalTitle{font-size:10px!important;line-height:1.4!important;padding:0!important;margin:0!important;border:0!important;width:100%!important;font-weight:500!important}
+#appContainer .header-bar>div:last-child{gap:5px!important;flex:0 0 auto}
+#appContainer .header-bar #refreshDataBtn,#appContainer .header-bar .btn-logout{min-height:38px!important;width:auto!important;margin:0!important;padding:7px 9px!important;font-size:11px!important;font-weight:600!important;line-height:1.4!important;border-radius:8px!important;box-shadow:none!important}
+#appContainer .header-bar #refreshDataBtn{background:#edf4f0!important;color:#356354!important}
+#appContainer .header-bar .btn-logout{background:#fff0ed!important;color:#ac463a!important}
+#adminTabNav,#dsoTabNav{padding:0!important;margin:0!important;gap:3px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu,#dsoTabNav>.tab-btn{min-height:44px!important;padding:7px 10px!important;border-radius:9px!important;background:transparent!important;font-size:12.5px!important;line-height:1.4!important;column-gap:10px!important;grid-template-columns:26px minmax(0,1fr)!important;box-shadow:none!important}
+#adminTabNav .main-menu-icon,#dsoTabNav .dso-menu-icon{width:26px!important;height:26px!important;flex-basis:26px!important;border-radius:7px!important}
+#adminTabNav .main-menu-icon svg,#dsoTabNav .dso-menu-icon svg{width:17px!important;height:17px!important}
+#adminTabNav>.tab-btn.active,#dsoTabNav>.tab-btn.active{background:linear-gradient(115deg,#174c3e,#138466)!important;color:#fff!important}
+#adminTabNav>.tab-btn:hover,#adminTabNav>#deviceAdminButton:hover,#dsoTabNav>.tab-btn:hover{background:#f0f6f2!important}
+@media(max-width:360px){#appContainer .hisab-header-brand .hisab-header-stage{width:114px!important}#appContainer .header-bar #refreshDataBtn,#appContainer .header-bar .btn-logout{padding:7px!important;font-size:10.5px!important}}
+}
 </style></head>
 <body>
 
@@ -1847,11 +1867,11 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
     function installFirebaseDeviceMenu(){
       if(currentUser!=='admin'||document.getElementById('deviceAdminButton'))return;
-      const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.innerHTML='<span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4m-5-8 2 2 4-4"/></svg></span><span>Device Permision</span>';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
+      const nav=document.getElementById('adminTabNav'),b=document.createElement('button');b.type='button';b.id='deviceAdminButton';b.innerHTML='<span class="main-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4m-5-8 2 2 4-4"/></svg></span><span>Device Permission</span>';b.className='device-approval-menu';b.onclick=openFirebaseDeviceAdmin;nav.appendChild(b);
     }
     async function openFirebaseDeviceAdmin(liveValues=null){
       if(currentUser!=='admin')return;
-      let modal=document.getElementById('deviceAdminModal');if(!modal){modal=document.createElement('div');modal.id='deviceAdminModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:#0008;display:flex;align-items:center;justify-content:center;padding:12px';const card=document.createElement('div');card.className='device-admin-card';card.style.cssText='width:min(1100px,100%);max-height:90vh;overflow:auto;background:white;color:#173b45;border-radius:16px;padding:20px';const title=document.createElement('h3');title.textContent='Device Permision';const header=document.createElement('div');header.className='device-admin-header';header.appendChild(title);card.appendChild(header);const close=document.createElement('button');close.textContent='বন্ধ করুন';close.className='device-close';close.onclick=()=>{modal.deviceSyncStop?.();modal.remove();};header.appendChild(close);const refresh=document.createElement('button');refresh.textContent='↻ তালিকা আপডেট';refresh.className='device-refresh';refresh.onclick=openFirebaseDeviceAdmin;card.appendChild(refresh);const status=document.createElement('p');status.id='deviceAdminStatus';card.appendChild(status);const content=document.createElement('div');content.id='deviceAdminContent';content.style.overflowX='auto';card.appendChild(content);modal.appendChild(card);document.body.appendChild(modal);}
+      let modal=document.getElementById('deviceAdminModal');if(!modal){modal=document.createElement('div');modal.id='deviceAdminModal';modal.style.cssText='position:fixed;inset:0;z-index:99999;background:#0008;display:flex;align-items:center;justify-content:center;padding:12px';const card=document.createElement('div');card.className='device-admin-card';card.style.cssText='width:min(1100px,100%);max-height:90vh;overflow:auto;background:white;color:#173b45;border-radius:16px;padding:20px';const title=document.createElement('h3');title.textContent='Device Permission';const header=document.createElement('div');header.className='device-admin-header';header.appendChild(title);card.appendChild(header);const close=document.createElement('button');close.textContent='বন্ধ করুন';close.className='device-close';close.onclick=()=>{modal.deviceSyncStop?.();modal.remove();};header.appendChild(close);const refresh=document.createElement('button');refresh.textContent='↻ তালিকা আপডেট';refresh.className='device-refresh';refresh.onclick=openFirebaseDeviceAdmin;card.appendChild(refresh);const status=document.createElement('p');status.id='deviceAdminStatus';card.appendChild(status);const content=document.createElement('div');content.id='deviceAdminContent';content.style.overflowX='auto';card.appendChild(content);modal.appendChild(card);document.body.appendChild(modal);}
       const status=document.getElementById('deviceAdminStatus');if(!liveValues?.requests)status.textContent='তালিকা আসছে…';
       const requestEpoch=(modal.deviceRenderEpoch||0)+1;modal.deviceRenderEpoch=requestEpoch;
       if(!modal.deviceSyncStop){
@@ -1895,7 +1915,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.04';
+    const APP_RELEASE_VERSION = '2026.11.10.05';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
