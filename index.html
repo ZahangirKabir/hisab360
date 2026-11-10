@@ -698,7 +698,7 @@ body.login-design-visible::before,body.login-design-visible::after{display:none}
 #loginSection.login-box{position:relative;width:100%;max-width:470px;margin:clamp(16px,8svh,78px) auto 18px!important;padding:43px 36px 36px!important;box-sizing:border-box;border:0!important;border-radius:15px!important;background:#fff!important;box-shadow:0 10px 28px #174f3f0d!important}
 #loginSection.login-box::before{content:none;display:none}
 #loginSection .hisab-login-stage{margin:0 auto 28px!important;width:202px!important;max-width:90%!important}
-#loginSection .login-field{width:100%!important;max-width:340px!important;margin:0 auto 14px!important;text-align:left}
+#loginSection .login-field{width:100%!important;max-width:380px!important;margin:0 auto 14px!important;text-align:left}
 #loginSection .login-field>input{width:100%!important;height:48px!important;min-height:48px!important;box-sizing:border-box;border:1px solid #dbe5e0!important;border-radius:11px!important;background:#fff!important;padding:11px 14px 11px 44px!important;color:#173c32;font-family:inherit;font-size:16px!important;line-height:24px!important;box-shadow:0 1px 3px #183e3203!important;transition:border-color .18s,box-shadow .18s}
 #loginSection .login-field>input::placeholder{color:#83948d;font-size:13px}
 #loginSection .login-field>input:focus{border-color:#198468!important;box-shadow:0 0 0 3px #19846812!important;outline:none!important}
@@ -706,11 +706,11 @@ body.login-design-visible::before,body.login-design-visible::after{display:none}
 #loginSection .login-field-icon{left:15px;width:18px;height:18px;color:#6d897d;transition:color .18s}
 #loginSection .login-field-icon svg{width:18px;height:18px}
 #loginSection #loginPass::-ms-reveal,#loginSection #loginPass::-ms-clear{display:none}
-#loginSection #loginBtn{display:flex;width:100%!important;max-width:340px!important;box-sizing:border-box;min-height:48px;height:48px;margin:18px auto 0!important;padding:11px 16px;border:0;border-radius:10px;font-size:15px;letter-spacing:.15px;font-weight:600;background:linear-gradient(115deg,#153e36,#10785b);box-shadow:0 7px 17px -5px #14634d40;transition:background .18s,box-shadow .18s,transform .18s}
+#loginSection #loginBtn{display:flex;width:100%!important;max-width:380px!important;box-sizing:border-box;min-height:48px;height:48px;margin:18px auto 0!important;padding:11px 16px;border:0;border-radius:10px;font-size:15px;letter-spacing:.15px;font-weight:600;background:linear-gradient(115deg,#153e36,#10785b);box-shadow:0 7px 17px -5px #14634d40;transition:background .18s,box-shadow .18s,transform .18s}
 #loginSection #loginBtn:hover{background:linear-gradient(115deg,#124837,#098362);box-shadow:0 8px 20px -5px #14634d50}
 #loginSection #loginBtn:active{transform:translateY(1px)}
 #loginSection #loginBtn:focus-visible{outline:2px solid #168161;outline-offset:3px}
-#loginSection .login-inline-error:not([hidden]){max-width:340px;margin:0 auto 9px;padding:9px 11px;box-sizing:border-box;border-radius:9px;background:#fff3ef;color:#a33f30;font-size:12px;line-height:1.7;text-align:left;overflow-wrap:anywhere}
+#loginSection .login-inline-error:not([hidden]){max-width:380px;margin:0 auto 9px;padding:9px 11px;box-sizing:border-box;border-radius:9px;background:#fff3ef;color:#a33f30;font-size:12px;line-height:1.7;text-align:left;overflow-wrap:anywhere}
 body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important;padding:0 8px 12px;color:#86958d;font-size:10px;line-height:1.8}
 @media(max-width:480px){#loginSection.login-box{padding:33px 24px 28px!important;border-radius:14px!important}#loginSection .hisab-login-stage{margin-bottom:28px!important}}
 @media(max-height:560px){body.login-design-visible{padding-top:14px!important}#loginSection.login-box{margin-top:0!important;padding-top:25px!important;padding-bottom:24px!important}#loginSection .hisab-login-stage{margin-bottom:22px!important}}
@@ -1915,7 +1915,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.07';
+    const APP_RELEASE_VERSION = '2026.11.10.08';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
