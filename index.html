@@ -826,6 +826,22 @@ body #loginSection .login-field-icon{left:14px;top:45px!important;width:16px;hei
 body #loginSection #loginBtn{height:46px!important;min-height:46px!important;margin:6px 0 0!important;padding:10px 14px!important;border-radius:10px!important;font-size:14px!important}
 @media(max-width:380px){body #loginSection.login-box{padding:26px 24px!important;margin-top:28px!important}}
 @media(max-height:520px){body #loginSection.login-box{margin-top:16px!important}}
+</style><style id="menu-text-icon-polish">
+body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{color:#173f4b!important;font-weight:650!important;letter-spacing:.1px;text-shadow:0 1px 0 #ffffffb3;background:linear-gradient(130deg,#fff,#f0f7f5)!important;border:1px solid #d7e8e3!important;box-shadow:0 2px 6px #16483b08!important;transition:background .16s,border-color .16s,box-shadow .16s}
+body #adminTabNav .main-menu-label,body #dsoTabNav .dso-menu-label{font-weight:650!important;line-height:1.45}
+body #adminTabNav .main-menu-icon,body #dsoTabNav .dso-menu-icon,body #moduleMenu .investment-nav-icon{width:28px!important;height:28px!important;flex-basis:28px!important;border-radius:8px!important;background:linear-gradient(145deg,#e0f5ee,#c7eadd)!important;color:#087756!important;box-shadow:inset 0 1px 0 #ffffffd9,0 2px 4px #123d3010}
+body #adminTabNav .main-menu-icon svg,body #dsoTabNav .dso-menu-icon svg,body #moduleMenu .investment-nav-icon svg{width:19px!important;height:19px!important;stroke-width:1.9}
+body #tabAdminBankBtn .main-menu-icon,body #navBank .investment-nav-icon{background:linear-gradient(145deg,#e6efff,#d4e3fb)!important;color:#285db7!important}
+body #tabAdminNotesBtn .main-menu-icon,body #navPettyCash .investment-nav-icon{background:linear-gradient(145deg,#fff3dc,#f8e4b9)!important;color:#986119!important}
+body #tabAdminInvestmentBtn .main-menu-icon,body #navWorkingCapital .investment-nav-icon{background:linear-gradient(145deg,#ede7ff,#dfd5fa)!important;color:#6b43b2!important}
+body #adminTabNav>button:hover,body #dsoTabNav>button:hover,body #moduleMenu>button:hover,body #moduleMenu>.module-dropdown>summary:hover{background:#eaf5ef!important;border-color:#9acbb8!important;box-shadow:0 3px 10px #16483b10!important}
+body #adminTabNav>.tab-btn.active,body #dsoTabNav>.tab-btn.active{background:linear-gradient(115deg,#175545,#138466)!important;color:#fff!important;text-shadow:none;border-color:#13785b!important}
+body #adminTabNav>.tab-btn.active .main-menu-icon,body #dsoTabNav>.tab-btn.active .dso-menu-icon{background:#ffffff26!important;color:#fff!important;box-shadow:inset 0 1px 0 #ffffff33}
+body #moduleMenu .module-dropdown-panel{border:1px solid #d5e6df!important;box-shadow:0 10px 25px #173f3520!important}
+body #moduleMenu .module-dropdown-panel button{font-weight:600!important;color:#254f45!important;letter-spacing:.05px}
+body #moduleMenu .module-dropdown-panel button::before{width:7px;height:7px;flex-basis:7px;background:#22a47c;box-shadow:0 0 0 3px #22a47c12}
+body #moduleMenu .module-dropdown-panel button:hover{background:#edf7f2!important;color:#08684c!important}
+@media(prefers-reduced-motion:reduce){body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{transition:none}}
 </style></head>
 <body>
 
@@ -1944,7 +1960,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.17';
+    const APP_RELEASE_VERSION = '2026.11.10.18';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
