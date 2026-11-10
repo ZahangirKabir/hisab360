@@ -797,6 +797,16 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 #adminTabNav>.tab-btn:hover,#adminTabNav>#deviceAdminButton:hover,#dsoTabNav>.tab-btn:hover{background:#f0f6f2!important}
 @media(max-width:360px){#appContainer .hisab-header-brand .hisab-header-stage{width:114px!important}#appContainer .header-bar #refreshDataBtn,#appContainer .header-bar .btn-logout{padding:7px!important;font-size:10.5px!important}}
 }
+</style><style id="continuous-app-layout">
+@media screen{
+body:not(.login-design-visible){background:#fff!important;background-image:none!important;padding:0!important}
+#appContainer.container{width:100%!important;max-width:none!important;margin:0!important;padding:16px 20px!important;border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;box-sizing:border-box}
+#appContainer>.portal-sticky-top{margin-left:0!important;margin-right:0!important;padding-left:0!important;padding-right:0!important;box-shadow:none!important;border:0!important;border-radius:0!important;background:#fff!important}
+#adminView,#adminPageReport{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#adminPageReport>.table-container{border-radius:4px!important;box-shadow:none!important}
+body:not(.login-design-visible)>.portal-footer{background:transparent!important;box-shadow:none!important}
+@media(max-width:700px){#appContainer.container{padding:10px 12px!important}}
+}
 </style></head>
 <body>
 
@@ -1915,7 +1925,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.09';
+    const APP_RELEASE_VERSION = '2026.11.10.10';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
