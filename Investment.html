@@ -554,7 +554,13 @@ body #moduleMenu .module-dropdown-panel button:hover{background:#edf7f2!importan
 @media(prefers-reduced-motion:reduce){body #adminTabNav>button,body #dsoTabNav>button,body #moduleMenu>button,body #moduleMenu>.module-dropdown>summary{transition:none}}
 </style><style id="menu-icons-no-background">
 html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html body #moduleMenu .investment-nav-icon,html body #adminTabNav>.tab-btn.active .main-menu-icon,html body #dsoTabNav>.tab-btn.active .dso-menu-icon{background:none!important;box-shadow:none!important;border:0!important}
-</style><style id="parent-sidebar-navigation">body.parent-sidebar-navigation #moduleMenu{display:none!important}body.parent-sidebar-navigation .investment-masthead{display:none!important}</style></head><body><script>
+</style><style id="parent-sidebar-navigation">body.parent-sidebar-navigation #moduleMenu{display:none!important}body.parent-sidebar-navigation .investment-masthead{display:none!important}</style><style id="single-line-report-controls">@media screen{
+#investmentPageHeading>button,button[aria-label^="Back to"]{display:none!important}
+.report-filter,.bank-filters,.report-actions,.report-export-actions{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.report-filter>*,.bank-filters>*,.report-actions>*,.report-export-actions>*{flex:0 0 auto!important}
+.report-filter button,.bank-filters button,.report-actions button{white-space:nowrap!important}
+.report-filter input,.report-filter select,.bank-filters input,.bank-filters select{width:auto!important;min-width:130px!important}
+}</style></head><body><script>
 window.investmentValidateBankDeposit=function(entry){
  const banks=['Islami','Pubali','City','DBBL','Agroni','UCB','Sonali'];
  if(entry.type!=='deposit'||entry.scope!=='company'||!banks.includes(entry.bankName)||!['Refund','Internal Bank Transfer'].includes(entry.depositType))throw Error('সঠিক Bank ও Type নির্বাচন করুন।');
