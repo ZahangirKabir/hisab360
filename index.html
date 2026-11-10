@@ -744,6 +744,14 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 @media(max-width:760px){#appContainer .summary-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}#appContainer .summary-cards>.card{padding:11px 12px!important}#appContainer .summary-cards>.card p{font-size:19px!important}#adminPageTitle{font-size:15px}}
 @media(max-width:360px){#appContainer .summary-cards>.card h3{font-size:10px!important}#appContainer .summary-cards>.card p{font-size:17px!important}}
 }
+</style><style id="mobile-menu-list-layout">
+@media screen and (max-width:700px){
+#adminTabNav,#dsoTabNav{flex-direction:column!important;align-items:stretch!important;gap:5px!important;padding:7px!important;border-radius:14px!important;background:#f3f7f5!important}
+#adminTabNav>.tab-btn,#adminTabNav>#deviceAdminButton.device-approval-menu,#dsoTabNav>.tab-btn{flex:0 0 auto!important;width:100%!important;max-width:100%!important;min-width:0!important;min-height:49px!important;box-sizing:border-box;margin:0!important;padding:9px 12px!important;border-radius:10px!important;grid-template-columns:28px minmax(0,1fr)!important;column-gap:11px!important;justify-content:flex-start!important;align-items:center!important;text-align:left!important;font-size:13px!important;line-height:1.4!important;white-space:normal!important;background:#fff!important;box-shadow:none!important}
+#adminTabNav .main-menu-icon,#dsoTabNav .dso-menu-icon{width:28px!important;height:28px!important;flex:0 0 28px!important;border-radius:8px!important}
+#adminTabNav .main-menu-icon svg,#dsoTabNav .dso-menu-icon svg{width:18px!important;height:18px!important}
+#adminTabNav>.tab-btn.active,#dsoTabNav>.tab-btn.active{background:linear-gradient(115deg,#174c3e,#138466)!important;color:#fff!important}
+}
 </style></head>
 <body>
 
@@ -1860,7 +1868,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.09.14';
+    const APP_RELEASE_VERSION = '2026.11.10.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
