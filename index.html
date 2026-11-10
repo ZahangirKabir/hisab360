@@ -766,6 +766,17 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 #missingDsoBox[hidden]{display:none!important}
 }
 @media print{#missingDsoToggle{display:none!important}#missingDsoBox[hidden]{display:block!important}}
+</style><style id="aligned-report-toolbar">
+@media screen{
+#adminReportToolbar:not([hidden]){display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:5px 0 12px}
+#adminReportToolbar>button:not([hidden]){display:inline-flex!important;align-items:center;justify-content:center;min-height:40px;margin:0!important;padding:8px 13px!important;box-sizing:border-box;border:0;border-radius:9px;font-family:inherit;font-size:12px;font-weight:600;line-height:1.5;white-space:normal}
+#adminReportToolbar>button[hidden],#adminReportToolbar[hidden]{display:none!important}
+#adminReportToolbar #adminFilterToggle{background:#e5f2ec;color:#145744}
+#adminReportToolbar #dsoSummaryToggle{background:#edf2f9;color:#315476}
+#adminReportToolbar #missingDsoToggle{background:#fff4e2;color:#855f21}
+@media(max-width:600px){#adminReportToolbar{gap:6px}#adminReportToolbar>button:not([hidden]){flex:1 1 auto;font-size:11.5px!important;padding:8px 10px!important}}
+}
+@media print{#adminReportToolbar{display:none!important}}
 </style></head>
 <body>
 
@@ -815,7 +826,7 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
     <div id="adminView" style="display: none;">
       
       <!-- GLOBAL FILTER PANEL WITH CHECKBOX MULTI-SELECT DSO -->
-      <button type="button" id="adminFilterToggle" aria-controls="adminFilterPanel" aria-expanded="false" hidden>Filter ▸</button>
+      <div id="adminReportToolbar" class="admin-report-toolbar" hidden><button type="button" id="adminFilterToggle" aria-controls="adminFilterPanel" aria-expanded="false" hidden>Filter ▸</button><button type="button" id="dsoSummaryToggle" hidden aria-controls="dsoReportSummary" aria-expanded="false" onclick="toggleDsoReportSummary()">Summary ▸</button><button type="button" id="missingDsoToggle" hidden aria-controls="missingDsoBox" aria-expanded="false" onclick="toggleMissingDsoReport()">রিপোর্ট জমা দিতে বাকি আছে ▸</button></div>
       <div class="filter-panel is-collapsed" id="adminFilterPanel">
         <div class="filter-group admin-filter-admin">
           <label>Admin নির্বাচন করুন</label>
@@ -860,7 +871,7 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
 
       <!-- ADMIN PAGE 1: MAIN REPORT TABLE -->
       <div id="adminPageReport">
-        <button type="button" id="missingDsoToggle" aria-controls="missingDsoBox" aria-expanded="false" onclick="toggleMissingDsoReport()">রিপোর্ট জমা দিতে বাকি আছে ▸</button>
+        
         <div class="missing-box" id="missingDsoBox" hidden>
           <h3>
             <span>⚠️ রিপোর্ট জমা দিতে বাকি আছে (<span id="missingCount">0</span> জন DSO)</span>
@@ -869,7 +880,7 @@ body.login-design-visible>.portal-footer{max-width:470px;margin:0 auto!important
           <div class="missing-list" id="missingDsoList"></div>
         </div>
 
-        <button type="button" id="dsoSummaryToggle" aria-controls="dsoReportSummary" aria-expanded="false" onclick="toggleDsoReportSummary()">Summary ▸</button>
+        
         <div class="summary-cards" id="dsoReportSummary" hidden>
           <div class="card"><h3>মোট এন্ট্রি সংখ্যা</h3><p id="totalEntriesCount">0</p></div>
           <div class="card green"><h3>মোট রিসিভড</h3><p> <span id="totalReceivedAllSum">0</span></p></div>
@@ -1884,7 +1895,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.03';
+    const APP_RELEASE_VERSION = '2026.11.10.04';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2173,6 +2184,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const filterPanel=document.getElementById('adminFilterPanel');
       const filterToggle=document.getElementById('adminFilterToggle');
       filterToggle.hidden=!['report','bank','slipApproval','notes'].includes(tab);
+      document.getElementById('adminReportToolbar').hidden=filterToggle.hidden;
+      document.getElementById('dsoSummaryToggle').hidden=tab!=='report';
+      document.getElementById('missingDsoToggle').hidden=tab!=='report';
       const setFilterExpanded=expanded=>{
         filterPanel.classList.toggle('is-collapsed',!expanded);
         filterPanel.style.display=expanded?'flex':'none';
