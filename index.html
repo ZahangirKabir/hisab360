@@ -815,6 +815,17 @@ body:not(.login-design-visible)>.portal-footer{background:transparent!important;
 body #app .investment-kpi>small{font-size:9px!important;margin-top:2px!important;text-align:center!important}
 @media(max-width:760px){#appContainer .summary-cards,body #app .investment-kpis,body #app .petty-summary-cards,body #app .bank-net-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}#appContainer .summary-cards>.card p,body #app .investment-kpi>strong,body #app .petty-summary-card>strong,body #app .bank-net-card>strong,body #app .bank-net-sum>strong{font-size:12px!important}}
 @media(max-width:360px){#appContainer .summary-cards>.card p,body #app .investment-kpi>strong,body #app .petty-summary-card>strong,body #app .bank-net-card>strong,body #app .bank-net-sum>strong{font-size:11px!important}}
+</style><style id="login-reference-sizing">
+body #loginSection.login-box{width:390px!important;max-width:calc(100vw - 32px)!important;margin:42px auto 24px!important;padding:32px!important;border-radius:22px!important;box-sizing:border-box}
+body #loginSection .hisab-login-stage{width:180px!important;max-width:100%!important;height:64px!important;margin:0 auto 28px!important}
+body #loginSection #hisabLoginLogo{width:180px!important;height:64px!important;max-height:64px!important;object-fit:contain}
+body #loginSection .login-field{margin:0 0 16px!important;text-align:left}
+body #loginSection .login-field-label{display:block;font-size:12px;line-height:14px;font-weight:500;margin:0 0 8px;color:#254663}
+body #loginSection .login-field>input{height:46px!important;min-height:46px!important;padding:10px 12px 10px 40px!important;border-radius:10px!important;font-size:15px!important}
+body #loginSection .login-field-icon{left:14px;top:45px!important;width:16px;height:18px}body #loginSection .login-field-icon svg{width:16px;height:18px}
+body #loginSection #loginBtn{height:46px!important;min-height:46px!important;margin:6px 0 0!important;padding:10px 14px!important;border-radius:10px!important;font-size:14px!important}
+@media(max-width:380px){body #loginSection.login-box{padding:26px 24px!important;margin-top:28px!important}}
+@media(max-height:520px){body #loginSection.login-box{margin-top:16px!important}}
 </style></head>
 <body>
 
@@ -822,8 +833,8 @@ body #app .investment-kpi>small{font-size:9px!important;margin-top:2px!important
   <!-- LOGIN SECTION -->
   <div id="loginSection" class="login-box">
     <span class="hisab-logo-stage hisab-login-stage"><img id="hisabLoginLogo" class="hisab-login-logo" src="assets/hisab360-logo-v8.png" alt="Hisab360"></span>
-    <div class="login-field"><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span><input type="text" id="loginId" aria-label="User ID" placeholder="User ID" enterkeyhint="next" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
-    <div class="login-field"><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></span><input type="password" id="loginPass" aria-label="Password" placeholder="Password" autocomplete="current-password"></div>
+    <div class="login-field"><label class="login-field-label" for="loginId">User ID</label><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span><input type="text" id="loginId" aria-label="User ID" placeholder="User ID" enterkeyhint="next" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+    <div class="login-field"><label class="login-field-label" for="loginPass">Password</label><span class="login-field-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></span><input type="password" id="loginPass" aria-label="Password" placeholder="Password" autocomplete="current-password"></div>
     <p id="loginInlineError" class="login-inline-error" role="alert" aria-live="polite" hidden></p>
     <button class="btn" id="loginBtn" type="button" onclick="handleLogin(event)">Log in</button>
   </div>
@@ -1933,7 +1944,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.10.16';
+    const APP_RELEASE_VERSION = '2026.11.10.17';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
