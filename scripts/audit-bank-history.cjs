@@ -16,5 +16,6 @@ const {accessToken,requestJSON,unseal}=require('./financial-backup.cjs');
  const missing=Object.keys(old).filter(k=>!Object.hasOwn(live,k)).length;
  const result='Bank audit: current '+JSON.stringify(count(live))+'; backup '+JSON.stringify(count(old))+'; missing keys '+missing;
  fs.appendFileSync(process.env.GITHUB_OUTPUT,'result='+result+'\n');
+ fs.writeFileSync(process.env.RUNNER_TEMP+'/bank-audit-result.txt',result);
  console.log('Read-only Bank comparison completed. No database writes performed.');
 })().catch(()=>{console.error('Read-only audit failed; no database changes.');process.exitCode=1;});
