@@ -64,3 +64,5 @@ jobs:
         run: node scripts/record-backup-status.cjs
       - name: Backup result
         run: echo 'Encrypted backup uploaded, downloaded and restored in isolation; production records unchanged.' >> "$GITHUB_STEP_SUMMARY"
+
+# Full backups also preserve permitted Authentication recovery exports.
