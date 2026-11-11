@@ -1,0 +1,44 @@
+name: Apply tested financial protection
+on:
+  push:
+    paths: ['.github/workflows/apply-data-protection.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: apply-financial-protection
+  cancel-in-progress: false
+jobs:
+  protection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROTECTION_PHASE: stage
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: Data-protection-test-result
+          run-id: 42961103498
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ runner.temp }}/protection-tests
+      - name: Apply only emulator-tested Rules
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          PROTECTION_TEST_DIR: ${{ runner.temp }}/protection-tests
+          BACKUP_OUTPUT_DIR: ${{ runner.temp }}/rules-backup
+        run: node scripts/apply-data-protection.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Encrypted-Rules-before-protection-${{ github.run_id }}
+          path: ${{ runner.temp }}/rules-backup/
+          retention-days: 90
+          if-no-files-found: ignore
