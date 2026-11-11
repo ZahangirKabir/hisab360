@@ -10,7 +10,7 @@ const {accessToken,requestJSON,unseal}=require('./financial-backup.cjs');require
  const rules=(await requestJSON(base+'/.settings/rules.json',{headers})).rules;
  const files=fs.readdirSync(process.env.OLD_BACKUP_DIR,{recursive:true}).filter(x=>String(x).endsWith('.hisabbackup'));if(files.length!==1)throw Error();
  const old=unseal(JSON.parse(fs.readFileSync(path.join(process.env.OLD_BACKUP_DIR,files[0]),'utf8')),process.env.BACKUP_PASSPHRASE).database;
- const out={counts:Object.fromEntries(roots.map(root=>[root,Object.keys(live[root]).length])),missingSinceBackup:Object.fromEntries(roots.map(root=>[root,Object.keys(old[root]||{}).filter(k=>!Object.hasOwn(live[root],k)).length])),checks:{accountKeyMismatch:0,approvedUnbalanced:0,approvedWithPendingSlip:0,bankSlipTotalMismatch:0,missingSlipImages:0,duplicateSlipIdentityAcrossAccounts:0,withdrawalReasonTotalMismatch:0,capitalTotalMismatch:0,calculatorMATotalMismatch:0,calculatorCapitalLinkMismatch:0},serverDeleteGuard:{}};
+ const out={counts:Object.fromEntries(roots.map(root=>[root,Object.keys(live[root]).length])),missingSinceBackup:Object.fromEntries(roots.map(root=>[root,Object.keys(old[root]||{}).filter(k=>!Object.hasOwn(live[root],k)).length])),checks:{accountKeyMismatch:0,approvedUnbalanced:0,approvedWithPendingSlip:0,bankSlipTotalMismatch:0,missingSlipImages:0,duplicateSlipIdentityAcrossAccounts:0,withdrawalReasonTotalMismatch:0,capitalTotalMismatch:0,calculatorMATotalMismatch:0,calculatorCapitalLinkMismatch:0},serverDeleteGuard:{},security:{publicRootRead:rules['.read']===true,publicRootWrite:rules['.write']===true,publicFinancialWrites:roots.filter(root=>rules[root]?.['.write']===true)}};
  const c=n=>Math.round((Number(n)||0)*100),ids=new Map();
  for(const [key,a]of Object.entries(live.ledgerAccounts)){
   if(a.date+'_'+a.userId!==key)out.checks.accountKeyMismatch++;
@@ -23,6 +23,6 @@ const {accessToken,requestJSON,unseal}=require('./financial-backup.cjs');require
   if(r.type==='capital'&&c(r.openingTotal)!==c(r.closingTotal))out.checks.capitalTotalMismatch++;
   if(r.type==='calculator'){const expected=c(r.opening)+c(r.lifting)+c(r.cashCalculation?.cashDepositLifting)+c(r.commissionReceived)+c(r.b2bReceive)-c(r.b2bSend)-c(r.refund)-((r.cashCalculation?.transfers?.pettySource||'Cash')==='MA'?c(r.cashCalculation?.transfers?.petty):0);if(expected!==c(r.netMA))out.checks.calculatorMATotalMismatch++;const capital=investment.find(x=>x.type==='capital'&&x.scope===r.scope&&x.date===r.date&&x.closingSource==='calculator');if(capital&&c(capital.closing?.maWallet)!==c(r.netMA))out.checks.calculatorCapitalLinkMismatch++;}
  }
- for(const root of roots){const write=String(rules?.[root]?.['.write']||'');out.serverDeleteGuard[root]=/numChildren|newData.exists\(\)/.test(write);}
+ for(const root of roots){const write=String(rules?.[root]?.['.write']||'');out.serverDeleteGuard[root]=/numChildren|newData.exists\(\)/.test(write)||JSON.stringify(rules[root]).includes('newData.exists()');}
  fs.writeFileSync(process.env.RUNNER_TEMP+'/financial-audit-result.json',JSON.stringify(out,null,2));console.log('Read-only financial integrity audit completed. No records or rules changed.');
 })().catch(()=>{console.error('Financial audit failed. No database changes.');process.exitCode=1;});
