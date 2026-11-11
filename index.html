@@ -894,7 +894,7 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
         <button class="tab-btn active" id="tabDsoFormBtn" onclick="switchDsoTab('form')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9M8 16l1-4L19 2l3 3-10 10-4 1Z"/></svg></span><span class="dso-menu-label">দিনের রিপোর্ট</span></button>
         <button class="tab-btn" id="tabDsoSlipBtn" onclick="switchDsoTab('slip')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6M9 11h6M9 15h3"/></svg></span><span class="dso-menu-label">ব্যাংক স্লিপ আপলোড</span></button>
         <button class="tab-btn" id="tabDsoReportBtn" onclick="switchDsoTab('report')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h7l2-3h9v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7ZM7 12h10M7 16h7"/></svg></span><span class="dso-menu-label">রিপোর্ট ও ইতিহাস</span></button>
-        <button class="tab-btn settings-icon" id="tabDsoSettingsBtn" type="button" onclick="switchDsoTab('settings')" title="Password Settings" aria-label="Password Settings"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3H9Z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="dso-menu-label">সেটিংস</span></button>
+        <button class="tab-btn settings-icon" id="tabDsoSettingsBtn" type="button" onclick="switchDsoTab('settings')" title="Password Settings" aria-label="Password Settings"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12M5.64 18.36l2.12-2.12m8.48-8.48 2.12-2.12"/></svg></span><span class="dso-menu-label">সেটিংস</span></button>
       </div>
     </div>
 
@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.23';
+    const APP_RELEASE_VERSION = '2026.11.11.24';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6973,4 +6973,32 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
 #dsoTabNav>#tabDsoSettingsBtn .dso-menu-icon{width:24px!important;height:24px!important;flex:0 0 24px!important}
 #dsoTabNav>#tabDsoSettingsBtn .dso-menu-icon svg{width:22px!important;height:22px!important}
 #dsoTabNav>#tabDsoSettingsBtn .dso-menu-label{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+</style>
+
+<style id="compact-app-spacing">
+@media screen{
+#appContainer.container{padding:10px 12px!important}
+#appContainer .header-bar{margin-bottom:8px!important;padding-bottom:8px!important;gap:6px!important}
+#appContainer .portal-sticky-top{margin-bottom:6px!important;padding-top:0!important;padding-bottom:0!important}
+#appContainer .hisab-header-brand{gap:4px!important}
+#appContainer #portalTitle{margin-top:2px!important;line-height:1.35!important}
+#appContainer #dsoTabNav{margin-top:6px!important;margin-bottom:6px!important;padding:4px!important;gap:4px!important}
+#appContainer .section-box{padding:10px!important;margin-top:6px!important;margin-bottom:8px!important}
+#appContainer .section-title{margin-bottom:6px!important;padding-bottom:5px!important}
+#appContainer .form-group{margin-bottom:6px!important}
+#appContainer .form-row{gap:8px!important;margin-bottom:6px!important}
+#appContainer .report-page-controls{margin:5px 0 7px!important;gap:8px!important}
+#appContainer #adminPageHeading{padding:4px 0!important}
+#app .card,#bankApp .card{padding:10px!important;margin:8px 0!important}
+#app .working-level{padding:10px!important;margin:10px 0!important}
+#app .finance-section{padding:8px!important;margin:8px 0!important}
+#app .fields,#bankApp .bank-form{gap:8px!important}
+#app .repeat-row{padding:6px 0!important}
+#app .card h2,#bankApp .card h2{margin-bottom:8px!important}
+#investmentPageHeading:not([hidden]){padding:4px 0!important;margin-bottom:6px!important}
+.report-filter,.bank-filters{margin-bottom:7px!important;padding:7px!important}
+.report-export-actions{margin-bottom:7px!important;gap:6px!important}
+.portal-footer,.investment-footer{padding:8px!important;margin-top:10px!important}
+@media(max-width:760px){#appContainer.container{padding:6px 8px!important}body.has-icon-sidebar #appContainer.container{padding:6px!important}#appContainer .section-box{padding:8px!important}#app .card,#bankApp .card{padding:8px!important;margin:6px 0!important}#app .working-level{padding:8px!important;margin:8px 0!important}}
+}
 </style>
