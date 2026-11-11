@@ -4,7 +4,8 @@ on:
   push:
     paths: ['.github/workflows/financial-backup.yml']
   schedule:
-    - cron: '17 * * * *'
+    - cron: '17 19 * * *'
+    - cron: '17 0-18,20-23 * * *'
 permissions:
   contents: read
 concurrency:
@@ -23,7 +24,7 @@ jobs:
           node-version: '22'
       - name: Choose backup scope
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$(date -u +%H)" != "19" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "${{ github.event.schedule }}" != "17 19 * * *" ]; then
             echo 'BACKUP_SCOPE=financial-metadata' >> "$GITHUB_ENV"
           else
             echo 'BACKUP_SCOPE=full-rtdb' >> "$GITHUB_ENV"
