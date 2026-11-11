@@ -1,5 +1,5 @@
 'use strict';
-const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');globalThis.crypto=crypto.webcrypto;
+const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto');if(!globalThis.crypto)Object.defineProperty(globalThis,'crypto',{value:crypto.webcrypto});
 const {initializeTestEnvironment,assertFails}=require('@firebase/rules-unit-testing'),{ref,get,set,update,remove}=require('firebase/database');require('../assets/hisab360-protected-writes.js');
 const adapt=db=>({ref(path=''){const r=ref(db,path);return {key:r.key,get:()=>get(r),once:()=>get(r),update:patch=>update(r,patch),set:value=>set(r,value),remove:()=>remove(r),child:p=>adapt(db).ref([path,p].filter(Boolean).join('/'))};}});
 (async()=>{const environment=await initializeTestEnvironment({projectId:'demo-hisab360-protection',database:{host:'127.0.0.1',port:9000,rules:fs.readFileSync(process.env.RUNNER_TEMP+'/protected-rules.json','utf8')}});let count=0;const pass=name=>{count++;console.log('PASS '+name);};
