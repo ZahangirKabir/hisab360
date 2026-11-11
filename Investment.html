@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.11.36">
+<meta name="investment-release-version" content="2026.11.11.38">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1771,3 +1771,19 @@ input,select,textarea{max-width:100%;box-sizing:border-box}
 @media(max-width:760px){#appContainer.container{padding:6px 8px!important}body.has-icon-sidebar #appContainer.container{padding:6px!important}#appContainer .section-box{padding:8px!important}#app .card,#bankApp .card{padding:8px!important;margin:6px 0!important}#app .working-level{padding:8px!important;margin:8px 0!important}}
 }
 </style>
+
+<style id="smaller-filter-fields">@media screen{
+html body #appContainer #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(auto-fit,minmax(120px,155px))!important;padding:6px!important;gap:6px!important}
+html body #appContainer #adminFilterPanel .filter-group label{font-size:10px!important;margin-bottom:2px!important}
+html body #appContainer #adminFilterPanel .filter-group input:not(.smart-period-source),html body #appContainer #adminFilterPanel .filter-group select,html body #appContainer #adminFilterPanel #dsoMultiSelectToggle{height:32px!important;min-height:32px!important;padding:4px 7px!important;font-size:12px!important}
+html body #appContainer #adminFilterPanel .admin-filter-action{min-height:32px!important;padding:5px 8px!important}
+html body .report-filter,html body .bank-filters{padding:6px!important;gap:6px!important}
+html body .report-filter>.field,html body .report-filter>.bank-field,html body .bank-filters>.bank-field{width:155px!important;flex:0 1 155px!important;max-width:155px!important}
+html body .report-filter>.smart-period-wrapper,html body .bank-filters>.smart-period-wrapper{width:155px!important;flex:0 1 155px!important}
+html body .report-filter input:not(.smart-period-source),html body .report-filter select,html body .bank-filters input:not(.smart-period-source),html body .bank-filters select{height:32px!important;min-height:32px!important;max-width:155px!important;padding:4px 7px!important;font-size:12px!important}
+html body #appContainer #adminFilterPanel .smart-period-trigger,html body .report-filter .smart-period-trigger,html body .bank-filters .smart-period-trigger{height:32px!important;min-height:32px!important;padding:4px 7px!important;font-size:12px!important}
+html body .report-filter button,html body .bank-filters button{min-height:32px!important;padding:5px 8px!important;font-size:11px!important}
+html body #adminPageSlipApproval .slip-filter-field,html body #adminPageSlipApproval .slip-filter-field:last-child{flex:0 1 155px!important;min-width:0!important;max-width:155px!important}
+html body #adminPageSlipApproval .slip-filter-field select{height:32px!important;min-height:32px!important;padding:4px 28px 4px 7px!important;font-size:12px!important}
+@media(max-width:760px){html body #appContainer #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(2,minmax(0,155px))!important}html body #appContainer #adminFilterPanel .filter-group input:not(.smart-period-source),html body #appContainer #adminFilterPanel .filter-group select,html body .report-filter input:not(.smart-period-source),html body .report-filter select,html body .bank-filters input:not(.smart-period-source),html body .bank-filters select{font-size:16px!important;min-height:36px!important;height:36px!important}html body #appContainer #adminFilterPanel .smart-period-trigger,html body .report-filter .smart-period-trigger,html body .bank-filters .smart-period-trigger{height:36px!important;min-height:36px!important}html body .report-filter>.field,html body .report-filter>.bank-field,html body .bank-filters>.bank-field{flex:0 1 calc(50% - 3px)!important;width:155px!important}}
+}</style>
