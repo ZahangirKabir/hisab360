@@ -34,3 +34,5 @@ jobs:
           name: Financial-integrity-counts
           path: ${{ runner.temp }}/financial-audit-result.json
           retention-days: 1
+
+# Verify deployed access flags without exposing database rules or records.
