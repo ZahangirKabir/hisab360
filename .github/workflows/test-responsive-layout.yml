@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/test-responsive-layout.yml'
+      - 'scripts/check-responsive-layout.cjs'
 permissions:
   contents: read
 jobs:
