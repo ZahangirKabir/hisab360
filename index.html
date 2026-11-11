@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.39';
+    const APP_RELEASE_VERSION = '2026.11.11.40';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -3036,7 +3036,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     function renderSlipApprovalFilters(){if(currentUser==='admin')listenBankSlipStatuses();renderBankSlipStatus('admin');}
     function renderBankSlipStatus(user){const body=document.getElementById(user==='admin'?'adminBankSlipStatusBody':'dsoBankSlipStatusBody');if(!body)return;
       const displayed=user==='admin'?{...slipPagedItems,...slipStatusItems}:slipStatusItems;
-      if(user==='admin'){const select=document.getElementById('slipApprovalBank');if(select){const chosen=select.value;const names=[...new Set(Object.values(displayed).flatMap(r=>(r.slips||[]).map(s=>String(s.bankName||'').trim())).filter(Boolean))].sort();select.replaceChildren(new Option('All Bank',''),...names.map(n=>new Option(n,n)));select.value=names.includes(chosen)?chosen:'';}}
+      if(user==='admin'){const select=document.getElementById('slipApprovalBank');if(select){const chosen=select.value;const names=[...new Set([chosen,...Object.values(displayed).flatMap(r=>(r.slips||[]).map(s=>String(s.bankName||'').trim()))].filter(Boolean))].sort();select.replaceChildren(new Option('All Banks',''),...names.map(n=>new Option(n,n)));select.value=chosen;}}
       const today=getLocalDateString();
       if(user!=='admin')document.getElementById('dsoSlipStatusDate').textContent=today;
       const visible=user==='admin'?Object.entries(displayed):Object.entries(displayed).filter(([_,item])=>item?.date===today&&String(item.userId)===String(currentUser));
@@ -7056,4 +7056,19 @@ html body #adminPageSlipApproval .slip-filter-field select{height:32px!important
 #adminReportToolbar #inlineSlipFilters select{width:100%!important;max-width:145px!important;height:32px!important;min-height:32px!important;padding:4px 28px 4px 8px!important;border:1px solid #c5d9cd!important;border-radius:7px!important;background-color:#fff!important;font-size:12px!important}
 #adminReportToolbar:has(#inlineSlipFilters:not([hidden])){align-items:flex-end!important;gap:8px!important}
 @media(max-width:760px){#adminReportToolbar #inlineSlipFilters .slip-filter-field{flex-basis:125px!important;width:125px!important;max-width:125px!important}#adminReportToolbar #inlineSlipFilters select{height:36px!important;min-height:36px!important;font-size:16px!important}}
+}</style>
+
+<style id="inline-filter-responsive-fix">@media screen{
+.report-page-controls:has(#inlineSlipFilters:not([hidden])){flex-wrap:wrap!important;overflow:visible!important;align-items:end!important}
+#adminReportToolbar:has(#inlineSlipFilters:not([hidden])){display:flex!important;flex:1 1 380px!important;min-width:0!important;width:auto!important;max-width:100%!important;overflow:visible!important;align-items:end!important}
+#adminReportToolbar #inlineSlipFilters:not([hidden]){flex:0 1 auto!important;min-width:0!important;max-width:100%!important;align-items:end!important}
+#adminReportToolbar #inlineSlipFilters .slip-filter-label{display:block!important;color:#345f52!important;font-size:11px!important;line-height:1.4!important;white-space:nowrap!important}
+#adminReportToolbar #inlineSlipFilters select{color:#234d41!important;line-height:1.4!important;text-overflow:ellipsis}
+@media(max-width:760px){
+.report-page-controls:has(#inlineSlipFilters:not([hidden])) #adminPageHeading{flex:1 0 100%!important}
+#adminReportToolbar:has(#inlineSlipFilters:not([hidden])){flex:1 1 100%!important;width:100%!important;gap:6px!important}
+#adminReportToolbar #inlineSlipFilters:not([hidden]){flex:1 1 0!important;gap:6px!important;width:auto!important}
+#adminReportToolbar #inlineSlipFilters .slip-filter-field{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important}
+#adminReportToolbar #inlineSlipFilters select{max-width:100%!important;width:100%!important;padding-left:7px!important;padding-right:24px!important;font-size:13px!important}
+}
 }</style>
