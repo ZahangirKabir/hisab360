@@ -1,0 +1,40 @@
+name: Read-only Bank history audit
+on:
+  push:
+    paths: ['.github/workflows/audit-bank-history.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      result: ${{ steps.compare.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: Hisab360-encrypted-backup-42740748267
+          run-id: 42740748267
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ runner.temp }}/old-bank-backup
+      - id: compare
+        name: Compare record counts only
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          OLD_BACKUP_DIR: ${{ runner.temp }}/old-bank-backup
+        run: node scripts/audit-bank-history.cjs
+  result:
+    needs: audit
+    name: ${{ needs.audit.outputs.result }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Read-only comparison complete. No records changed.'
