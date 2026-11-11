@@ -16,13 +16,9 @@
 
 ---
 
-## এই আপডেটের পর প্রথমে করুন
+## বর্তমান অবস্থা
 
-১. `Firebase_Rules_Reliability.json` ফাইলের সম্পূর্ণ লেখা Firebase Console → Realtime Database → Rules-এ বসিয়ে Publish করুন। পুরোনো Rules আগে আলাদা করে রাখুন। Database Data অংশে Import/Delete করবেন না। নতুন Rules-এ আগের অনুমতি রেখে Investment-এর দ্রুত record save ও closed-month validation যোগ হয়েছে।
-
-২. অ্যাপ Refresh করুন। Rules Publish না হলে অ্যাপ নিরাপদ পুরোনো save পদ্ধতিতে চলবে; দ্রুত record save তখন চালু হবে না।
-
-৩. নিচের দুই GitHub Secret বসিয়ে Hisab360 Financial Backup-এর Run workflow চালান এবং Success ও download যাচাই করুন। সর্বশেষ ব্যর্থ run-এ দুটি Secret খালি ছিল। Secret ছাড়া workflow তৈরি থাকা মানেই Backup সক্রিয় নয়।
+সুরক্ষিত Rules প্রকাশ করা হয়েছে এবং Full ও ঘণ্টাভিত্তিক Backup সফলভাবে যাচাই হয়েছে। নিচের Secret setup ধাপগুলো কেবল নতুন repository বা পুনরায় setup-এর জন্য; চালু অ্যাপে পুরোনো Rules দিয়ে বর্তমান Rules প্রতিস্থাপন করবেন না।
 
 # Hisab360 — Backup চালু করা
 
@@ -45,7 +41,7 @@ Backup তৈরির সময়কার password দিয়েই পরে ও
 - প্রতিদিন বাংলাদেশ সময় রাত ১:১৭-তে workflow চালুর অনুরোধ হবে। GitHub schedule দেরি করতে পারে; এটি নির্দিষ্ট সময়ে চালুর নিশ্চয়তা নয়। Public repository দীর্ঘদিন নিষ্ক্রিয় থাকলে scheduled workflow বন্ধ হতে পারে। নিয়মিত Actions-এর ফল দেখুন।
 - Full backup: একটি server read-এ সম্পূর্ণ Realtime Database, embedded Bank Slip ছবি, financial data, account/device metadata এবং Database Rules। ফাইল download করার আগে encrypt ও decrypt করে মিলিয়ে দেখা হয়। কোনো live data লেখা বা মোছা হয় না।
 - App-এর manual Backup: ledgerAccounts, collections, bankSlipRequests, investmentEntries, bankTrackerEntries, ledgerLocations, appConfig, notifications ও slipImages। এটি financial-path backup, সম্পূর্ণ account/device/Rules backup নয়। আলাদা আলাদা path পড়া হয়, তাই চলমান লেনদেনের মধ্যে এক মুহূর্তের atomic snapshot নয়। Full backup-এর বিকল্প নয়।
-- Firebase Authentication user/password এবং বাহিরের Storage file এই backup-এ নেই। RTDB account metadata Authentication account-এর বিকল্প নয়। Bank Slip ছবি RTDB-তে থাকলে অন্তর্ভুক্ত হবে।
+- স্বয়ংক্রিয় Full Backup-এ অনুমতি থাকা সাপেক্ষে Firebase Authentication user export ও password-hash configuration থাকে; ১১ নভেম্বরের সর্বশেষ Full Backup-এ দুটিই সফল হয়েছে। App-এর manual backup-এ Authentication export নেই। বাহিরের Storage file অন্তর্ভুক্ত নয়; RTDB-তে থাকা Bank Slip ছবি Full Backup-এ থাকে।
 - GitHub artifact সর্বোচ্চ ৯০ দিন রাখার অনুরোধ করা আছে; repository policy কম সময় নির্ধারণ করতে পারে। মেয়াদ শেষ হওয়ার আগে নিজের private storage-এ আরও একটি copy রাখুন। Public repository-র artifact-এও শুধু encrypted file থাকে।
 - বড় লেনদেন/পরিবর্তনের আগে ও পরে প্রয়োজনমতো Run workflow করুন। দুটি backup-এর মধ্যবর্তী পরিবর্তন শেষ backup-এ থাকবে না। Backup হলো recovery ব্যবস্থা; এটি zero-data-loss guarantee নয়। Firebase-এর quota/নেটওয়ার্ক/অ্যাকাউন্টের সমস্যা ব্যাকআপ ব্যর্থ করতে পারে।
 - Backup password বা service-account key বদলালে পুরোনো backup-এর পুরোনো password ধরে রাখুন।
