@@ -1,0 +1,20 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const {accessToken,requestJSON,unseal}=require('./financial-backup.cjs');
+(async()=>{
+ const account=JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+ if(account.project_id!=='collection-app-479e0')throw Error('Project mismatch');
+ const token=await accessToken(account);
+ const current=await requestJSON('https://collection-app-479e0-default-rtdb.firebaseio.com/bankTrackerEntries.json',{headers:{Authorization:'Bearer '+token}});
+ const dir=process.env.OLD_BACKUP_DIR;
+ const files=fs.readdirSync(dir,{recursive:true}).filter(x=>String(x).endsWith('.hisabbackup'));
+ if(files.length!==1)throw Error('Expected one previous backup');
+ const payload=unseal(JSON.parse(fs.readFileSync(path.join(dir,files[0]),'utf8')),process.env.BACKUP_PASSPHRASE);
+ if(payload.projectId!=='collection-app-479e0')throw Error('Backup project mismatch');
+ const old=payload.database?.bankTrackerEntries||{},live=current||{};
+ const count=data=>{const counts={range:0,withdrawal:0,cheque:0,deposit:0,other:0};for(const row of Object.values(data)){const type=Object.hasOwn(counts,row?.type)?row.type:'other';counts[type]++;}return counts;};
+ const missing=Object.keys(old).filter(k=>!Object.hasOwn(live,k)).length;
+ const result='Bank audit: current '+JSON.stringify(count(live))+'; backup '+JSON.stringify(count(old))+'; missing keys '+missing;
+ fs.appendFileSync(process.env.GITHUB_OUTPUT,'result='+result+'\n');
+ console.log('Read-only Bank comparison completed. No database writes performed.');
+})().catch(()=>{console.error('Read-only audit failed; no database changes.');process.exitCode=1;});
