@@ -36,6 +36,20 @@ function create(raw,options={}){
  function entity(a,root,key){return root==='collections'?(a?.reportKey===key?a.report:null):a?.requests?.[key]||null;}
  function pathGet(x,parts){for(const p of parts)x=x?.[p];return x??null;}
  function pathSet(x,parts,v){if(!parts.length)return v;let n=x;for(const p of parts.slice(0,-1))n=n[p]||(n[p]={});if(v===null)delete n[parts.at(-1)];else n[parts.at(-1)]=v;return x;}
+ class DeviceScopedQuery {
+  constructor(refs){this.refs=refs;this.handlers=new Map();this.key='ledgerAccounts';}
+  async once(){const all=await Promise.all(this.refs.map(r=>r.once('value')));return this.merge(all);}
+  merge(all){const out={};for(const s of all){if(!s)continue;if(s.key==='ledgerAccounts')s.forEach(c=>{if(c.val())out[c.key]=c.val();});else if(s.val())out[s.key]=s.val();}return snapshot('ledgerAccounts',out);}
+  on(event,fn,error){
+   const data=Array(this.refs.length),seen=new Set(),handlers=[];
+   const emit=()=>{if(seen.size===this.refs.length)fn(this.merge(data));};
+   this.refs.forEach((r,i)=>{const h=s=>{data[i]=s;seen.add(i);emit();};handlers.push(h);
+    r.on(event,h,e=>{data[i]=null;seen.add(i);emit();error?.(e);});
+   });this.handlers.set(fn,handlers);
+   if(!this.refs.length)Promise.resolve().then(()=>fn(snapshot('ledgerAccounts',{})));
+  }
+  off(event,fn){const handlers=this.handlers.get(fn)||[];this.refs.forEach((r,i)=>{if(handlers[i])r.off(event,handlers[i]);});this.handlers.delete(fn);}
+ }
  class Ref{
   constructor(path,opts={}){this.path=path;this.parts=path.split('/');this.root=this.parts[0];this.key=this.parts.at(-1);this.opts=opts;this.listeners=[];}
   child(p){return new Ref(this.path+'/'+p,this.opts);}
@@ -45,22 +59,30 @@ function create(raw,options={}){
   limitToLast(v){return this.query('last',v);}limitToFirst(v){return this.query('first',v);}
   async source(){await enabled();if(this.parts.length>1)return raw.ref('ledgerAccounts/'+await locate(this.root,this.parts[1]));
    let q=raw.ref('ledgerAccounts');const o=this.opts;
-   if(o.userDates)return q.orderByKey().startAt(o.userDates[1]+'_').endAt(o.userDates[2]+'_\uf8ff');
    // A DSO's deposit status and submission checks need only today's account.
    if(this.root==='bankSlipRequests'&&o.order==='userId'&&o.equal){return raw.ref('ledgerAccounts/'+accountKey(today(),o.equal[0]));}
+   const scope=options.scope?.();
+   if(o.userDates){
+    const [user,start,end]=o.userDates;
+    if(Array.isArray(scope)&&!scope.map(String).includes(String(user)))throw Error('এই DSO দেখার অনুমতি নেই।');
+    const first=new Date(start+'T00:00:00Z'),last=new Date(end+'T00:00:00Z');
+    if(!Number.isFinite(first.getTime())||!Number.isFinite(last.getTime())||first>last)throw Error('সঠিক তারিখ প্রয়োজন।');
+    const days=Math.round((last-first)/86400000)+1;
+    if(days<=62)return new DeviceScopedQuery(Array.from({length:days},(_,i)=>raw.ref('ledgerAccounts/'+accountKey(new Date(first.getTime()+i*86400000).toISOString().slice(0,10),user))));
+   }
+   if(Array.isArray(scope)){const users=o.userDates?[String(o.userDates[0])]:scope.map(String);if(users.some(u=>!scope.map(String).includes(u)))throw Error('এই DSO দেখার অনুমতি নেই।');return new DeviceScopedQuery(users.map(u=>o.order==='date'&&o.equal?raw.ref('ledgerAccounts/'+accountKey(o.equal[0],u)):raw.ref('ledgerAccounts').orderByChild('userId').equalTo(u)));}
+   if(o.userDates)return q.orderByChild('userId').equalTo(String(o.userDates[0]));
    if(o.order&&o.order!=='$key')q=q.orderByChild(o.order);else q=q.orderByKey();
    if(o.equal)q=q.equalTo(...o.equal);
-   if(o.start)q=o.start[1]===undefined?q.startAt(o.start[0]):q.startAt(...o.start);if(o.end)q=o.end[1]===undefined?q.endAt(o.end[0]):q.endAt(...o.end);
+   if(o.start){const v=[...o.start];if(v[1]&&this.root==='bankSlipRequests'&&!/^\d{4}-\d{2}-\d{2}_\d+$/.test(v[1]))v[1]=await locate(this.root,v[1]);q=q.startAt(...v);}if(o.end){const v=[...o.end];if(v[1]&&this.root==='bankSlipRequests'&&!/^\d{4}-\d{2}-\d{2}_\d+$/.test(v[1]))v[1]=await locate(this.root,v[1]);q=q.endAt(...v);}
    // Request pages load the selected date's small metadata, never image blobs.
-   if(this.root==='collections'){if(o.last)q=q.limitToLast(o.last);if(o.first)q=q.limitToFirst(o.first);}
+   if(o.last)q=q.limitToLast(o.last);if(o.first)q=q.limitToFirst(o.first);
    return q;
   }
   project(s){if(this.parts.length>1){const a=s.val();learn(s.key,a);return snapshot(this.key,pathGet(entity(a,this.root,this.parts[1]),this.parts.slice(2)));}
-   const out={};const add=(k,a)=>{if(!a||(this.opts.userDates&&String(a.userId)!==String(this.opts.userDates[0])))return;learn(k,a);if(this.root==='collections'){if(a.report)out[a.reportKey]=a.report;}else Object.assign(out,a.requests||{});};
+   const out={},cursors=[];const add=(k,a)=>{if(a?.date)cursors.push({date:a.date,key:k});if(!a||(this.opts.userDates&&String(a.userId)!==String(this.opts.userDates[0])))return;if(this.opts.userDates&&(a.date<this.opts.userDates[1]||a.date>this.opts.userDates[2]))return;if(this.opts.start&&a.date<this.opts.start[0])return;if(this.opts.end&&a.date>this.opts.end[0])return;learn(k,a);if(this.root==='collections'){if(a.report)out[a.reportKey]=a.report;}else Object.assign(out,a.requests||{});};
    if(this.root==='bankSlipRequests'&&this.opts.order==='userId'&&this.opts.equal)add(s.key,s.val());else s.forEach(c=>add(c.key,c.val()));
-   const result=snapshot(this.root,out);
-   if(this.root==='collections'&&!this.opts.userDates){let oldest=null;s.forEach(child=>{if(!oldest){const value=child.val();oldest={date:value?.date||String(child.key).slice(0,10),key:child.key};}return true;});result.ledgerPage={count:s.numChildren(),oldest};}
-   return result;
+   const projected=snapshot(this.root,out);cursors.sort((a,b)=>a.date.localeCompare(b.date)||a.key.localeCompare(b.key));projected.ledgerPage={count:s.numChildren(),oldest:cursors[0]||null};return projected;
   }
   async once(event,success,failure){try{if(event!=='value')throw Error('Unsupported ledger event');const q=await this.source();const s=this.project(await q.once('value'));success?.(s);return s;}catch(e){failure?.(e);throw e;}}
   on(event,fn,error){const state={event,fn,cancel:false,previous:null,q:null,handler:null};this.listeners.push(state);
@@ -69,7 +91,13 @@ function create(raw,options={}){
   off(event,fn){for(const l of this.listeners)if((!event||l.event===event)&&(!fn||l.fn===fn)){l.cancel=true;l.q?.off('value',l.handler);}this.listeners=this.listeners.filter(l=>!l.cancel);}
   async transaction(update,complete,applyLocally=false){try{await enabled();const key=this.parts[1],ak=await locate(this.root,key);const [date,userId]=ak.split('_');
    const result=await raw.ref('ledgerAccounts/'+ak).transaction(current=>{
-    const a=clone(current)||{date,userId,requests:{}};const old=entity(a,this.root,key);const value=update(clone(pathGet(old,this.parts.slice(2))));if(value===undefined)return;
+    const a=clone(current)||{date,userId,requests:{}};
+    // Migrated report-only accounts may predate the requests container.
+    // Normalize on every transaction retry, preserving all existing financial fields.
+    if(typeof a!=='object'||Array.isArray(a))throw Error('দিনের হিসাবের গঠন সঠিক নয়। Admin-কে জানান।');
+    if(a.requests==null)a.requests={};
+    else if(typeof a.requests!=='object'||Array.isArray(a.requests))throw Error('Bank Slip তালিকার গঠন সঠিক নয়। Admin-কে জানান।');
+    const old=entity(a,this.root,key);const value=update(clone(pathGet(old,this.parts.slice(2))));if(value===undefined)return;
     const next=pathSet(clone(old)||{},this.parts.slice(2),value);
     if(this.root==='collections'){
      if(a.reportKey&&a.reportKey!==key&&a.report&&next!==null)throw Error('একই দিনের দ্বিতীয় রিপোর্ট গ্রহণযোগ্য নয়।');
@@ -97,8 +125,8 @@ function create(raw,options={}){
  const db={ref(path=''){const root=path.split('/')[0];return root==='collections'||root==='bankSlipRequests'?new Ref(path):raw.ref(path);}};
  async function thumbnail(data){if(!global.document?.createElement)return '';return new Promise(resolve=>{let done=false;const img=new Image();const finish=v=>{if(done)return;done=true;clearTimeout(timer);resolve(v);};const timer=setTimeout(()=>finish(''),8000);img.onerror=()=>finish('');img.onload=()=>{try{const scale=Math.min(1,160/img.naturalWidth,160/img.naturalHeight);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));const context=c.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,c.width,c.height);context.drawImage(img,0,0,c.width,c.height);finish(c.toDataURL('image/jpeg',0.65));}catch(_){finish('');}};img.src=data;});}
  async function putImage(data){if(!/^data:image\//.test(data))return data;const bytes=new TextEncoder().encode(data);const [hash,small]=await Promise.all([crypto.subtle.digest('SHA-256',bytes),thumbnail(data)]);const key=[...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');const r=await raw.ref('slipImages/'+key).transaction(v=>v===null?{data,...(small?{thumbnail:small}:{})}:undefined,undefined,false);if(!r.snapshot.val()?.data)throw Error('স্লিপের ছবি সেভ হয়নি।');return 'rtdb:'+key;}
- async function imageData(value,small=false){if(!String(value).startsWith('rtdb:'))return value;const key=value.slice(5);if(!/^[a-f0-9]{64}$/.test(key))throw Error('স্লিপের ছবির পরিচয় সঠিক নয়।');const cacheKey=key+(small?':thumbnail':':data');if(assetCache.has(cacheKey))return assetCache.get(cacheKey);const result=raw.ref('slipImages/'+key+'/'+(small?'thumbnail':'data')).once('value').then(async s=>{if(!s.val()&&small)return imageData(value,false);if(!s.val())throw Error('স্লিপের ছবি পাওয়া যায়নি।');return s.val();}).catch(e=>{assetCache.delete(cacheKey);throw e;});assetCache.set(cacheKey,result);if(assetCache.size>12)assetCache.delete(assetCache.keys().next().value);return result;}
- return {database:db,raw,enabled,putImage,imageData,accountKey,requestsForDate:(date)=>new Ref('bankSlipRequests',{order:'date',equal:[date]}),collectionsRange:(user,start,end)=>new Ref('collections',{userDates:[String(user),start,end]}),reset:()=>{ready=null;}};
+ async function imageData(value,small=false){if(!String(value).startsWith('rtdb:'))return value;const key=value.slice(5);if(!/^[a-f0-9]{64}$/.test(key))throw Error('স্লিপের ছবির পরিচয় সঠিক নয়।');const cacheKey=key+(small?':thumbnail':':data');if(assetCache.has(cacheKey))return assetCache.get(cacheKey);const result=raw.ref('slipImages/'+key+'/'+(small?'thumbnail':'data')).once('value').then(async s=>{if(!s.val()&&small)return imageData(value,false);if(!s.val())throw Error('স্লিপের ছবি পাওয়া যায়নি।');return s.val();}).catch(e=>{assetCache.delete(cacheKey);throw e;});assetCache.set(cacheKey,result);if(assetCache.size>((navigator.deviceMemory||4)<=2?4:8))assetCache.delete(assetCache.keys().next().value);return result;}
+ return {database:db,raw,enabled,putImage,imageData,accountKey,requestsForDate:(date)=>new Ref('bankSlipRequests',{order:'date',equal:[date]}),collectionsRange:(user,start,end)=>new Ref('collections',{userDates:[String(user),start,end]}),reset:()=>{ready=null;locations.clear();assetCache.clear();}};
 }
 global.PortalLedger={create,sync,balance,same,snapshot};
 })(typeof window!=='undefined'?window:globalThis);
