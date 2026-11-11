@@ -1,10 +1,13 @@
 name: Test financial data protection
 on:
   push:
-    paths: ['.github/workflows/test-data-protection.yml']
+    paths: ['.github/workflows/test-data-protection.yml','scripts/test-protection-emulator.cjs','scripts/build-protection-rules.cjs','assets/hisab360-protected-writes.js']
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: test-financial-protection
+  cancel-in-progress: true
 jobs:
   emulator:
     runs-on: ubuntu-latest
