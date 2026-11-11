@@ -18,4 +18,4 @@ const adapt=db=>({ref(path=''){const r=ref(db,path);return {key:r.key,get:()=>ge
  const anonymous=environment.unauthenticatedContext().database();await assertFails(get(ref(anonymous,'financialHistory')));await assertFails(get(ref(anonymous,'bankTrackerEntries')));pass('public access remains denied');
  fs.writeFileSync(process.env.RUNNER_TEMP+'/protection-test-result.json',JSON.stringify({passed:count,rulesFingerprint:fs.readFileSync(process.env.RUNNER_TEMP+'/rules-fingerprint.txt','utf8'),productionChanged:false},null,2));
  }finally{await environment.cleanup();}
-})().catch(error=>{console.error('Protection regression test failed:',error.code||error.name);process.exitCode=1;});
+})().catch(error=>{console.error('Protection regression test failed:',error.stack||error.message);process.exitCode=1;});
