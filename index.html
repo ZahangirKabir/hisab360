@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.21';
+    const APP_RELEASE_VERSION = '2026.11.11.22';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6949,3 +6949,19 @@ body.has-icon-sidebar #hisabMobileMenuBar{align-self:center!important}
 <style id="dso-original-menu">body[data-portal-menu-role="dso"] #hisabSideMenu,body[data-portal-menu-role="dso"] #hisabMobileMenuBar,body[data-portal-menu-role="dso"] #adminTabNav{display:none!important}body[data-portal-menu-role="dso"] #dsoTabNav{display:grid!important}body[data-portal-menu-role="dso"]{padding-left:0!important}</style>
 
 <style id="dso-minimal-labels">#dsoHistoryTitle{display:none!important}#dsoPageReport>div:first-child{display:block!important}#dsoPageReport>div:first-child>div:first-child{display:none!important}#dsoPageReport>div:first-child>div:last-child{justify-content:flex-start!important;gap:6px!important;width:100%;min-width:0}#dsoPageReport .smart-period-wrapper{flex:0 1 200px!important;width:200px!important;max-width:100%!important}#dsoPageReport .smart-period-trigger{min-height:38px!important;height:38px!important;padding:6px 9px!important}#dsoPageReport .btn-reset{min-height:38px;padding:6px 10px;font-size:12px}</style>
+
+<style id="dso-colourful-menus">
+@media screen{
+#dsoTabNav #tabDsoFormBtn{--menu-colour:#1764bf;--menu-tint:#edf5ff;--menu-line:#c6dcfa;--menu-end:#3185df}
+#dsoTabNav #tabDsoSlipBtn{--menu-colour:#087d70;--menu-tint:#eaf9f4;--menu-line:#b9e5d7;--menu-end:#12a58c}
+#dsoTabNav #tabDsoReportBtn{--menu-colour:#7945b3;--menu-tint:#f5efff;--menu-line:#ddcaf5;--menu-end:#a269d7}
+#dsoTabNav #tabDsoSettingsBtn{--menu-colour:#a65c08;--menu-tint:#fff5e7;--menu-line:#f3d6a9;--menu-end:#d78420}
+#dsoTabNav>.tab-btn{background:var(--menu-tint)!important;color:var(--menu-colour)!important;border:1px solid var(--menu-line)!important;box-shadow:0 2px 6px #173e3210!important;border-radius:10px!important}
+#dsoTabNav>.tab-btn .dso-menu-icon{background:none!important;color:var(--menu-colour)!important;box-shadow:none!important}
+#dsoTabNav>.tab-btn .dso-menu-icon svg{stroke-width:2!important}
+#dsoTabNav>.tab-btn:hover{border-color:var(--menu-colour)!important;box-shadow:0 3px 9px #173e3218!important}
+#dsoTabNav>.tab-btn.active{background:linear-gradient(115deg,var(--menu-colour),var(--menu-end))!important;color:#fff!important;border-color:var(--menu-colour)!important;box-shadow:0 4px 10px #173e3224!important}
+#dsoTabNav>.tab-btn.active .dso-menu-icon{color:#fff!important;background:none!important}
+#dsoTabNav>.tab-btn:focus-visible{outline:2px solid var(--menu-colour)!important;outline-offset:2px}
+}
+</style>
