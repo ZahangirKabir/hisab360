@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.16';
+    const APP_RELEASE_VERSION = '2026.11.11.17';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6914,3 +6914,33 @@ input,select,textarea{max-width:100%;box-sizing:border-box}
 @media(max-width:760px){.scroll th,.scroll td,.table-container th,.table-container td{font-size:12px!important;padding:8px!important}}
 }
 </style>
+
+<style id="mobile-menu-header-alignment">
+@media(max-width:760px){
+body.has-icon-sidebar .header-bar{align-items:center!important}
+body.has-icon-sidebar #hisabMobileMenuBar{align-self:center!important}
+#hisabSideMenu{padding-top:0!important;gap:0!important}
+#hisabSideMenu>button:first-child{height:var(--menu-header-bottom,64px)!important;min-height:var(--menu-header-bottom,64px)!important;padding-top:var(--menu-header-top,0px)!important;padding-bottom:0!important;border-radius:0!important}
+#hisabSideMenu>.rail-items{margin-top:0!important}
+}
+</style>
+<script>
+(function(){
+ const header=document.querySelector('#appContainer .header-bar');
+ const rail=document.getElementById('hisabSideMenu');
+ if(!header||!rail)return;
+ function alignMenuHeader(){
+  const box=header.getBoundingClientRect();
+  if(box.height<=0)return;
+  const top=Math.max(0,box.top),bottom=Math.max(top+box.height,box.bottom);
+  rail.style.setProperty('--menu-header-top',top+'px');
+  rail.style.setProperty('--menu-header-bottom',bottom+'px');
+ }
+ new ResizeObserver(alignMenuHeader).observe(header);
+ new MutationObserver(alignMenuHeader).observe(rail,{attributes:true,attributeFilter:['class','hidden']});
+ window.addEventListener('resize',alignMenuHeader,{passive:true});
+ window.addEventListener('scroll',alignMenuHeader,{passive:true});
+ window.visualViewport?.addEventListener('resize',alignMenuHeader,{passive:true});
+ alignMenuHeader();
+})();
+</script>
