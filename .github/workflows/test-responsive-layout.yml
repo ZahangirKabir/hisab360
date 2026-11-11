@@ -1,4 +1,5 @@
 name: Responsive layout checks
+# Recheck compact calendar fields after layout refinement.
 on:
   workflow_dispatch:
   push:
