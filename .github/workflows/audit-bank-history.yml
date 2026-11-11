@@ -32,6 +32,11 @@ jobs:
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
           OLD_BACKUP_DIR: ${{ runner.temp }}/old-bank-backup
         run: node scripts/audit-bank-history.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bank-audit-counts
+          path: ${{ runner.temp }}/bank-audit-result.txt
+          retention-days: 1
   result:
     needs: audit
     name: ${{ needs.audit.outputs.result }}
