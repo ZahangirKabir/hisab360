@@ -942,7 +942,7 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
       <!-- Investment module: independent HTML; keep future changes in Investment.html -->
       <div id="adminPageInvestment" style="display:none">
         <iframe id="investmentFrame" title="Investment calculation" loading="lazy"
-          style="display:block;width:100%;min-height:85vh;border:0;border-radius:12px;background:#f4f7f6"></iframe>
+          style="display:block;width:100%;min-height:0;height:1px;border:0;border-radius:12px;background:#f4f7f6"></iframe>
       </div>
 
       <!-- ADMIN PAGE 1: MAIN REPORT TABLE -->
@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.32';
+    const APP_RELEASE_VERSION = '2026.11.11.33';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7006,3 +7006,14 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
 <style id="admin-footer-text-size">@media screen{body[data-portal-menu-role="admin"]>.portal-footer{display:table!important;width:fit-content!important;max-width:calc(100% - 12px)!important;min-width:0!important;min-height:0!important;height:auto!important;margin:4px auto!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;line-height:1.3!important}body[data-portal-menu-role="admin"]>.portal-footer strong{line-height:inherit}}</style>
 
 <style id="footer-bottom-alignment">@media screen{body:not(.login-design-visible){min-height:0!important;height:auto!important;display:block!important;padding-bottom:0!important}body:not(.login-design-visible)>#appContainer{flex:none!important;min-height:0!important;padding-bottom:0!important}body:not(.login-design-visible)>.portal-footer,body[data-portal-menu-role="admin"]>.portal-footer{margin-top:4px!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important}#appContainer .table-container{margin-bottom:0!important}}</style>
+
+<script id="investment-content-height">
+(function(){
+ const frame=document.getElementById('investmentFrame');if(!frame)return;
+ let resizeObserver,mutationObserver,queued=false;
+ function fit(){queued=false;if(!frame.isConnected||!frame.getBoundingClientRect().width)return;try{const doc=frame.contentDocument,body=doc?.body;if(!body)return;let bottom=0;for(const child of body.children){const style=doc.defaultView.getComputedStyle(child);if(style.display==='none'||style.position==='fixed'||style.position==='absolute')continue;const box=child.getBoundingClientRect();if(box.height)bottom=Math.max(bottom,box.bottom+doc.defaultView.scrollY+(parseFloat(style.marginBottom)||0));}const height=Math.max(1,Math.ceil(bottom+(parseFloat(doc.defaultView.getComputedStyle(body).paddingBottom)||0)));if(frame.style.height!==height+'px')frame.style.height=height+'px';frame.style.minHeight='0';}catch(_){}}
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(fit);}}
+ function bind(){resizeObserver?.disconnect();mutationObserver?.disconnect();try{const doc=frame.contentDocument;if(!doc?.body)return;if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(schedule);resizeObserver.observe(doc.body);}mutationObserver=new MutationObserver(schedule);mutationObserver.observe(doc.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','class','style']});doc.addEventListener('load',schedule,true);doc.fonts?.ready.then(schedule);schedule();}catch(_){}}
+ frame.style.minHeight='0';frame.addEventListener('load',bind);window.addEventListener('resize',schedule);bind();
+})();
+</script>
