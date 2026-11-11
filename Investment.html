@@ -624,12 +624,13 @@ window.investmentReadSnapshot=function(bridge,root,date=''){
 window.investmentWriteToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(16))).map(x=>x.toString(16).padStart(2,'0')).join('');
 // Bounded history reads and replay-safe creates. All money stays in Firebase.
 window.investmentRecordKeys=new WeakMap();
+// Financial metadata contains no images. Publish only complete authenticated snapshots.
 window.investmentWatchPagedData=function(bridge,root,onValue,onError){
- const size=100,pages=[],stops=[];let active=true,complete=false,lastCursor=null,notifyTimer=null,loadingNext=false;
- const emit=()=>{if(!active)return;clearTimeout(notifyTimer);notifyTimer=setTimeout(()=>{if(!active)return;const data=Object.assign({},...pages.slice().reverse().map(x=>x||{}));for(const [key,value]of Object.entries(data))if(value&&typeof value==='object')window.investmentRecordKeys.set(value,{root,key});onValue({complete,loaded:Object.keys(data).length,val:()=>data});},0);};
- const add=cursor=>{if(!active||loadingNext)return;loadingNext=true;const index=pages.length;pages.push(null);let first=true;
-  const stop=window.investmentWatchData(bridge,root,snap=>{if(!active)return;const values=snap.val()||{},keys=Object.keys(values).sort();pages[index]=values;emit();if(!first&&complete&&index===pages.length-1&&keys.length>=size+(cursor?1:0)&&keys[0]!==lastCursor){complete=false;lastCursor=keys[0];add(keys[0]);return;}if(first){first=false;loadingNext=false;if(keys.length<size+(cursor?1:0)){complete=true;emit();}else{const oldest=keys[0];if(!oldest||oldest===lastCursor){complete=true;emit();return;}lastCursor=oldest;setTimeout(()=>add(oldest),0);}}},error=>{if(!active)return;if(/permission.denied/i.test(String(error?.code||'')+' '+String(error?.message||''))||[401,403].includes(error?.httpStatus)){active=false;complete=false;clearTimeout(notifyTimer);for(const stop of stops)stop();}onError(error);},{byKey:true,endAt:cursor||null,last:size+(cursor?1:0)});stops.push(stop);
- };add(null);return ()=>{active=false;clearTimeout(notifyTimer);for(const stop of stops)stop();pages.length=0;};
+ return window.investmentWatchData(bridge,root,snap=>{
+  const data=snap.val()||{};
+  for(const [key,value]of Object.entries(data))if(value&&typeof value==='object')window.investmentRecordKeys.set(value,{root,key});
+  onValue({complete:true,loaded:Object.keys(data).length,val:()=>data});
+ },onError);
 };
 window.investmentStableJSON=function(value){if(Array.isArray(value))return '['+value.map(window.investmentStableJSON).join(',')+']';if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+window.investmentStableJSON(value[k])).join(',')+'}';return JSON.stringify(value);};
 window.investmentSubmissionTicket=async function(owner,menu,payload){const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(window.investmentStableJSON(payload))))).map(b=>b.toString(16).padStart(2,'0')).join(''),storageKey='hisab360:pending:'+owner+':'+menu+':'+fingerprint;window.investmentPendingTickets??=new Map();let id=window.investmentPendingTickets.get(storageKey);try{id=localStorage.getItem(storageKey)||id;}catch(_){}if(!/^[a-f0-9]{32}$/.test(id||''))id=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('');window.investmentPendingTickets.set(storageKey,id);try{localStorage.setItem(storageKey,id);}catch(_){}return {id,fingerprint,storageKey,key:menu+'_'+id};};
