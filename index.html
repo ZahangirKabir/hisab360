@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.29';
+    const APP_RELEASE_VERSION = '2026.11.11.30';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7002,3 +7002,5 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
 @media(max-width:760px){#appContainer.container{padding:6px 8px!important}body.has-icon-sidebar #appContainer.container{padding:6px!important}#appContainer .section-box{padding:8px!important}#app .card,#bankApp .card{padding:8px!important;margin:6px 0!important}#app .working-level{padding:8px!important;margin:8px 0!important}}
 }
 </style>
+
+<style id="admin-footer-text-size">@media screen{body[data-portal-menu-role="admin"]>.portal-footer{display:table!important;width:fit-content!important;max-width:calc(100% - 12px)!important;min-width:0!important;min-height:0!important;height:auto!important;margin:4px auto!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;line-height:1.3!important}body[data-portal-menu-role="admin"]>.portal-footer strong{line-height:inherit}}</style>
