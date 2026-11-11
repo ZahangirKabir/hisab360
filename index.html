@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.30';
+    const APP_RELEASE_VERSION = '2026.11.11.31';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7004,3 +7004,5 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
 </style>
 
 <style id="admin-footer-text-size">@media screen{body[data-portal-menu-role="admin"]>.portal-footer{display:table!important;width:fit-content!important;max-width:calc(100% - 12px)!important;min-width:0!important;min-height:0!important;height:auto!important;margin:4px auto!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;line-height:1.3!important}body[data-portal-menu-role="admin"]>.portal-footer strong{line-height:inherit}}</style>
+
+<style id="footer-bottom-alignment">@media screen{body:not(.login-design-visible){display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding-bottom:0!important}body:not(.login-design-visible)>#appContainer{flex:1 0 auto}body:not(.login-design-visible)>.portal-footer,body[data-portal-menu-role="admin"]>.portal-footer{flex:0 0 auto;margin-bottom:0!important;padding-bottom:0!important}body:not(.login-design-visible)>.portal-footer{margin-top:4px!important}}</style>
