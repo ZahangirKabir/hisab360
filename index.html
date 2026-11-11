@@ -1198,8 +1198,8 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
 
         <button type="button" class="btn" id="submitSlipBtn" onclick="submitBankSlips()">Submit Bank Slip</button>
         <div id="slipSubmitMessage" style="margin:10px 0"></div>
-        <h3>আমার Bank Deposit Status — আজ: <span id="dsoSlipStatusDate"></span></h3>
-        <div class="table-container"><table><thead><tr><th>তারিখ</th><th>Upload Time</th><th>Bank Name / Account</th><th>Transaction / Ref / Tracking</th><th>Amount</th><th>Status</th><th>কারণ</th><th>Slip</th></tr></thead><tbody id="dsoBankSlipStatusBody"></tbody></table></div>
+        <section id="dsoBankDepositStatusSection" hidden style="display:none!important"><h3>আমার Bank Deposit Status — আজ: <span id="dsoSlipStatusDate"></span></h3>
+        <div class="table-container"><table><thead><tr><th>তারিখ</th><th>Upload Time</th><th>Bank Name / Account</th><th>Transaction / Ref / Tracking</th><th>Amount</th><th>Status</th><th>কারণ</th><th>Slip</th></tr></thead><tbody id="dsoBankSlipStatusBody"></tbody></table></div></section>
         <button type="button" class="btn-add" onclick="switchDsoTab('form')">← দিনের রিপোর্টে ফিরে যান</button>
       </div>
 
@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.27';
+    const APP_RELEASE_VERSION = '2026.11.11.28';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2832,7 +2832,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           </div>
           <div class="slip-field">
             <label class="slip-field-label">🔖 Transaction / Reference / Tracking ID</label>
-            <input type="text" class="slip-transaction-id" maxlength="48" placeholder="OCR থেকে আসবে; ভুল হলে সংশোধন করুন" autocomplete="off" aria-label="Transaction ID, Reference Number or Tracking Number">
+            <input type="text" class="slip-transaction-id" maxlength="48" autocomplete="off" aria-label="Transaction ID, Reference Number or Tracking Number">
           </div>
 
           <input type="hidden" id="slipOcrAmt_${slipCounter}" class="slip-ocr-val" value="0">
