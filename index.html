@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.33';
+    const APP_RELEASE_VERSION = '2026.11.11.34';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7015,5 +7015,18 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
  function schedule(){if(!queued){queued=true;requestAnimationFrame(fit);}}
  function bind(){resizeObserver?.disconnect();mutationObserver?.disconnect();try{const doc=frame.contentDocument;if(!doc?.body)return;if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(schedule);resizeObserver.observe(doc.body);}mutationObserver=new MutationObserver(schedule);mutationObserver.observe(doc.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','class','style']});doc.addEventListener('load',schedule,true);doc.fonts?.ready.then(schedule);schedule();}catch(_){}}
  frame.style.minHeight='0';frame.addEventListener('load',bind);window.addEventListener('resize',schedule);bind();
+})();
+</script>
+
+<style id="daily-report-available-height">@media screen{#adminPageReport>.table-container{max-height:var(--daily-report-height,70vh)!important;height:auto!important;min-height:0!important;padding-bottom:0!important;margin-bottom:0!important}#adminPageReport{padding-bottom:0!important;margin-bottom:0!important}}</style>
+<script id="daily-report-fit">
+(function(){
+ const report=document.getElementById('adminPageReport'),box=report?.querySelector('.table-container'),footer=document.querySelector('body>.portal-footer');if(!box||!footer)return;
+ let queued=false;
+ function fit(){queued=false;if(!box.getClientRects().length)return;const rect=box.getBoundingClientRect(),style=getComputedStyle(footer),reserve=footer.getBoundingClientRect().height+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0)+6,height=Math.max(120,Math.floor(innerHeight-Math.max(0,rect.top)-reserve)),value=height+'px';if(box.style.getPropertyValue('--daily-report-height')!==value)box.style.setProperty('--daily-report-height',value);}
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(fit);}}
+ window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,{passive:true});
+ if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(schedule);observer.observe(document.getElementById('appContainer'));observer.observe(footer);}
+ new MutationObserver(schedule).observe(document.getElementById('appContainer'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden']});document.fonts?.ready.then(schedule);schedule();
 })();
 </script>
