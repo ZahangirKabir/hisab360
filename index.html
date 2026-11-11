@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.37';
+    const APP_RELEASE_VERSION = '2026.11.11.38';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7030,3 +7030,19 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
  new MutationObserver(schedule).observe(document.getElementById('appContainer'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden']});document.fonts?.ready.then(schedule);schedule();
 })();
 </script>
+
+<style id="smaller-filter-fields">@media screen{
+html body #appContainer #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(auto-fit,minmax(120px,155px))!important;padding:6px!important;gap:6px!important}
+html body #appContainer #adminFilterPanel .filter-group label{font-size:10px!important;margin-bottom:2px!important}
+html body #appContainer #adminFilterPanel .filter-group input:not(.smart-period-source),html body #appContainer #adminFilterPanel .filter-group select,html body #appContainer #adminFilterPanel #dsoMultiSelectToggle{height:32px!important;min-height:32px!important;padding:4px 7px!important;font-size:12px!important}
+html body #appContainer #adminFilterPanel .admin-filter-action{min-height:32px!important;padding:5px 8px!important}
+html body .report-filter,html body .bank-filters{padding:6px!important;gap:6px!important}
+html body .report-filter>.field,html body .report-filter>.bank-field,html body .bank-filters>.bank-field{width:155px!important;flex:0 1 155px!important;max-width:155px!important}
+html body .report-filter>.smart-period-wrapper,html body .bank-filters>.smart-period-wrapper{width:155px!important;flex:0 1 155px!important}
+html body .report-filter input:not(.smart-period-source),html body .report-filter select,html body .bank-filters input:not(.smart-period-source),html body .bank-filters select{height:32px!important;min-height:32px!important;max-width:155px!important;padding:4px 7px!important;font-size:12px!important}
+html body #appContainer #adminFilterPanel .smart-period-trigger,html body .report-filter .smart-period-trigger,html body .bank-filters .smart-period-trigger{height:32px!important;min-height:32px!important;padding:4px 7px!important;font-size:12px!important}
+html body .report-filter button,html body .bank-filters button{min-height:32px!important;padding:5px 8px!important;font-size:11px!important}
+html body #adminPageSlipApproval .slip-filter-field,html body #adminPageSlipApproval .slip-filter-field:last-child{flex:0 1 155px!important;min-width:0!important;max-width:155px!important}
+html body #adminPageSlipApproval .slip-filter-field select{height:32px!important;min-height:32px!important;padding:4px 28px 4px 7px!important;font-size:12px!important}
+@media(max-width:760px){html body #appContainer #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(2,minmax(0,155px))!important}html body #appContainer #adminFilterPanel .filter-group input:not(.smart-period-source),html body #appContainer #adminFilterPanel .filter-group select,html body .report-filter input:not(.smart-period-source),html body .report-filter select,html body .bank-filters input:not(.smart-period-source),html body .bank-filters select{font-size:16px!important;min-height:36px!important;height:36px!important}html body #appContainer #adminFilterPanel .smart-period-trigger,html body .report-filter .smart-period-trigger,html body .bank-filters .smart-period-trigger{height:36px!important;min-height:36px!important}html body .report-filter>.field,html body .report-filter>.bank-field,html body .bank-filters>.bank-field{flex:0 1 calc(50% - 3px)!important;width:155px!important}}
+}</style>
