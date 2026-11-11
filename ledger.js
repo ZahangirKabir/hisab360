@@ -50,7 +50,7 @@ function create(raw,options={}){
    if(this.root==='bankSlipRequests'&&o.order==='userId'&&o.equal){return raw.ref('ledgerAccounts/'+accountKey(today(),o.equal[0]));}
    if(o.order&&o.order!=='$key')q=q.orderByChild(o.order);else q=q.orderByKey();
    if(o.equal)q=q.equalTo(...o.equal);
-   if(o.start)q=q.startAt(o.start[0]);if(o.end)q=q.endAt(o.end[0]);
+   if(o.start)q=o.start[1]===undefined?q.startAt(o.start[0]):q.startAt(...o.start);if(o.end)q=o.end[1]===undefined?q.endAt(o.end[0]):q.endAt(...o.end);
    // Request pages load the selected date's small metadata, never image blobs.
    if(this.root==='collections'){if(o.last)q=q.limitToLast(o.last);if(o.first)q=q.limitToFirst(o.first);}
    return q;
@@ -58,7 +58,9 @@ function create(raw,options={}){
   project(s){if(this.parts.length>1){const a=s.val();learn(s.key,a);return snapshot(this.key,pathGet(entity(a,this.root,this.parts[1]),this.parts.slice(2)));}
    const out={};const add=(k,a)=>{if(!a||(this.opts.userDates&&String(a.userId)!==String(this.opts.userDates[0])))return;learn(k,a);if(this.root==='collections'){if(a.report)out[a.reportKey]=a.report;}else Object.assign(out,a.requests||{});};
    if(this.root==='bankSlipRequests'&&this.opts.order==='userId'&&this.opts.equal)add(s.key,s.val());else s.forEach(c=>add(c.key,c.val()));
-   return snapshot(this.root,out);
+   const result=snapshot(this.root,out);
+   if(this.root==='collections'&&!this.opts.userDates){let oldest=null;s.forEach(child=>{if(!oldest){const value=child.val();oldest={date:value?.date||String(child.key).slice(0,10),key:child.key};}return true;});result.ledgerPage={count:s.numChildren(),oldest};}
+   return result;
   }
   async once(event,success,failure){try{if(event!=='value')throw Error('Unsupported ledger event');const q=await this.source();const s=this.project(await q.once('value'));success?.(s);return s;}catch(e){failure?.(e);throw e;}}
   on(event,fn,error){const state={event,fn,cancel:false,previous:null,q:null,handler:null};this.listeners.push(state);
