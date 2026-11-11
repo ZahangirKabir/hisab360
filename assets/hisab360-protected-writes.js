@@ -42,7 +42,7 @@
    throw Error('একই সময়ে অন্য হিসাব সেভ হয়েছে। নতুন তথ্য দেখে আবার Submit করুন।');
   }
   function ref(path=''){
-   const target=database().ref(path),parts=String(path).split('/').filter(Boolean),protectedPath=roots.has(parts[0]);
+   const target=path?database().ref(path):database().ref(),parts=String(path).split('/').filter(Boolean),protectedPath=roots.has(parts[0]);
    return new Proxy(target,{get(object,key){
     if(key==='child')return child=>ref([path,child].filter(Boolean).join('/'));
     if(protectedPath&&key==='remove')return async()=>{throw Error('আর্থিক হিসাব মোছা বন্ধ আছে।');};
