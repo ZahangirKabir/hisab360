@@ -19,6 +19,11 @@ function build(source,{enforce=true}={}){
   const allowed='('+expr(section['.write'])+') || ('+expr(record['.write'])+')';
   section['.write']=false;record['.write']='('+allowed+") && newData.exists() && newData.child('_writeRevision').val() == "+next+" && newData.parent().parent().child('financialRevisions/"+root+"/version').val() == newData.child('_writeRevision').val() && newData.parent().parent().child('financialRevisions/"+root+"/auditId').val() == newData.child('_auditId').val() && "+future+".child('actor').val() == auth.uid && "+future+".child('changes').child("+wildcard+").child('after/_writeRevision').val() == newData.child('_writeRevision').val()";section[wildcard]=record;
  }
+ if(enforce){
+  if(rules.slipImages){const section=rules.slipImages,wildcard=Object.keys(section).find(key=>key.startsWith('$'))||'$image',record=section[wildcard]||{},allowed='('+expr(section['.write'])+') || ('+expr(record['.write'])+')';section['.write']=false;record['.write']='('+allowed+") && newData.exists() && (!data.exists() || newData.child('data').val() == data.child('data').val())";section[wildcard]=record;}
+  const freeze=node=>{if(!node||typeof node!=='object')return;node['.write']=false;for(const [key,value]of Object.entries(node))if(!key.startsWith('.'))freeze(value);};
+  for(const archived of ['collections','bankSlipRequests'])if(rules[archived])freeze(rules[archived]);
+ }
  return result;
 }
 module.exports={build};
