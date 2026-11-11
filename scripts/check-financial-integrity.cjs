@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-require('../ledger.js');const {PortalLedger}=globalThis;let passed=0;
+const appSource=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');const start=appSource.indexOf('/* Billing-free canonical daily ledger.');const end=appSource.indexOf("})(typeof window!=='undefined'?window:globalThis);",start)+"})(typeof window!=='undefined'?window:globalThis);".length;vm.runInThisContext(appSource.slice(start,end));const {PortalLedger}=globalThis;assert.equal(fs.readFileSync(require('node:path').join(__dirname,'../ledger.js'),'utf8').trim(),appSource.slice(start,end).trim());let passed=0;
 function test(name,fn){fn();passed++;console.log('PASS '+name);}
 const clone=x=>JSON.parse(JSON.stringify(x));
 test('slip identity uses bank and unique transaction ID',()=>{assert(PortalLedger.same({bankName:'City',transactionId:'REF123456'},{bankName:'City',transactionId:'REF123456'}));assert(!PortalLedger.same({bankName:'City',transactionId:'REF123456'},{bankName:'Pubali',transactionId:'REF123456'}));assert(!PortalLedger.same({bankName:'City',amt:100},{bankName:'City',amt:100}));});
