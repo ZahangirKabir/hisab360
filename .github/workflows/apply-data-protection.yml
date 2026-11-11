@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      PROTECTION_PHASE: stage
+      PROTECTION_PHASE: enforce
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: Data-protection-test-result
-          run-id: 42961103498
+          run-id: 42962009244
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ runner.temp }}/protection-tests
       - name: Apply only emulator-tested Rules
