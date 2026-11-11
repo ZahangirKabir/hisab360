@@ -43,3 +43,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo 'Read-only comparison complete. No records changed.'
+
+# Compare legacy metadata counts only.
