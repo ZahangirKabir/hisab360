@@ -49,4 +49,13 @@ size=await page.locator('#investmentFrame').evaluate(e=>e.getBoundingClientRect(
 await page.locator('#investmentFrame').evaluate(e=>e.contentDocument.querySelector('main').style.height='90px');await page.waitForTimeout(150);
 size=await page.locator('#investmentFrame').evaluate(e=>e.getBoundingClientRect().height);if(size>120)throw Error('Report did not shrink '+size);
 console.log('Embedded report grows and shrinks to content without viewport blank space.');
+
+await page.setViewportSize({width:1280,height:900});await page.setContent(html);
+await page.evaluate(()=>{document.querySelector('#loginSection').style.display='none';document.querySelector('#appContainer').style.display='block';document.querySelector('#adminView').style.display='block';document.querySelector('#adminPageReport').style.display='block';document.body.dataset.portalMenuRole='admin';const table=document.querySelector('#dataTable');table.tBodies[0].innerHTML=Array.from({length:46},(_,i)=>'<tr>'+Array.from({length:16},(_,j)=>'<td>'+(j===0?'2026-11-11':j===1?'DSO '+(801+i):'1,000')+'</td>').join('')+'</tr>').join('');});
+const dailyFit=source.match(/<script id="daily-report-fit">([\s\S]*?)<\/script>/)?.[1];if(!dailyFit)throw Error('Daily report sizing missing');await page.addScriptTag({content:dailyFit});await page.waitForTimeout(200);
+const filled=await page.evaluate(()=>({bottom:document.querySelector('body>.portal-footer').getBoundingClientRect().bottom,height:innerHeight}));if(Math.abs(filled.height-filled.bottom)>14)throw Error('Daily report wasted screen space '+JSON.stringify(filled));
+await page.screenshot({path:'responsive-checks/daily-report-fills-screen.png'});
+await page.evaluate(()=>{const body=document.querySelector('#dataTable tbody');while(body.rows.length>2)body.deleteRow(-1);});await page.waitForTimeout(150);
+const shortGap=await page.evaluate(()=>document.querySelector('body>.portal-footer').getBoundingClientRect().top-document.querySelector('#dataTable').getBoundingClientRect().bottom);if(shortGap>14)throw Error('Short daily report has footer gap '+shortGap);
+console.log('Daily report uses remaining screen height; short reports keep footer next to table.');
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
