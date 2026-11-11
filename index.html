@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.35';
+    const APP_RELEASE_VERSION = '2026.11.11.36';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7030,22 +7030,3 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
  new MutationObserver(schedule).observe(document.getElementById('appContainer'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden']});document.fonts?.ready.then(schedule);schedule();
 })();
 </script>
-
-<style id="compact-field-corners">
-@media screen{
-html body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),html body select,html body textarea,
-html body #appContainer input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),html body #appContainer select,html body #appContainer textarea,
-html body #loginSection .login-field>input,
-html body #app input:not([type="checkbox"]):not([type="radio"]),html body #app select,html body #app textarea,
-html body #bankApp input:not([type="checkbox"]):not([type="radio"]),html body #bankApp select,
-html body #adminFilterPanel input:not([type="checkbox"]),html body #adminFilterPanel select,
-html body #appContainer #adminFilterPanel input:not([type="checkbox"]),html body #appContainer #adminFilterPanel select,
-html body .modal-content input:not([type="checkbox"]):not([type="radio"]),html body .modal-content select,html body .modal-content textarea,
-html body #editModal input:not([type="checkbox"]):not([type="radio"]),html body #editModal select,
-html body #passwordGate input,
-html body .smart-period-trigger,html body .submission-date-trigger,
-html body #appContainer .smart-period-trigger,html body #appContainer .submission-date-trigger,
-html body #app .smart-period-trigger,html body #app .submission-date-trigger,
-html body #bankApp .smart-period-trigger,html body #appContainer #dsoMultiSelectToggle{border-radius:4px!important}
-}
-</style>
