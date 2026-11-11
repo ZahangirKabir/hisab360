@@ -894,7 +894,7 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
         <button class="tab-btn active" id="tabDsoFormBtn" onclick="switchDsoTab('form')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9M8 16l1-4L19 2l3 3-10 10-4 1Z"/></svg></span><span class="dso-menu-label">দিনের রিপোর্ট</span></button>
         <button class="tab-btn" id="tabDsoSlipBtn" onclick="switchDsoTab('slip')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6M9 11h6M9 15h3"/></svg></span><span class="dso-menu-label">ব্যাংক স্লিপ আপলোড</span></button>
         <button class="tab-btn" id="tabDsoReportBtn" onclick="switchDsoTab('report')"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h7l2-3h9v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7ZM7 12h10M7 16h7"/></svg></span><span class="dso-menu-label">রিপোর্ট ও ইতিহাস</span></button>
-        <button class="tab-btn settings-icon" id="tabDsoSettingsBtn" type="button" onclick="switchDsoTab('settings')" title="Password Settings" aria-label="Password Settings"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none"/></svg></span><span class="dso-menu-label">সেটিংস</span></button>
+        <button class="tab-btn settings-icon" id="tabDsoSettingsBtn" type="button" onclick="switchDsoTab('settings')" title="Password Settings" aria-label="Password Settings"><span class="dso-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none"/></svg></span><span class="dso-menu-label">Setting</span></button>
       </div>
     </div>
 
@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.26';
+    const APP_RELEASE_VERSION = '2026.11.11.27';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6969,10 +6969,10 @@ body.has-icon-sidebar #hisabMobileMenuBar{align-self:center!important}
 
 <style id="dso-only-controls">
 body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #adminPageHeading,body[data-portal-menu-role="dso"] #adminReportToolbar,body[data-portal-menu-role="dso"] #adminFilterPanel,body[data-portal-menu-role="dso"] #editModal{display:none!important}
-#dsoTabNav>#tabDsoSettingsBtn{width:44px!important;height:44px!important;min-height:44px!important;min-width:44px!important;padding:0!important;border-radius:50%!important;justify-content:center!important;justify-self:start;gap:0!important}
-#dsoTabNav>#tabDsoSettingsBtn .dso-menu-icon{width:24px!important;height:24px!important;flex:0 0 24px!important}
-#dsoTabNav>#tabDsoSettingsBtn .dso-menu-icon svg{width:22px!important;height:22px!important}
-#dsoTabNav>#tabDsoSettingsBtn .dso-menu-label{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+
+
+
+
 </style>
 
 <style id="compact-app-spacing">
