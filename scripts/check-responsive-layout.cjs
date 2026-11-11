@@ -11,7 +11,7 @@ for(const id of ['loginSection','adminPageBank','adminPageSlipApproval','adminPa
  for(const width of [320,390,768,1440]){
   await page.setViewportSize({width,height:900});await page.setContent(html);
   await page.evaluate(id=>{document.querySelector('#loginSection').style.display=id==='loginSection'?'block':'none';document.querySelector('#appContainer').style.display=id==='loginSection'?'none':'block';document.querySelectorAll('#adminView,#dsoView,#adminView>div[id^=adminPage],#dsoView>div[id^=dsoPage]').forEach(e=>e.style.display='none');const el=document.getElementById(id);el.style.display='block';if(id.startsWith('admin'))document.querySelector('#adminView').style.display='block';if(id.startsWith('dso'))document.querySelector('#dsoView').style.display='block';},id);
-  const r=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth}));results.push({view:id,width,...r});if(r.page>width+1)throw Error('Page overflow '+JSON.stringify({id,width,...r}));
+  const r=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth}));results.push({view:id,width,...r});if(r.page>width+1){await page.screenshot({path:'responsive-checks/overflow-'+id+'.png'});throw Error('Page overflow '+JSON.stringify({id,width,...r,offenders:await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:e.className,width:e.getBoundingClientRect().width}))) }));}
  }
 }
 await page.goto('file://'+base+'Investment.html');await page.waitForTimeout(300);
