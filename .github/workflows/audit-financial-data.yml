@@ -1,0 +1,36 @@
+name: Financial integrity audit
+on:
+  push:
+    paths: ['.github/workflows/audit-financial-data.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: Hisab360-encrypted-backup-42740748267
+          run-id: 42740748267
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ runner.temp }}/old-bank-backup
+      - name: Read-only integrity checks
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          OLD_BACKUP_DIR: ${{ runner.temp }}/old-bank-backup
+        run: node scripts/audit-financial-data.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Financial-integrity-counts
+          path: ${{ runner.temp }}/financial-audit-result.json
+          retention-days: 1
