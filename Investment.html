@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.11.13">
+<meta name="investment-release-version" content="2026.11.11.14">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1704,6 +1704,11 @@ body{min-width:0}
 #adminReportToolbar>button:not([hidden]),#adminFilterToggle:not([hidden]){min-height:34px!important;padding:6px 10px!important;font-size:12px!important;line-height:1.35!important}
 .modal-content,.cheque-dialog{box-sizing:border-box;max-width:min(650px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
 input,select,textarea{max-width:100%;box-sizing:border-box}
+
+#adminPageSettings,#dsoPageSettings,.portal-user-management,.user-management-grid,.user-management-grid>label{min-width:0;max-width:100%;overflow-wrap:anywhere}
+#adminPageSettings div:has(>input){flex-wrap:wrap!important;gap:8px!important}
+#adminPageSettings input,#adminPageSettings select,#dsoPageSettings input{min-width:0!important;max-width:100%!important}
+#adminPageSettings div>input{flex:1 1 160px!important}
 @media(max-width:760px){
 #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:8px!important}
 #adminFilterPanel .filter-group input:not(.smart-period-source),#adminFilterPanel .filter-group select{font-size:16px!important}
