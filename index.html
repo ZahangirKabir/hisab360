@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.14';
+    const APP_RELEASE_VERSION = '2026.11.11.15';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6884,7 +6884,7 @@ input,select,textarea{max-width:100%;box-sizing:border-box}
 #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:8px!important}
 #adminFilterPanel .filter-group input:not(.smart-period-source),#adminFilterPanel .filter-group select{font-size:16px!important}
 #adminFilterPanel .admin-filter-action{width:100%!important;min-height:38px!important;font-size:11px!important;padding:6px!important}
-.report-filter>.field,.report-filter>.bank-field,.bank-filters>.bank-field{flex:1 1 140px!important;width:auto!important;max-width:210px!important}
+.report-filter>.field,.report-filter>.bank-field,.bank-filters>.bank-field{flex:1 1 calc(50% - 4px)!important;width:auto!important;max-width:210px!important}
 .report-filter input:not(.smart-period-source),.report-filter select,.bank-filters input:not(.smart-period-source),.bank-filters select{font-size:16px!important;max-width:100%!important;height:38px!important;min-height:38px!important}
 .report-filter .smart-period-trigger,.bank-filters .smart-period-trigger,#adminFilterPanel .smart-period-trigger{min-height:38px!important;height:38px!important}
 .report-filter button,.bank-filters button{min-height:38px!important}
