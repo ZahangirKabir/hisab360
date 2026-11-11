@@ -1,8 +1,10 @@
 name: Hisab360 Financial Backup
 on:
   workflow_dispatch:
+  push:
+    paths: ['.github/workflows/financial-backup.yml']
   schedule:
-    - cron: '17 19 * * *'
+    - cron: '17 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -19,6 +21,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Choose backup scope
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$(date -u +%H)" != "19" ]; then
+            echo 'BACKUP_SCOPE=financial-metadata' >> "$GITHUB_ENV"
+          else
+            echo 'BACKUP_SCOPE=full-rtdb' >> "$GITHUB_ENV"
+          fi
       - name: Create and verify encrypted database backup
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
@@ -32,5 +41,25 @@ jobs:
           path: ${{ runner.temp }}/hisab360-backup/
           retention-days: 90
           if-no-files-found: error
+      - name: Download the saved backup for independent restoration test
+        uses: actions/download-artifact@v4
+        with:
+          name: Hisab360-encrypted-backup-${{ github.run_id }}
+          path: ${{ runner.temp }}/hisab360-restore-test
+      - name: Verify downloaded backup can be restored
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: node scripts/verify-backup-restore.cjs "$RUNNER_TEMP/hisab360-restore-test"
+      - name: Record successful backup and restoration check
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_RESULT: success
+        run: node scripts/record-backup-status.cjs
+      - name: Record backup failure
+        if: failure()
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_RESULT: failure
+        run: node scripts/record-backup-status.cjs
       - name: Backup result
-        run: echo 'Encrypted database and Rules backup verified and uploaded. Keep an additional private copy before artifact expiry.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Encrypted backup uploaded, downloaded and restored in isolation; production records unchanged.' >> "$GITHUB_STEP_SUMMARY"
