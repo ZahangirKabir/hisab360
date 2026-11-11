@@ -1507,6 +1507,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
+<script src="assets/hisab360-protected-writes.js?v=2026111111"></script>
   <script type="text/plain" id="portalApplicationCode">
     const firebaseConfig = {
       apiKey: "AIzaSyAjTNlvbrVyqI30-e1waJT1HKRd6dge43A",
@@ -1948,7 +1949,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const summary=document.createElement('div');summary.className='device-summary';for(const [key,label]of [['pending','অপেক্ষমাণ'],['approved','অনুমোদিত'],['blocked','ব্লক করা']]){const tile=document.createElement('div');tile.dataset.status=key;const number=document.createElement('strong');number.textContent=Object.keys(items).filter(uid=>(permissions[uid]?.status||'pending')===key).length;const caption=document.createElement('span');caption.textContent=label;tile.append(number,caption);summary.appendChild(tile);}const content=document.getElementById('deviceAdminContent');let oldSummary=modal.querySelector('.device-summary');if(oldSummary)oldSummary.replaceWith(summary);else content.before(summary);if(Object.keys(items).length)content.replaceChildren(table);else{const empty=document.createElement('p');empty.className='device-empty';empty.textContent='এখন কোনো ডিভাইসের আবেদন নেই';content.replaceChildren(empty);}status.textContent='';
       }catch(e){status.textContent=e.message;}
     }
-    const rawDatabase = {ref(...args){return (portalFinancialApp||firebase.app()).database().ref(...args);}};
+    const protectedFinancialDatabase=window.Hisab360ProtectedWrites.create(()=>(portalFinancialApp||firebase.app()).database(),()=>(portalFinancialApp||firebase.app()).auth().currentUser?.uid);
+    const rawDatabase = {ref(path=''){return protectedFinancialDatabase.ref(path);}};
     const portalLedger=PortalLedger.create(rawDatabase,{scope:()=>currentUser==='admin'?null:isGroupAdmin(currentUser)?Array.from(SUB_ADMIN_GROUPS[currentUser]||[],String):currentUser?[String(currentUser)]:[]});
     const database = portalLedger.database;
     // Stable one-time connection used by Investment.html. Its future code stays separate.
@@ -1971,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.10';
+    const APP_RELEASE_VERSION = '2026.11.11.11';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6829,7 +6831,7 @@ body.has-icon-sidebar #hisabMobileMenuBar{display:flex;align-items:center;gap:12
  new MutationObserver(schedule).observe(app,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden','disabled']});sync();
 })();
 </script>
-<script>(()=>{const heading=document.getElementById('adminPageHeading'),toolbar=document.getElementById('adminReportToolbar');if(heading&&toolbar){const row=document.createElement('div');row.className='report-page-controls';heading.before(row);row.append(heading,toolbar);}})();</script><script src="assets/hisab360-integrity-monitor.js?v=2026111110"></script></body>
+<script>(()=>{const heading=document.getElementById('adminPageHeading'),toolbar=document.getElementById('adminReportToolbar');if(heading&&toolbar){const row=document.createElement('div');row.className='report-page-controls';heading.before(row);row.append(heading,toolbar);}})();</script><script src="assets/hisab360-integrity-monitor.js?v=2026111111"></script><script src="assets/hisab360-backup-status.js?v=2026111111"></script></body>
 </html>
 <style id="mobile-menu-row-alignment">
 @media screen and (max-width:760px){
