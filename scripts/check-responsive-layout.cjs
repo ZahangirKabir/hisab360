@@ -38,4 +38,15 @@ for(const width of [390,1440]){
  if(await page.locator('#hisabSideMenu .rail-items button').count())throw Error('Admin clones remained after DSO switch');
 }
 console.log('DSO original menu only: mobile, desktop, misleading title and Admin-to-DSO session changes passed.');
+
+await page.setViewportSize({width:390,height:900});await page.setContent(html);
+await page.evaluate(()=>{document.querySelector('#loginSection').style.display='none';document.querySelector('#appContainer').style.display='block';document.querySelector('#adminView').style.display='block';document.querySelector('#adminPageInvestment').style.display='block';});
+const fitter=source.match(/<script id="investment-content-height">([\s\S]*?)<\/script>/)?.[1];if(!fitter)throw Error('Content frame sizing missing');
+await page.addScriptTag({content:fitter});await page.locator('#investmentFrame').evaluate(frame=>frame.srcdoc='<body style="margin:0;padding:8px"><main style="height:160px">Short report fixture</main></body>');await page.waitForTimeout(150);
+let size=await page.locator('#investmentFrame').evaluate(e=>e.getBoundingClientRect().height);if(size>190||size<160)throw Error('Empty report space persisted '+size);
+await page.locator('#investmentFrame').evaluate(e=>e.contentDocument.querySelector('main').style.height='650px');await page.waitForTimeout(150);
+size=await page.locator('#investmentFrame').evaluate(e=>e.getBoundingClientRect().height);if(size<650)throw Error('Long report clipped '+size);
+await page.locator('#investmentFrame').evaluate(e=>e.contentDocument.querySelector('main').style.height='90px');await page.waitForTimeout(150);
+size=await page.locator('#investmentFrame').evaluate(e=>e.getBoundingClientRect().height);if(size>120)throw Error('Report did not shrink '+size);
+console.log('Embedded report grows and shrinks to content without viewport blank space.');
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
