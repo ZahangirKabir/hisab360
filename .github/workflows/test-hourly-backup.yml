@@ -1,0 +1,38 @@
+name: Verify hourly financial backup
+on:
+  push:
+    paths: ['.github/workflows/test-hourly-backup.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Create hourly metadata backup
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          BACKUP_SCOPE: financial-metadata
+          BACKUP_OUTPUT_DIR: ${{ runner.temp }}/hourly-backup
+        run: node scripts/financial-backup.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Verified-hourly-financial-backup
+          path: ${{ runner.temp }}/hourly-backup/
+          retention-days: 7
+      - uses: actions/download-artifact@v4
+        with:
+          name: Verified-hourly-financial-backup
+          path: ${{ runner.temp }}/hourly-restore-test
+      - name: Restore saved hourly backup in isolation
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: node scripts/verify-backup-restore.cjs "$RUNNER_TEMP/hourly-restore-test"
