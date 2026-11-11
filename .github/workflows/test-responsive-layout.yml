@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-save playwright@1.58.2
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install chromium
       - run: node scripts/check-responsive-layout.cjs
       - uses: actions/upload-artifact@v4
         if: always()
