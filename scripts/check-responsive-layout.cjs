@@ -25,4 +25,17 @@ await page.evaluate(()=>{const host=document.querySelector('#bankList');host.inn
 const readability=await page.evaluate(()=>{const host=document.querySelector('#bankList');return {scrolls:host.scrollWidth>host.clientWidth,unbroken:[...host.querySelectorAll('td')].every(e=>getComputedStyle(e).whiteSpace==='nowrap'&&e.getBoundingClientRect().height<45),headingOutline:getComputedStyle(document.querySelector('#investmentPageHeading strong')).outlineStyle};});
 if(!readability.scrolls||!readability.unbroken||readability.headingOutline!=='none')throw Error('Populated bank report readability failed '+JSON.stringify(readability));
 await page.screenshot({path:'responsive-checks/populated-bank-mobile.png'});console.log('Populated report: unbroken dates, banks, cheque IDs and amounts; internal scrolling; no heading focus border.');
+const source=fs.readFileSync(base+'index.html','utf8');const sidebar=[...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]).find(s=>s.includes("const rail=document.createElement('nav')"));if(!sidebar)throw Error('Missing sidebar source');
+for(const width of [390,1440]){
+ await page.setViewportSize({width,height:900});await page.setContent(html);
+ await page.evaluate(()=>{document.querySelector('#loginSection').style.display='none';document.querySelector('#appContainer').style.display='block';document.querySelector('#adminView').style.display='none';document.querySelector('#dsoView').style.display='block';document.querySelector('#dsoTabNav').style.display='flex';document.querySelector('#adminTabNav').style.display='none';document.body.dataset.portalMenuRole='dso';document.querySelector('#portalTitle').textContent='Admin Control Dashboard';});
+ await page.addScriptTag({content:sidebar});await page.waitForTimeout(80);
+ const state=await page.evaluate(()=>({railHidden:document.querySelector('#hisabSideMenu').hidden,originalVisible:getComputedStyle(document.querySelector('#dsoTabNav')).display!=='none',adminHidden:getComputedStyle(document.querySelector('#adminTabNav')).display==='none',clones:document.querySelectorAll('#hisabSideMenu .rail-items button').length}));
+ if(!state.railHidden||!state.originalVisible||!state.adminHidden||state.clones)throw Error('DSO menu isolation failed '+JSON.stringify(state));
+ await page.evaluate(()=>{document.body.dataset.portalMenuRole='admin';document.querySelector('#adminView').style.display='block';document.querySelector('#dsoView').style.display='none';document.querySelector('#adminTabNav').style.display='flex';document.querySelector('#dsoTabNav').style.display='none';});await page.waitForTimeout(80);
+ if(await page.locator('#hisabSideMenu').evaluate(e=>e.hidden))throw Error('Admin menu was not restored');
+ await page.evaluate(()=>{document.body.dataset.portalMenuRole='dso';document.querySelector('#adminView').style.display='none';document.querySelector('#dsoView').style.display='block';document.querySelector('#adminTabNav').style.display='none';document.querySelector('#dsoTabNav').style.display='flex';});await page.waitForTimeout(80);
+ if(await page.locator('#hisabSideMenu .rail-items button').count())throw Error('Admin clones remained after DSO switch');
+}
+console.log('DSO original menu only: mobile, desktop, misleading title and Admin-to-DSO session changes passed.');
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
