@@ -32,3 +32,5 @@ jobs:
           name: Data-protection-test-result
           path: ${{ runner.temp }}/protection-test-result.json
           retention-days: 7
+
+# Node 22 native Web Crypto verified.
