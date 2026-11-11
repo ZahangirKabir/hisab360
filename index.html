@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.38';
+    const APP_RELEASE_VERSION = '2026.11.11.39';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2261,6 +2261,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const investmentFrame=document.getElementById('investmentFrame');
       const filterPanel=document.getElementById('adminFilterPanel');
       const filterToggle=document.getElementById('adminFilterToggle');
+      const slipFilters=document.querySelector('.slip-approval-filters');
+      if(slipFilters){slipFilters.id='inlineSlipFilters';document.getElementById('adminReportToolbar').append(slipFilters);slipFilters.hidden=tab!=='slipApproval';}
       filterToggle.hidden=!['report','bank','slipApproval','notes'].includes(tab);
       document.getElementById('adminReportToolbar').hidden=filterToggle.hidden;
       document.getElementById('dsoSummaryToggle').hidden=tab!=='report';
@@ -7045,4 +7047,13 @@ html body .report-filter button,html body .bank-filters button{min-height:32px!i
 html body #adminPageSlipApproval .slip-filter-field,html body #adminPageSlipApproval .slip-filter-field:last-child{flex:0 1 155px!important;min-width:0!important;max-width:155px!important}
 html body #adminPageSlipApproval .slip-filter-field select{height:32px!important;min-height:32px!important;padding:4px 28px 4px 7px!important;font-size:12px!important}
 @media(max-width:760px){html body #appContainer #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(2,minmax(0,155px))!important}html body #appContainer #adminFilterPanel .filter-group input:not(.smart-period-source),html body #appContainer #adminFilterPanel .filter-group select,html body .report-filter input:not(.smart-period-source),html body .report-filter select,html body .bank-filters input:not(.smart-period-source),html body .bank-filters select{font-size:16px!important;min-height:36px!important;height:36px!important}html body #appContainer #adminFilterPanel .smart-period-trigger,html body .report-filter .smart-period-trigger,html body .bank-filters .smart-period-trigger{height:36px!important;min-height:36px!important}html body .report-filter>.field,html body .report-filter>.bank-field,html body .bank-filters>.bank-field{flex:0 1 calc(50% - 3px)!important;width:155px!important}}
+}</style>
+
+<style id="inline-slip-filter-layout">@media screen{
+#adminReportToolbar #inlineSlipFilters:not([hidden]){display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+#adminReportToolbar #inlineSlipFilters .slip-filter-field{display:flex!important;flex-direction:column!important;gap:3px!important;flex:0 0 145px!important;width:145px!important;min-width:0!important;max-width:145px!important;margin:0!important}
+#adminReportToolbar #inlineSlipFilters .slip-filter-label{font-size:10px!important;line-height:1.3!important;color:#426c60}
+#adminReportToolbar #inlineSlipFilters select{width:100%!important;max-width:145px!important;height:32px!important;min-height:32px!important;padding:4px 28px 4px 8px!important;border:1px solid #c5d9cd!important;border-radius:7px!important;background-color:#fff!important;font-size:12px!important}
+#adminReportToolbar:has(#inlineSlipFilters:not([hidden])){align-items:flex-end!important;gap:8px!important}
+@media(max-width:760px){#adminReportToolbar #inlineSlipFilters .slip-filter-field{flex-basis:125px!important;width:125px!important;max-width:125px!important}#adminReportToolbar #inlineSlipFilters select{height:36px!important;min-height:36px!important;font-size:16px!important}}
 }</style>
