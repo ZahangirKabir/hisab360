@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.12.3';
+    const APP_RELEASE_VERSION = '2026.11.12.4';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7092,7 +7092,7 @@ white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!im
 <style id="hide-outer-page-scrollbar">@media screen{html{scrollbar-width:none!important}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}}</style>
 
 <style id="dense-table-layout">@media screen{
-html body .table-container table,html body .scroll table,html body #appContainer .table-container table,html body #app .scroll table,html body #bankApp .scroll table{width:max-content!important;min-width:0!important;max-width:none!important;table-layout:auto!important}
+html body .table-container table,html body .scroll table,html body #appContainer .table-container table,html body #app .scroll table,html body #bankApp .scroll table{width:max-content!important;min-width:100%!important;max-width:none!important;table-layout:auto!important}
 html body #appContainer table th,html body #appContainer table td,html body #app table th,html body #app table td,html body #bankApp table th,html body #bankApp table td{padding:5px 7px!important;line-height:1.35!important}
 html body #appContainer table thead th,html body #app table thead th,html body #bankApp table thead th{white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;text-wrap:balance}
 html body #appContainer table thead th:not([colspan]),html body #app table thead th:not([colspan]),html body #bankApp table thead th:not([colspan]){max-width:120px!important}
