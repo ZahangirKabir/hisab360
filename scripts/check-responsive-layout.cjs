@@ -3,12 +3,12 @@ const fs=require('fs');const base=process.cwd()+'/';
 (async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});const page=await browser.newPage();await page.route(/^https?:/,r=>r.abort());
 const html=fs.readFileSync(base+'index.html','utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
 fs.mkdirSync('responsive-checks',{recursive:true});const results=[];
-for(const width of [320,360,390,600,768,1024,1440]){
+for(const width of [320,360,390,600,768,1024,1440,1920,2560]){
  await page.setViewportSize({width,height:900});await page.setContent(html);await page.evaluate(()=>{document.querySelector('#loginSection').style.display='none';document.body.classList.remove('login-design-visible');document.querySelector('#appContainer').style.display='block';document.querySelector('#adminView').style.display='block';document.querySelector('#adminFilterPanel').classList.remove('is-collapsed');document.querySelector('#adminReportToolbar').hidden=false;document.querySelectorAll('#adminReportToolbar button').forEach(b=>b.hidden=false);});
  const r=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth,filter:document.querySelector('#adminFilterPanel').getBoundingClientRect().width,controlHeight:document.querySelector('#filterAdmin').getBoundingClientRect().height}));results.push({view:'portal',width,...r});if(r.page>width+1)throw Error(JSON.stringify(results));if(width===390)await page.screenshot({path:'responsive-checks/hisab-portal-mobile.png'});
 }
 for(const id of ['loginSection','adminPageBank','adminPageSlipApproval','adminPageNotes','adminPageSettings','dsoPageForm','dsoPageSlip','dsoPageReport','dsoPageSettings']){
- for(const width of [320,390,768,1440]){
+ for(const width of [320,390,768,1440,1920]){
   await page.setViewportSize({width,height:900});await page.setContent(html);
   await page.evaluate(id=>{document.querySelector('#loginSection').style.display=id==='loginSection'?'block':'none';document.querySelector('#appContainer').style.display=id==='loginSection'?'none':'block';document.querySelectorAll('#adminView,#dsoView,#adminView>div[id^=adminPage],#dsoView>div[id^=dsoPage]').forEach(e=>e.style.display='none');const el=document.getElementById(id);el.style.display='block';if(id.startsWith('admin'))document.querySelector('#adminView').style.display='block';if(id.startsWith('dso'))document.querySelector('#dsoView').style.display='block';},id);
   const r=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth}));results.push({view:id,width,...r});if(r.page>width+1){await page.screenshot({path:'responsive-checks/overflow-'+id+'.png'});throw Error('Page overflow '+JSON.stringify({id,width,...r,offenders:await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(0,12).map(e=>({tag:e.tagName,id:e.id,cls:e.className,width:e.getBoundingClientRect().width}))) }));}
@@ -18,7 +18,7 @@ await page.goto('file://'+base+'Investment.html');await page.waitForTimeout(300)
 console.log('Investment buttons',await page.locator('#moduleMenu button').evaluateAll(es=>es.map(e=>({id:e.id,text:e.textContent.trim()}))));
 for(const id of ['showWorkingCapital','showWorkingCapitalReport','showPettyCashReport','showBankCheque','showBankWithdraw','showBankDeposit','showExpenseTypes','showHeadOfficeReport','showTotalInvestment']){
  if(!await page.locator('#'+id).count())continue;await page.locator('#'+id).evaluate(e=>e.click());await page.waitForTimeout(100);
- for(const width of [320,390,600,768,1024,1440]){await page.setViewportSize({width,height:900});const r=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth,filters:[...document.querySelectorAll('.report-filter,.bank-filters')].filter(e=>e.getBoundingClientRect().height).map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));results.push({view:id,width,...r});if(r.page>width+1)throw Error(JSON.stringify(results));if(width===390)await page.screenshot({path:'responsive-checks/hisab-'+id+'.png'});if(r.filters?.some(f=>f.height>200))throw Error('Oversized filter '+JSON.stringify({id,width,...r}));if(width===390)await page.screenshot({path:'responsive-checks/hisab-'+id+'.png'});}
+ for(const width of [320,390,600,768,1024,1440,1920]){await page.setViewportSize({width,height:900});const r=await page.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth,filters:[...document.querySelectorAll('.report-filter,.bank-filters')].filter(e=>e.getBoundingClientRect().height).map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))}));results.push({view:id,width,...r});if(r.page>width+1)throw Error(JSON.stringify(results));if(width===390)await page.screenshot({path:'responsive-checks/hisab-'+id+'.png'});if(r.filters?.some(f=>f.height>200))throw Error('Oversized filter '+JSON.stringify({id,width,...r}));if(width===390)await page.screenshot({path:'responsive-checks/hisab-'+id+'.png'});}
 }
 await page.locator('#showBankCheque').evaluate(e=>e.click());await page.setViewportSize({width:390,height:900});await page.waitForTimeout(100);
 await page.evaluate(()=>{const host=document.querySelector('#bankList');host.innerHTML='<table><thead><tr><th>Date</th><th>Bank</th><th>Withdraw By</th><th>Cheque</th><th>Amount</th><th>Withdrawer</th></tr></thead><tbody><tr><td>2026-11-10</td><td>Pubali</td><td>Cheque</td><td>8268454</td><td>13,50,000</td><td>Sample</td></tr></tbody></table>';});
@@ -69,4 +69,9 @@ console.log('Status and Bank Name fields visible side by side at 320, 390 and 12
 await page.evaluate(()=>document.querySelector('#inlineSlipFilters').hidden=true);
 if(await page.locator('#inlineSlipFilters').isVisible())throw Error('Slip filters leaked into another report despite hidden state');
 console.log('Hidden slip filters stay invisible on other reports.');
+
+for(const [width,height] of [[640,360],[844,390],[1024,600]]){
+ await page.setViewportSize({width,height});await page.setContent(html);await page.evaluate(()=>{document.querySelector('#loginSection').style.display='none';document.querySelector('#appContainer').style.display='block';document.querySelector('#adminView').style.display='block';document.querySelector('#adminFilterPanel').classList.remove('is-collapsed');});const extent=await page.evaluate(()=>document.documentElement.scrollWidth);if(extent>width+1)throw Error('Landscape page overflow '+JSON.stringify({width,height,extent}));
+}
+console.log('Responsive audit covers 320–2560px widths and landscape phones/tablets.');
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
