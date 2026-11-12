@@ -5,7 +5,7 @@ on:
     paths: ['.github/workflows/financial-backup.yml']
   schedule:
     - cron: '17 19 * * *'
-    - cron: '17 0-18,20-23 * * *'
+    - cron: '7,22,37,52 * * * *'
 permissions:
   contents: read
 concurrency:
@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   backup:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,20 +22,37 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Choose backup scope
-        run: |
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "${{ github.event.schedule }}" != "17 19 * * *" ]; then
-            echo 'BACKUP_SCOPE=financial-metadata' >> "$GITHUB_ENV"
-          else
-            echo 'BACKUP_SCOPE=full-rtdb' >> "$GITHUB_ENV"
-          fi
+      - name: Test catch-up and freshness planning
+        run: node scripts/test-backup-scope.cjs
+      - name: Choose due backup and catch up missed daily full
+        id: plan
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/choose-backup-scope.cjs
+      - name: Audit financial records without editing them
+        if: steps.plan.outputs.should_run == 'true'
+        continue-on-error: true
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: node scripts/audit-live-finances.cjs
+      - name: Preserve encrypted audit details
+        if: steps.plan.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hisab360-encrypted-audit-${{ github.run_id }}
+          path: ${{ runner.temp }}/hisab360-audit/
+          retention-days: 90
+          if-no-files-found: warn
       - name: Create and verify encrypted database backup
+        if: steps.plan.outputs.should_run == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
           BACKUP_OUTPUT_DIR: ${{ runner.temp }}/hisab360-backup
         run: node scripts/financial-backup.cjs
       - name: Preserve encrypted backup
+        if: steps.plan.outputs.should_run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: Hisab360-encrypted-backup-${{ github.run_id }}
@@ -43,15 +60,18 @@ jobs:
           retention-days: 90
           if-no-files-found: error
       - name: Download the saved backup for independent restoration test
+        if: steps.plan.outputs.should_run == 'true'
         uses: actions/download-artifact@v4
         with:
           name: Hisab360-encrypted-backup-${{ github.run_id }}
           path: ${{ runner.temp }}/hisab360-restore-test
       - name: Verify downloaded backup can be restored
+        if: steps.plan.outputs.should_run == 'true'
         env:
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: node scripts/verify-backup-restore.cjs "$RUNNER_TEMP/hisab360-restore-test"
       - name: Record successful backup and restoration check
+        if: steps.plan.outputs.should_run == 'true'
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
           BACKUP_RESULT: success
@@ -63,6 +83,6 @@ jobs:
           BACKUP_RESULT: failure
         run: node scripts/record-backup-status.cjs
       - name: Backup result
-        run: echo 'Encrypted backup uploaded, downloaded and restored in isolation; production records unchanged.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Due checks every 15 minutes with missed-full catch-up. Success follows downloaded restore verification. GitHub scheduling may still be delayed.' >> "$GITHUB_STEP_SUMMARY"
 
 # Full backups also preserve permitted Authentication recovery exports.
