@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.11.38">
+<meta name="investment-release-version" content="2026.11.12.01">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1787,3 +1787,17 @@ html body #adminPageSlipApproval .slip-filter-field,html body #adminPageSlipAppr
 html body #adminPageSlipApproval .slip-filter-field select{height:32px!important;min-height:32px!important;padding:4px 28px 4px 7px!important;font-size:12px!important}
 @media(max-width:760px){html body #appContainer #adminFilterPanel:not(.is-collapsed){grid-template-columns:repeat(2,minmax(0,155px))!important}html body #appContainer #adminFilterPanel .filter-group input:not(.smart-period-source),html body #appContainer #adminFilterPanel .filter-group select,html body .report-filter input:not(.smart-period-source),html body .report-filter select,html body .bank-filters input:not(.smart-period-source),html body .bank-filters select{font-size:16px!important;min-height:36px!important;height:36px!important}html body #appContainer #adminFilterPanel .smart-period-trigger,html body .report-filter .smart-period-trigger,html body .bank-filters .smart-period-trigger{height:36px!important;min-height:36px!important}html body .report-filter>.field,html body .report-filter>.bank-field,html body .bank-filters>.bank-field{flex:0 1 calc(50% - 3px)!important;width:155px!important}}
 }</style>
+
+<style id="table-header-word-wrap">
+html body table thead th,html body table thead td,
+html body #appContainer table thead th,html body #appContainer table thead td,
+html body #app table thead th,html body #bankApp table thead th,
+html body .table-container table th,html body .scroll table th{
+white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;text-wrap:balance;line-height:1.35!important;vertical-align:middle!important}
+html body table thead th:not([colspan]),html body #appContainer table thead th:not([colspan]),html body #app table thead th:not([colspan]),html body #bankApp table thead th:not([colspan]){max-width:150px!important}
+html body table tbody td,html body table tfoot td,
+html body #appContainer table tbody td,html body #appContainer table tfoot td,
+html body #app table tbody td,html body #app table tfoot td,
+html body #bankApp table tbody td,html body #bankApp table tfoot td{
+white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
+</style>
