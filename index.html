@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.11.41';
+    const APP_RELEASE_VERSION = '2026.11.12.01';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7074,3 +7074,17 @@ html body #adminPageSlipApproval .slip-filter-field select{height:32px!important
 }</style>
 
 <style id="inline-filters-hidden-state">#adminReportToolbar #inlineSlipFilters[hidden]{display:none!important}#adminReportToolbar>button[hidden]{display:none!important}</style>
+
+<style id="table-header-word-wrap">
+html body table thead th,html body table thead td,
+html body #appContainer table thead th,html body #appContainer table thead td,
+html body #app table thead th,html body #bankApp table thead th,
+html body .table-container table th,html body .scroll table th{
+white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;text-wrap:balance;line-height:1.35!important;vertical-align:middle!important}
+html body table thead th:not([colspan]),html body #appContainer table thead th:not([colspan]),html body #app table thead th:not([colspan]),html body #bankApp table thead th:not([colspan]){max-width:150px!important}
+html body table tbody td,html body table tfoot td,
+html body #appContainer table tbody td,html body #appContainer table tfoot td,
+html body #app table tbody td,html body #app table tfoot td,
+html body #bankApp table tbody td,html body #bankApp table tfoot td{
+white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
+</style>
