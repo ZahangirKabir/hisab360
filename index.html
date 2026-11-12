@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.12.4';
+    const APP_RELEASE_VERSION = '2026.11.12.5';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2458,6 +2458,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
       document.body.dataset.portalMenuRole=(currentUser==="admin"||isGroupAdmin(currentUser)||isPortalReportViewer())?"admin":"dso";
       document.getElementById("adminView").inert=document.body.dataset.portalMenuRole==="dso";
+      for(const id of ["adminReportToolbar","inlineSlipFilters"]){const element=document.getElementById(id);if(element){element.inert=document.body.dataset.portalMenuRole==="dso";if(element.inert)element.hidden=true;}}
       document.getElementById("loginSection").style.display = "none";
       document.getElementById("appContainer").style.display = "block";
 
@@ -7104,3 +7105,12 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
 <script id="report-header-height">
 (function(){const table=document.getElementById('dataTable'),row=table?.tHead?.rows[0];if(!row)return;const sync=()=>{const height=Math.ceil(row.getBoundingClientRect().height);if(height&&table.style.getPropertyValue('--report-group-header-height')!==height+'px')table.style.setProperty('--report-group-header-height',height+'px');};if(typeof ResizeObserver!=='undefined')new ResizeObserver(sync).observe(row);window.addEventListener('resize',sync);document.fonts?.ready.then(sync);sync();})();
 </script>
+
+<style id="strict-dso-admin-filter-isolation">@media screen{
+html body[data-portal-menu-role="dso"] #appContainer #adminView,
+html body[data-portal-menu-role="dso"] #appContainer #adminPageHeading,
+html body[data-portal-menu-role="dso"] #appContainer #adminReportToolbar,
+html body[data-portal-menu-role="dso"] #appContainer #inlineSlipFilters,
+html body[data-portal-menu-role="dso"] #appContainer #adminFilterPanel,
+html body[data-portal-menu-role="dso"] #appContainer .report-page-controls{display:none!important;visibility:hidden!important;pointer-events:none!important}
+}</style>
