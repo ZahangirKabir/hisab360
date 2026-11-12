@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.12.01">
+<meta name="investment-release-version" content="2026.11.12.02">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1319,7 +1319,7 @@ function renderHeadOfficeReport(){
 function report(key){
  const box=card(pages.find(([k])=>k===key)[1]);
  if(key==='total')reportActions(box,'Total Investment');
- if(key==='capitalReport'){const actions=node('div');actions.className='report-export-actions';const print=node('button','Print'),excel=node('button','Download');print.type=excel.type='button';print.onclick=()=>window.exportWorkingCapital('print');excel.onclick=()=>window.exportWorkingCapital('excel',excel);print.className='report-print';excel.className='report-download';print.setAttribute('aria-label','Print Working Capital Report');excel.setAttribute('aria-label','Download Excel Report');actions.append(print,excel);box.classList.add('capital-report-heading');box.append(actions);
+ if(key==='capitalReport'){const actions=node('div');actions.className='report-export-actions';const print=node('button','Print'),excel=node('button','Download');print.type=excel.type='button';print.onclick=()=>window.exportWorkingCapital('print');excel.onclick=()=>window.exportWorkingCapital('excel',excel);print.className='report-print';excel.className='report-download';print.setAttribute('aria-label','Print Working Capital Report');excel.setAttribute('aria-label','Download Excel Report');actions.append(print,excel);box.classList.add('capital-report-heading');const header=document.getElementById('investmentPageHeading');if(header){header.querySelector('.capital-header-actions')?.remove();actions.classList.add('capital-header-actions');header.append(actions);}else box.append(actions);
   const filterBar=node('div');filterBar.className='report-filter';
   const dateButton=node('button','Date Wise');dateButton.type='button';dateButton.classList.add('active');dateButton.setAttribute('aria-pressed','true');
   const monthButton=node('button','Month Wise');monthButton.type='button';monthButton.setAttribute('aria-pressed','false');
@@ -1504,6 +1504,7 @@ window.bankNavigate=show;show('range');
  const reportViewer=!!bridge?.isReportViewer?.();
  const canReturnToAdmin=()=>parent!==window&&bridge?.getUser?.()==='admin'&&typeof parent.switchAdminTab==='function';
  function open(which){
+  heading.querySelector('.capital-header-actions')?.remove();
   if(which==='home'){
    window.stopCalculatorWithdrawalSync?.();closeDropdowns();
    document.body.classList.add('investment-menu-home');heading.hidden=!canReturnToAdmin();title.textContent='Investment';tabs.hidden=false;
@@ -1801,3 +1802,11 @@ html body #app table tbody td,html body #app table tfoot td,
 html body #bankApp table tbody td,html body #bankApp table tfoot td{
 white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
 </style>
+
+<style id="capital-heading-inline-actions">@media screen{
+#investmentPageHeading:has(.capital-header-actions):not([hidden]){display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important}
+#investmentPageHeading:has(.capital-header-actions)>strong{flex:1 1 auto;min-width:0;margin:0!important;line-height:1.35!important}
+#investmentPageHeading>.capital-header-actions{display:flex!important;float:none!important;flex:0 0 auto!important;gap:6px!important;margin:0!important;padding:0!important;overflow:visible!important}
+#investmentPageHeading>.capital-header-actions button{min-height:32px!important;padding:5px 9px!important;font-size:12px!important;white-space:nowrap!important}
+@media(max-width:560px){#investmentPageHeading:has(.capital-header-actions){gap:6px!important}#investmentPageHeading>.capital-header-actions button{padding:5px 7px!important;font-size:11px!important}#investmentPageHeading:has(.capital-header-actions)>strong{font-size:14px!important}}
+}</style>
