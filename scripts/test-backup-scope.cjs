@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict'),{choose}=require('./choose-backup-scope.cjs');
+const now=Date.parse('2026-11-12T10:00:00Z'),recent='2026-11-12T09:40:00Z',full='2026-11-11T20:17:00Z';
+assert.equal(choose({},now).scope,'full-rtdb');
+assert.equal(choose({lastFullAt:full,lastSuccessAt:recent,restoreVerified:true},now).run,false);
+assert.equal(choose({lastFullAt:full,lastSuccessAt:'2026-11-12T08:30:00Z',restoreVerified:true},now).scope,'financial-metadata');
+assert.equal(choose({lastFullAt:'2026-11-10T20:17:00Z',lastSuccessAt:recent,restoreVerified:true},now).scope,'full-rtdb');
+assert.equal(choose({lastFullAt:full,lastSuccessAt:recent,restoreVerified:true},now,true).scope,'full-rtdb');
+assert.equal(choose({lastFullAt:full,lastSuccessAt:recent,lastFailureAt:'2026-11-12T09:50:00Z',restoreVerified:true},now).run,true);
+assert.equal(choose({lastFullAt:full,lastSuccessAt:recent,restoreVerified:false},now).run,true);
+assert.equal(choose({lastFullAt:'2027-01-01T00:00:00Z',lastSuccessAt:recent,restoreVerified:true},now).scope,'full-rtdb');
+assert.equal(choose({lastFullAt:'2026-11-10T20:17:00Z'},Date.parse('2026-11-11T18:10:00Z')).scope,'financial-metadata');
+console.log('9 backup catch-up and freshness checks passed.');
