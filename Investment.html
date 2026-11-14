@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.14.3">
+<meta name="investment-release-version" content="2026.11.14.4">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -962,7 +962,7 @@ function selectedDateDsoTotals(legacy,ledger,selectedDate){
  for(const [group,team]of Object.entries(groupTeams))if(Array.isArray(groups?.[group]))teams[team]=groups[group].map(String);
  const configuredIds=typeof bridge.getAllowedDsoIds==='function'?bridge.getAllowedDsoIds():null;
  const dsoIds=new Set(Array.isArray(configuredIds)&&configuredIds.length?configuredIds.map(String):Object.values(teams).flat());
- const reports=new Map();
+ const reports=new Map(),accounts=new Map();
  for(const [key,report] of Object.entries(legacy||{})){
   if(report?.date===selectedDate && dsoIds.has(String(report.userId||'')))reports.set(String(report.userId),report);
  }
@@ -971,13 +971,20 @@ function selectedDateDsoTotals(legacy,ledger,selectedDate){
   const uid=String(account.userId||account.report?.userId||'');
   if(!dsoIds.has(uid))continue;
   // Canonical migration data replaces the archived legacy report, including deletion.
-  reports.delete(uid);
+  reports.delete(uid);accounts.set(uid,account);
   if(account.report)reports.set(uid,account.report);
  }
  const moneyValue=value=>{const n=Number(String(value??0).replace(/,/g,''));if(!Number.isFinite(n))throw Error('DSO B2B amount সঠিক নয়।');return Math.round(n*100);};
  let received=0,sent=0,cashIssued=0;for(const report of reports.values()){received+=moneyValue(report.emReturn);sent+=moneyValue(report.emReceived);cashIssued+=moneyValue(report.cashReceived);}
  const marketCash=Object.fromEntries(Object.entries(teams).map(([team,ids])=>[team,ids.reduce((sum,id)=>sum+moneyValue(reports.get(id)?.cashReturn??reports.get(id)?.cashDeposit),0)/100]));
- const bankDeposits=[];for(const report of reports.values()){const slips=report.bankSlips||report.slips; if(Array.isArray(slips)&&slips.length){for(const slip of slips){if(slip.status==='rejected')continue;bankDeposits.push({bankName:slip.bankName||report.bankName,amount:moneyValue(slip.amt??slip.amount)/100});}}else if(Number(report.bankDeposit)>0)bankDeposits.push({bankName:report.bankName,amount:moneyValue(report.bankDeposit)/100});}
+ const bankDeposits=[];for(const [uid,report] of reports){const account=accounts.get(uid),slips=report.bankSlips||report.slips;
+  if(Array.isArray(slips)&&slips.length){for(const slip of slips){
+   // Linked requests are authoritative; pending/rejected slips cannot fund a bank balance.
+   const status=slip.requestKey?(account?.requests?.[slip.requestKey]?.status??(report.approvedSlipRequests?.[slip.requestKey]?'approved':'pending')):slip.status;
+   if(status&&status!=='approved')continue;
+   bankDeposits.push({bankName:slip.bankName||report.bankName,amount:moneyValue(slip.amt??slip.amount)/100});
+  }}else if(Number(report.bankDeposit)>0)bankDeposits.push({bankName:report.bankName,amount:moneyValue(report.bankDeposit)/100});
+ }
  return {receive:received/100,send:sent/100,count:reports.size,cashIssueDso:cashIssued/100,marketCash,bankDeposits};
 }
 
@@ -1084,7 +1091,7 @@ function balanceCalculator(){
  function syncWithdrawalDrafts(){Object.entries(bankDrafts).forEach(([b,x])=>{x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.fundTransfer=withdrawalTotal(b,'APP');x.chequeWithdrawal=withdrawalTotal(b,'Cheque');x.net=Math.round((Number(x.opening||0)+Number(x.deposit||0)-x.fundTransfer-x.chequeWithdrawal-Number(x.bankCharge||0))*100)/100;});}
  function watchWithdrawals(selectedDate,epoch){
   window.stopCalculatorWithdrawalSync?.();const ref=database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate);
-  const handler=snap=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}withdrawalRows=Object.values(snap.val()||{});if(editExpected)return;delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));if(!liftingManual){lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));delete netMA.dataset.testManual;}if(!refundManual)maRefund.value=inputMoney(refundTotal());syncWithdrawalDrafts();choice.onchange();};
+  const handler=snap=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}withdrawalRows=Object.values(snap.val()||{});delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));if(!liftingManual){lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));delete netMA.dataset.testManual;}if(!refundManual)maRefund.value=inputMoney(refundTotal());syncWithdrawalDrafts();choice.onchange();};
   let cancel=()=>{},cancelDso=()=>{};const stop=()=>{cancel();cancelDso();if(window.stopCalculatorWithdrawalSync===stop)window.stopCalculatorWithdrawalSync=null;};
   window.stopCalculatorWithdrawalSync=stop;cancel=window.investmentWatchData(bridge,'bankTrackerEntries',handler,e=>{if(!form.isConnected||epoch!==sourceEpoch)return;loaded=false;status.textContent='Withdrawal হিসাব লোড হয়নি: '+e.message;paint();},selectedDate);
   const failedDso=e=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate)return;dsoSyncError=true;status.textContent='DSO Daily Report সিঙ্ক হয়নি: '+e.message;paint();};
@@ -1126,8 +1133,16 @@ function balanceCalculator(){
    const input=row.querySelector('[name='+name+']');input.value=value||'';
   }row.querySelector('[name=cash_ho_type]').dispatchEvent(new Event('change',{bubbles:true}));});
   if(!liveSources){
-   for(const [input,value]of [[maOpening,saved.opening],[lifting,saved.lifting],[maRefund,saved.refund],[cashOpening,cash.openingCash],[cashBankReceived,cash.cashReceivedFromBank],[cashIssue,cash.cashIssueDso],[marketTeam,cash.marketCash?.total??Object.values(cash.marketCash||{}).reduce((n,x)=>n+(Number(x)||0),0)]]){delete input.dataset.testManual;input.value=inputMoney(value);}
-   bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved.bankCalculations?.[bank]||{})}]));
+   // Restore editable MA inputs, but retain fresh DSO/withdrawal/bank source values.
+   lifting.value=inputMoney(saved.lifting??selectedDateLiftingTotal(withdrawalRows,date.value));
+   maRefund.value=inputMoney(saved.refund??refundTotal());
+   liftingManual=saved.lifting!==undefined;refundManual=saved.refund!==undefined;
+  }else{liftingManual=false;refundManual=false;}
+  // The first saved day has no predecessor; retain its audited opening seed.
+  if(!previous){
+   maOpening.value=inputMoney(saved.opening);
+   cashOpening.value=inputMoney(cash.openingCash);
+   for(const bank of banks)if(saved.bankCalculations?.[bank])bankDrafts[bank].opening=Number(saved.bankCalculations[bank].opening)||0;
   }
  }
  async function source(liveSources=false){
@@ -1144,11 +1159,11 @@ function balanceCalculator(){
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
    approved=totals.bankDeposits;
    const saved=items[date.value+'_calculator'];editExpected=saved?.type==='calculator'?JSON.parse(JSON.stringify(saved)):null;bankDrafts=Object.fromEntries(banks.map(bank=>[bank,{...(saved?.bankCalculations?.[bank]||{})}]));
-   maOpening.value=inputMoney(previous?.closing?.maWallet||0);lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));maRefund.value=inputMoney(saved?.refund??refundTotal());
+   maOpening.value=inputMoney(previous?.closing?.maWallet||0);lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));maRefund.value=inputMoney(liveSources?refundTotal():(saved?.refund??refundTotal()));
    receive.value=inputMoney(totals.receive);send.value=inputMoney(totals.send);
    cashOpening.value=inputMoney(previous?.closing?.cashInHand);delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));delete cashIssue.dataset.testManual;cashIssue.value=inputMoney(totals.cashIssueDso);cashLifting.value=inputMoney(saved?.cashCalculation?.cashDepositLifting);
    delete marketTeam.dataset.testManual;marketTeam.value=inputMoney(Math.round((totals.marketCash.Sadar+totals.marketCash.Saturia+totals.marketCash.Singair+totals.marketCash.Shivalaya)*100)/100);
-   Object.entries(bankDrafts).forEach(([b,x])=>{x.opening=Number(previous?.closing?.banks?.[b]||0);x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.net=Math.round((x.opening+x.deposit-Number(x.fundTransfer||0)-Number(x.chequeWithdrawal||0)-Number(x.bankCharge||0))*100)/100;});syncWithdrawalDrafts();if(editExpected)restoreSavedCalculator(editExpected,liveSources);applyDsoTotals(totals);loaded=true;loading=false;choice.onchange();paint();watchWithdrawals(selectedDate,epoch);
+   Object.entries(bankDrafts).forEach(([b,x])=>{x.opening=Number(previous?.closing?.banks?.[b]||0);x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.net=Math.round((x.opening+x.deposit-Number(x.fundTransfer||0)-Number(x.chequeWithdrawal||0)-Number(x.bankCharge||0))*100)/100;});syncWithdrawalDrafts();restoreSavedCalculator(editExpected||{},liveSources);applyDsoTotals(totals);loaded=true;loading=false;choice.onchange();paint();watchWithdrawals(selectedDate,epoch);
    status.textContent=editExpected?'সেভ করা হিসাব লোড হয়েছে। সংশোধন করে Update Submit করুন।': '';
   }catch(e){if(epoch!==sourceEpoch)return;loading=false;status.textContent='ডাটা পাওয়া যায়নি: '+e.message;paint();}finally{clearTimeout(timer);if(epoch===sourceEpoch)refresh.disabled=false;}
  }
