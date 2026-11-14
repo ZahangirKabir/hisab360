@@ -109,4 +109,30 @@ for(const width of [320,360,390,610,768,1280]){
 }
 console.log('DSO received and transfer: equal-height controls, usable amounts, no overlap at 320–1280px.');
 
+
+const adminUIStart=source.indexOf('let adminSlipUploadContext='),adminUIEnd=source.indexOf('async function submitBankSlips()',adminUIStart);
+if(adminUIStart<0||adminUIEnd<0)throw Error('Admin slip upload UI missing');
+await page.goto('about:blank');await page.setContent(html);
+await page.evaluate(code=>{
+ window.currentUser='admin';window.bankSlipSubmitInProgress=false;window.adminEditOriginal={date:'2026-11-10',userId:'801'};
+ document.getElementById('editKey').value='daily_2026-11-10_801';document.getElementById('editChangePreview').replaceChildren();
+ window.updateEditChangePreview=()=>{};window.cleanupSlipPreview=()=>{};window.isKnownPortalDsoId=id=>id==='801';
+ window.addSlipRow=()=>{const row=document.createElement('div');row.className='slip-box-item';row.textContent='Slip upload form';document.getElementById('slipsContainer').append(row);};
+ (0,eval)(code+';window.testAdminUploadOpen=openAdminSlipUpload;window.testAdminUploadClose=closeAdminSlipUpload;');
+},source.slice(adminUIStart,adminUIEnd));
+await page.evaluate(()=>{window.currentUser='823';window.testAdminUploadOpen();});
+if(await page.locator('#adminSlipUploadModal').count())throw Error('DSO opened Admin upload');
+await page.evaluate(()=>{window.currentUser='admin';window.testAdminUploadOpen();});
+if(!await page.locator('#adminSlipUploadModal #dsoPageSlip').count())throw Error('Admin upload form did not open');
+if(!await page.locator('#adminSlipUploadTitle').innerText().then(x=>x.includes('801')&&x.includes('2026-11-10')))throw Error('Admin upload target missing');
+for(const width of [320,390,768,1440]){
+ await page.setViewportSize({width,height:900});
+ const bounds=await page.locator('#adminSlipUploadModal .modal-content').evaluate(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,scrollWidth:e.scrollWidth,width:e.clientWidth};});
+ if(bounds.left<0||bounds.right>width+1||bounds.scrollWidth>bounds.width+1)throw Error('Admin upload modal overflow '+JSON.stringify({width,bounds}));
+}
+await page.evaluate(()=>window.testAdminUploadClose(true));
+if(!await page.locator('#dsoView #dsoPageSlip').count())throw Error('Shared DSO upload form not restored');
+if(await page.locator('#adminSlipUploadModal').isVisible())throw Error('Admin upload modal failed to close');
+console.log('Admin upload role guard, selected DSO/date, responsive dialog and DSO form restoration passed.');
+
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
