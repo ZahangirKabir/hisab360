@@ -202,6 +202,34 @@ if(await entry.inputValue()!==''||await page.locator('#slipAccountFallback_'+fal
 if(await page.evaluate(id=>window.verifyManualSlipAccount(id),fallbackId))throw Error('Verification allowed outside OCR fallback');
 console.log('OCR fallback: blank input, automatic exact match, wrong account rejection, Bangla digits, edit invalidation, reset and responsive widths passed.');
 
+
+await page.goto('about:blank');await page.setContent(html);
+const pickerNames=['populateDsoDropdown','getSelectedDsoValues','filterDsoPickerOptions','updateDsoDropdownText','toggleDsoDropdown','positionDsoPicker','closeDsoDropdown','handleDsoCheckboxChange','selectAllDsos','clearDsoSelection'];
+const pickerCode=pickerNames.map(name=>{const start=source.indexOf('    function '+name+'('),end=source.indexOf('\n    }',start)+6;if(start<0||end<6)throw Error('Missing picker function '+name);return source.slice(start,end);}).join('\n');
+await page.evaluate(code=>{
+ window.currentUser='admin';window.SUB_ADMIN_GROUPS={};window.portalDsoIds=()=>Array.from({length:46},(_,i)=>String(801+i));
+ window.isGroupAdmin=()=>false;window.getSelectedAdminGroup=()=>'';window.getAvailableDsoFilterIds=window.portalDsoIds;window.applyAdminFilters=()=>{};
+ document.querySelector('#loginSection').style.display='none';document.body.classList.remove('login-design-visible');
+ document.querySelector('#appContainer').style.display='block';document.querySelector('#adminView').style.display='block';document.querySelector('#adminFilterPanel').classList.remove('is-collapsed');
+ (0,eval)(code);window.populateDsoDropdown(null);
+},pickerCode);
+for(const width of [320,390,768,1440]){
+ await page.setViewportSize({width,height:850});await page.evaluate(()=>{window.closeDsoDropdown();window.toggleDsoDropdown();});
+ const result=await page.locator('#filterDsoCheckboxContainer').evaluate(panel=>{
+  const r=panel.getBoundingClientRect(),item=panel.querySelector('.dso-checkbox-item'),i=item.getBoundingClientRect(),check=item.querySelector('input').getBoundingClientRect(),grid=panel.querySelector('.dso-picker-grid');
+  return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,itemHeight:i.height,checkboxWidth:check.width,checkboxHeight:check.height,align:Math.abs((check.top+check.height/2)-(i.top+i.height/2)),scroll:grid.scrollHeight>grid.clientHeight};
+ });
+ if(result.left<0||result.right>width+1||result.top<0||result.bottom>851||result.itemHeight>42||result.checkboxWidth>18||result.checkboxHeight>18||result.align>2||!result.scroll)throw Error('DSO picker layout '+JSON.stringify({width,result}));
+ if(width===390)await page.screenshot({path:'responsive-checks/dso-picker-mobile.png'});
+}
+await page.locator('#dsoPickerSearch').fill('৮২৩');
+if(await page.locator('#dsoPickerGrid .dso-checkbox-item:visible').count()!==1)throw Error('DSO picker search failed');
+await page.locator('#dsoPickerGrid .dso-checkbox-item:visible input').check();
+if(!await page.locator('#dsoMultiSelectToggle').innerText().then(x=>x.includes('823')))throw Error('DSO selection failed');
+await page.evaluate(()=>window.selectAllDsos());if(await page.locator('.dso-chk:checked').count()!==46)throw Error('Select all failed');
+await page.evaluate(()=>window.clearDsoSelection());if(await page.locator('.dso-chk:checked').count())throw Error('Clear all failed');
+console.log('Compact DSO picker: viewport bounds, 16px checkboxes, aligned 38px rows, scrolling, Bangla search and multi-selection passed.');
+
 await page.goto('about:blank');await page.setContent('<section id="adminPageSettings"></section>');
 await page.evaluate(()=>{
  window.historyRole='823';window.historyReads=0;
