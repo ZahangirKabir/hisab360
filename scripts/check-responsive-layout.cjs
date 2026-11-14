@@ -83,4 +83,30 @@ await page.locator('.h360-select').click();const popup=await page.locator('.h360
 await page.locator('.h360-select').press('ArrowDown');await page.keyboard.press('Escape');
 await page.evaluate(()=>{const s=document.querySelector('select');s.append(new Option('City Bank','city'));s.value='city';s.dispatchEvent(new Event('change',{bubbles:true}));});await page.waitForTimeout(80);if(await page.locator('.h360-select span').innerText()!=='City Bank')throw Error('Dynamic options not synchronized');
 console.log('Compact dropdown selection, native change handlers, positioning, outside tap and dynamic options passed.');
+
+await page.goto('about:blank');await page.setContent(html);
+await page.evaluate(()=>{
+ document.body.dataset.portalMenuRole='dso';
+ document.querySelector('#loginSection').style.display='none';
+ document.querySelector('#appContainer').style.display='block';
+ document.querySelector('#adminView').style.display='none';
+ document.querySelector('#dsoView').style.display='block';
+ document.querySelector('#dsoPageForm').style.display='block';
+ for(const [id,kind] of [['dsoReceivedContainer','rec'],['dsoTransferContainer','trans']]){
+  document.getElementById(id).innerHTML='<div class="dynamic-row"><select class="dso-'+kind+'-id"><option value="">Select DSO</option><option value="801">DSO 801</option></select><input type="text" class="amt-field dso-'+kind+'-amt" placeholder="Amount" value="1,20,000"><button type="button" class="btn-remove-row">×</button></div>';
+ }
+});
+await page.addScriptTag({content:fs.readFileSync('assets/hisab360-select-menus.js','utf8')});
+await page.waitForTimeout(100);
+for(const width of [320,360,390,610,768,1280]){
+ await page.setViewportSize({width,height:900});
+ const sizes=await page.locator('#dsoReceivedContainer .dynamic-row,#dsoTransferContainer .dynamic-row').evaluateAll(rows=>rows.map(row=>{
+  const select=row.querySelector('.h360-select').getBoundingClientRect(),amount=row.querySelector('input').getBoundingClientRect(),remove=row.querySelector('.btn-remove-row').getBoundingClientRect();
+  return {selectWidth:select.width,amountWidth:amount.width,selectHeight:select.height,amountHeight:amount.height,overlap:select.right>amount.left+.5,overflow:remove.right>innerWidth};
+ }));
+ if(sizes.some(r=>r.amountWidth<100||r.selectWidth<80||Math.abs(r.selectHeight-r.amountHeight)>1||r.overlap||r.overflow))throw Error('DSO breakdown layout '+JSON.stringify({width,sizes}));
+ if(width===390)await page.screenshot({path:'responsive-checks/dso-received-transfer-mobile.png'});
+}
+console.log('DSO received and transfer: equal-height controls, usable amounts, no overlap at 320–1280px.');
+
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
