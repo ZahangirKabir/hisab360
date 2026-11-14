@@ -1,7 +1,7 @@
 name: Test financial data protection
 on:
   push:
-    paths: ['.github/workflows/test-data-protection.yml','scripts/test-protection-emulator.cjs','scripts/build-protection-rules.cjs','assets/hisab360-protected-writes.js']
+    paths: ['.github/workflows/test-data-protection.yml','scripts/test-protection-emulator.cjs','scripts/prepare-protection-test.cjs','scripts/build-protection-rules.cjs','assets/hisab360-protected-writes.js']
   workflow_dispatch:
 permissions:
   contents: read
