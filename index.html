@@ -1348,7 +1348,11 @@ html body #adminPageSlipApproval .slip-filter-field select:focus{outline:0;borde
           <h4>DSO Transfer Breakdown</h4><div id="editDsoTransferRows"></div>
           <button type="button" class="admin-breakdown-add" onclick="addAdminDsoRow('transfer');updateEditChangePreview()">＋ Add DSO</button>
         </div>
-        <div id="editChangePreview" style="margin-top:4px;background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px;font-size:12px;line-height:1.7;">পরিবর্তনগুলো এখানে দেখা যাবে।</div>
+        <div class="detail-section"><h4>Cash Note Breakdown</h4><div class="admin-edit-grid">
+<div class="form-group"><label>1000 টাকার নোট</label><input type="number" min="0" step="1" id="editNote1000" oninput="updateEditChangePreview()"></div><div class="form-group"><label>500 টাকার নোট</label><input type="number" min="0" step="1" id="editNote500" oninput="updateEditChangePreview()"></div><div class="form-group"><label>200 টাকার নোট</label><input type="number" min="0" step="1" id="editNote200" oninput="updateEditChangePreview()"></div><div class="form-group"><label>100 টাকার নোট</label><input type="number" min="0" step="1" id="editNote100" oninput="updateEditChangePreview()"></div><div class="form-group"><label>50 টাকার নোট</label><input type="number" min="0" step="1" id="editNote50" oninput="updateEditChangePreview()"></div>
+</div></div>
+<button type="button" class="btn-add" onclick="openAdminSlipUpload()">＋ DSO-এর Bank Slip Upload</button>
+<div id="editChangePreview" style="margin-top:4px;background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px;font-size:12px;line-height:1.7;">পরিবর্তনগুলো এখানে দেখা যাবে।</div>
         <button class="btn" onclick="saveEditedData()" style="margin-top:10px;">💾 Update & Submit</button>
       </div>
     </div>
@@ -1973,7 +1977,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.14.5';
+    const APP_RELEASE_VERSION = '2026.11.14.6';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2722,6 +2726,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function logout() {
+      closeAdminSlipUpload(true);
       portalIdleStop?.();portalLastActivity=0;
       clearTimeout(salamTimer);document.getElementById('loginSalam')?.remove();document.getElementById('deviceRecoveryButton')?.remove();document.getElementById('financialBackupButton')?.remove();document.getElementById('financialBackupSettingsSection')?.remove();document.getElementById('financialBackupModal')?.remove();deviceRecoveryBackup=null;stopPortalRecoveryWatcher();
       clearTimeout(deviceSessionExpiryTimer);portalLedger.reset();
@@ -3146,11 +3151,44 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       finally{if(scope===slipStatusScope&&currentUser==='admin'){slipStatusLoadingMore=false;renderBankSlipStatus('admin');}}
     }
     function slipStatusLabel(status){return ({approved:'✅ Approved',rejected:'❌ Rejected',rejecting:'⏳ Rejecting',approving:'⏳ Approving',pending:'⏳ Pending'})[status]||String(status||'Pending');}
+    let adminSlipUploadContext=null,adminSlipUploadPlaceholder=null;
+    function openAdminSlipUpload(){
+      if(currentUser!=='admin'||bankSlipSubmitInProgress)return;
+      const original=adminEditOriginal,key=document.getElementById('editKey').value;
+      if(!original||!isKnownPortalDsoId(original.userId)||!/^\d{4}-\d{2}-\d{2}$/.test(original.date))return;
+      if(adminSlipUploadContext)return;
+      updateEditChangePreview();if(document.getElementById('editChangePreview').querySelector('strong')){alert('আগে হিসাবের পরিবর্তন Update & Submit করুন, তারপর Bank Slip Upload খুলুন।');return;}
+      const page=document.getElementById('dsoPageSlip');
+      adminSlipUploadPlaceholder=document.createComment('DSO slip page location');page.before(adminSlipUploadPlaceholder);
+      adminSlipUploadContext={key,user:String(original.userId),date:original.date};
+      let overlay=document.getElementById('adminSlipUploadModal');
+      if(!overlay){overlay=document.createElement('div');overlay.id='adminSlipUploadModal';overlay.className='modal-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.innerHTML='<div class="modal-content" style="width:min(96vw,760px);max-height:92vh;overflow:auto"><div class="modal-header"><h3 id="adminSlipUploadTitle"></h3><button type="button" class="modal-close" onclick="closeAdminSlipUpload()">✖ Close</button></div><div id="adminSlipUploadBody"></div></div>';document.body.append(overlay);}
+      overlay.style.zIndex='1500';overlay.style.display='flex';
+      document.getElementById('adminSlipUploadTitle').textContent='Bank Slip · DSO '+original.userId+' · '+original.date;
+      document.getElementById('adminSlipUploadBody').append(page);page.style.display='block';
+      const back=page.querySelector('button[onclick*="switchDsoTab"]');if(back)back.style.setProperty('display','none','important');
+      document.querySelectorAll('#slipsContainer .slip-box-item').forEach(cleanupSlipPreview);
+      document.getElementById('slipsContainer').replaceChildren();document.getElementById('slipSubmitMessage').textContent='এই DSO ও তারিখে Slip জমা হবে। Approval আলাদাভাবে করতে হবে।';addSlipRow();
+    }
+    async function closeAdminSlipUpload(force=false){
+      if(!adminSlipUploadContext)return;
+      if(bankSlipSubmitInProgress&&!force)return;
+      if(!force&&[...document.querySelectorAll('#slipsContainer .slip-file-input')].some(x=>x.files?.length)&&!confirm('নির্বাচিত স্লিপ এখনো জমা হয়নি। বন্ধ করবেন?'))return;
+      const context=adminSlipUploadContext;
+      const page=document.getElementById('dsoPageSlip');adminSlipUploadPlaceholder?.replaceWith(page);page.style.display='none';
+      const back=page.querySelector('button[onclick*="switchDsoTab"]');if(back)back.style.removeProperty('display');
+      document.querySelectorAll('#slipsContainer .slip-box-item').forEach(cleanupSlipPreview);document.getElementById('slipsContainer').replaceChildren();
+      document.getElementById('adminSlipUploadModal').style.display='none';adminSlipUploadContext=null;adminSlipUploadPlaceholder=null;
+      addSlipRow();
+      if(context.saved&&!force&&currentUser==='admin'){try{const snapshot=await database.ref('collections/'+context.key).once('value');if(currentUser!=='admin')return;const record=snapshot.val();if(record){globalAllData[context.key]=record;openEditModal(context.key);}}catch(error){alert('স্লিপ জমা হয়েছে। সর্বশেষ হিসাব পেতে Refresh করে Edit খুলুন।');}}
+    }
+
     async function submitBankSlips() {
-      if(!currentUser || currentUser==='admin'||isGroupAdmin(currentUser))return;
+      if(!currentUser||isGroupAdmin(currentUser)||(currentUser==='admin'&&!adminSlipUploadContext))return;
       if(bankSlipSubmitInProgress)return;
       if(isSubmittingData){alert('দিনের হিসাব জমা শেষ হলে Bank Slip Submit করুন।');return;}
-      const user=String(currentUser),date=getLocalDateString(),button=document.getElementById('submitSlipBtn');
+      const actor=String(currentUser),adminContext=actor==='admin'?adminSlipUploadContext:null,user=adminContext?.user||actor,date=adminContext?.date||getLocalDateString(),button=document.getElementById('submitSlipBtn');
+      const sessionValid=()=>String(currentUser)===actor&&(!adminContext||(currentUser==='admin'&&adminSlipUploadContext===adminContext));
       const rows=[...document.querySelectorAll('#slipsContainer .slip-box-item')];
       const active=rows.filter(row=>row.querySelector('.slip-file-input')?.files?.[0]||row.dataset.existingImg||parseRawNumber(row.querySelector('.slip-amt-val')?.value));
       let saved=false,restore=()=>{};
@@ -3181,14 +3219,14 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         // Independent lookups run while the original image's small upload copy
         // is prepared. The live snapshot avoids downloading all old photos again.
         const [existingRequests,knownKey,slips]=await Promise.all([
-          readUserSlipRequests(user),findDailyCollectionKey(date,user),
+          adminContext?database.ref('ledgerAccounts/'+date+'_'+user+'/requests').once('value').then(s=>s.val()||{}):readUserSlipRequests(user),findDailyCollectionKey(date,user),
           (async()=>{const prepared=[];for(const draft of drafts){
             const image=draft.file?await prepareSlipImageForSave(draft.row,draft.file):draft.image;
             if(!image)throw new Error('ছবির upload copy প্রস্তুত হয়নি। JPG/PNG ছবি আবার নির্বাচন করুন।');
             prepared.push({...draft.slip,img:image});
           }return prepared;})()
         ]);
-        if(String(currentUser)!==user)throw new Error('Login পরিবর্তিত হয়েছে। আবার নিজের ID-তে Login করুন।');
+        if(!sessionValid())throw new Error('Login অথবা নির্বাচিত DSO পরিবর্তিত হয়েছে। আবার খুলুন।');
         const fingerprints=await Promise.all(slips.map(slip=>slipFingerprint(slip.img)));
         for(const slip of slips)slip.img=await portalLedger.putImage(slip.img);
         if(new Set(fingerprints).size!==fingerprints.length || slips.some((slip,i)=>slips.slice(0,i).some(other=>sameSlipTransaction(slip,other))))
@@ -3203,23 +3241,24 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const requestRef=database.ref('bankSlipRequests/'+(rejected?baseKey+'_retry_'+Date.now().toString(36):baseKey));
         slips.forEach(slip=>slip.requestKey=requestRef.key);
         const amount=roundMoney(slips.reduce((sum,slip)=>sum+slip.amt,0));
+        if(!sessionValid())throw new Error('Login অথবা নির্বাচিত DSO পরিবর্তিত হয়েছে।');
         button.textContent='Bank Slip সেভ হচ্ছে…';
         const result=await confirmDatabaseWrite(requestRef.transaction(existing=>existing===null?
-          {userId:user,date,amount,slips,status:'pending',submittedAt:firebase.database.ServerValue.TIMESTAMP}:undefined,undefined,false),button);
+          {userId:user,date,amount,slips,status:'pending',submittedBy:actor,submittedVia:adminContext?'admin':'dso',submittedAt:firebase.database.ServerValue.TIMESTAMP}:undefined,undefined,false),button);
         if(!result.committed)throw new Error('এই Bank Slip আগেই Submit হয়েছে। আবার জমা দেওয়া যাবে না।');
-        saved=true;
-        if(String(currentUser)===user){slipStatusItems[requestRef.key]=result.snapshot.val();refreshSubmittedBankAmount();}
+        saved=true;if(adminContext)adminContext.saved=true;
+        if(sessionValid()&&!adminContext){slipStatusItems[requestRef.key]=result.snapshot.val();refreshSubmittedBankAmount();}
         // Slip creation and report attachment commit in the same daily transaction.
-        if(String(currentUser)===user){
+        if(sessionValid()){
           active.forEach(cleanupSlipPreview);document.getElementById('slipsContainer').replaceChildren();addSlipRow();
           const message=document.getElementById('slipSubmitMessage');message.dataset.requestKey=requestRef.key;message.dataset.user=user;refreshSlipSubmitMessage();
-          refreshSubmittedBankAmount();renderBankSlipStatus(user);
+          if(adminContext){message.textContent='✅ DSO '+user+' · '+date+' তারিখে Bank Slip জমা হয়েছে। Bank Slip Approval থেকে Approve করুন।';}else{refreshSubmittedBankAmount();renderBankSlipStatus(user);}
           
           showSlipToast('Submit successfully — Admin Approval Pending',3000);
         }
       }catch(error){
         if(saved){
-          if(String(currentUser)===user){active.forEach(cleanupSlipPreview);document.getElementById('slipsContainer').replaceChildren();addSlipRow();}
+          if(sessionValid()){active.forEach(cleanupSlipPreview);document.getElementById('slipsContainer').replaceChildren();addSlipRow();}
           alert('Bank Slip সেভ হয়েছে। একই স্লিপ আবার Submit করবেন না। দিনের রিপোর্ট সমন্বয়ের জন্য Admin-কে জানান: '+describeSubmitError(error));
         }else alert('Bank Slip Submit হয়নি: '+describeSubmitError(error));
       }finally{
@@ -5999,7 +6038,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       adminEditOriginal = item;
       document.getElementById("editKey").value = key;
       document.getElementById("editUserId").value = item.userId;
-      document.getElementById("editModalTitle").innerText = `Amount Edit - DSO ${item.userId} (${item.date})`;
+      document.getElementById("editModalTitle").innerText = `সম্পূর্ণ হিসাব Edit - DSO ${item.userId} (${item.date})`;
+      for(const denomination of [1000,500,200,100,50])document.getElementById('editNote'+denomination).value=Number(item.notes?.['n'+denomination])||0;
       document.getElementById("editEmReceived").value = formatBD(item.emReceived || 0);
       document.getElementById("editCashReceived").value = formatBD(item.cashReceived || 0);
       document.getElementById("editEmReturn").value = formatBD(item.emReturn || 0);
@@ -6032,7 +6072,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         return oldV !== newV ? `<div>• <strong>${label}</strong>:  ${formatBD(oldV)} → <strong> ${formatBD(newV)}</strong></div>` : "";
       }).filter(Boolean).join("");
       const breakdown=adminBreakdownChanges(original,{dsoReceivedList:adminDsoRows('received'),dsoTransferList:adminDsoRows('transfer')}).map(line=>`<div>• ${escapeHtml(line)}</div>`).join('');
-      const allChanges=changes+breakdown;
+      const noteChanges=[1000,500,200,100,50].filter(n=>(Number(original.notes?.['n'+n])||0)!==Number(document.getElementById('editNote'+n).value||0)).map(n=>'<div>• '+n+' টাকার নোট: '+(Number(original.notes?.['n'+n])||0)+' → '+escapeHtml(document.getElementById('editNote'+n).value||'0')+'</div>').join('');
+      const allChanges=changes+breakdown+noteChanges;
       box.innerHTML = allChanges ? `<strong>পরিবর্তন:</strong>${allChanges}` : `<span style="color:#757575;">কোনো amount পরিবর্তন করা হয়নি।</span>`;
     }
 
@@ -6060,7 +6101,13 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const changed = Object.keys(values).filter(k => (Number(original[k]) || 0) !== values[k]);
       const lists={dsoReceivedList:adminDsoRows('received'),dsoTransferList:adminDsoRows('transfer')};
       const breakdownChanges=adminBreakdownChanges(original,lists);
-      if (!changed.length && !breakdownChanges.length) { alert("কোনো পরিবর্তন করা হয়নি।"); return; }
+      const notes=Object.fromEntries([1000,500,200,100,50].map(n=>['n'+n,Number(document.getElementById('editNote'+n).value||0)]));
+      if(Object.values(notes).some(n=>!Number.isSafeInteger(n)||n<0)){alert('নোটের সংখ্যা শূন্য বা ধনাত্মক পূর্ণসংখ্যা দিন।');return;}
+      const notesChanged=Object.keys(notes).some(k=>notes[k]!==Number(original.notes?.[k]||0));
+      const totalCash=[1000,500,200,100,50].reduce((sum,n)=>sum+n*notes['n'+n],0);
+      if(!Number.isSafeInteger(totalCash)){alert('নোটের মোট অঙ্ক সঠিক নয়।');return;}
+      if(notesChanged&&!moneyMatches(totalCash,values.cashDeposit)){alert('Cash Note Breakdown ও Cash Deposit Amount সমান হতে হবে।');return;}
+      if (!changed.length && !breakdownChanges.length&&!notesChanged) { alert("কোনো পরিবর্তন করা হয়নি।"); return; }
       if(Object.values(lists).flat().some(row=>!isKnownPortalDsoId(row.dsoId)||!Number.isFinite(row.amount)||row.amount<=0)){
         alert('প্রতিটি Breakdown-এ সঠিক DSO ID এবং শূন্যের বেশি Amount দিন।');return;
       }
@@ -6078,11 +6125,13 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       }
 
       const changeLines = changed.map(k => `${labels[k]}: ${formatBD(original[k] || 0)} → ${formatBD(values[k])}`).concat(breakdownChanges);
+      if(notesChanged)changeLines.push('Cash Note Breakdown সংশোধন হয়েছে');
       const historyEntry = { by: currentUser, at: Date.now(), changes: changeLines };
       const oldHistory = Array.isArray(original.adminEditHistory) ? original.adminEditHistory.slice(-19) : [];
 
       const update = {
         ...values,
+        ...(notesChanged?{notes,totalCash}:{}),
         ...(Array.isArray(original.dsoReceivedList)||breakdownChanges.some(x=>x.startsWith('DSO Receive Breakdown:'))?{dsoReceivedList:lists.dsoReceivedList}:{}),
         ...(Array.isArray(original.dsoTransferList)||breakdownChanges.some(x=>x.startsWith('DSO Transfer Breakdown:'))?{dsoTransferList:lists.dsoTransferList}:{}),
         dsoReceived: dsoRec, dsoTransfer: dsoTrans,
