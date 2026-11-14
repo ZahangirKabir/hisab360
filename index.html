@@ -1973,7 +1973,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.14.2';
+    const APP_RELEASE_VERSION = '2026.11.14.5';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2853,7 +2853,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
         <div class="slip-manual-tools">
           <button type="button" class="btn-manual-edit" onclick="retrySlipOCR(${slipCounter})">↻ আবার OCR করুন</button>
-          <button type="button" class="btn-manual-edit" onclick="enableManualSlipEdit(${slipCounter})">✎ Manual Correction / Confirm</button>
+          <button type="button" class="btn-manual-edit" onclick="enableManualSlipEdit(${slipCounter})">✎ Date / Amount Correction</button>
           <label class="manual-confirm-label"><input type="checkbox" id="slipManualConfirm_${slipCounter}" onchange="validateSlipManual(${slipCounter})"> ছবি দেখে তথ্য নিশ্চিত করেছি</label>
         </div>
         <div id="slipStatus_${slipCounter}" class="ocr-result-box"></div>
@@ -3163,7 +3163,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           if(file && row.dataset.previewReady!=='1')throw new Error('ছবির প্রিভিউ সম্পূর্ণ দেখা না গেলে Submit করা যাবে না। আবার ছবি নির্বাচন করুন।');
           if(row.querySelector('[id^="slipOcrStatus_"]')?.value==='processing')throw new Error('OCR চলছে। Amount ও Account আসার পরে Submit করুন।');
           if(!(file||image)||amount<=0||!row.querySelector('.slip-bank-name')?.value)throw new Error('স্লিপের ছবি, Bank Name ও Amount দিন।');
-          if(!isApprovedSlipAccount(row))throw new Error('অনুমোদিত Bank Account নির্বাচন করে তার Bank Name ও Account Name মিলিয়ে ছবি দেখে তথ্য নিশ্চিত করুন।');
+          if(!isApprovedSlipAccount(row))throw new Error('OCR-এ অনুমোদিত Bank Account ও Bank Name মেলেনি। পরিষ্কার ছবি দিয়ে আবার OCR করুন।');
           const ocrState=row.querySelector('[id^="slipOcrStatus_"]')?.value;
           if(!['ocr_ready','verified_manual'].includes(ocrState))throw new Error('Date ও Amount সংশোধন করে ছবি দেখে তথ্য নিশ্চিত করুন।');
           if(!normalizeOCRDate(row.querySelector('.slip-date-input')?.value))throw new Error('Deposit Date নির্বাচন করুন।');
@@ -3316,15 +3316,18 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     };
 
     function getApprovedAccountOptionsHTML() {
-      return '<option value="">-- অনুমোদিত অ্যাকাউন্ট নির্বাচন করুন --</option>'+
+      return '<option value="">-- OCR থেকে অনুমোদিত অ্যাকাউন্ট আসবে --</option>'+
         Object.entries(KNOWN_SLIP_ACCOUNTS).map(([number,info])=>
           `<option value="${number}">${info.bank} · ${number} · ${info.accountName}</option>`).join('');
     }
     function selectApprovedSlipAccount(id) {
       const row=document.getElementById(`slipRow_${id}`);
       if(!row) return;
-      const number=row.querySelector('.slip-account-number')?.value||'';
+      const number=row.dataset.ocrAccountNumber||'';
       const info=KNOWN_SLIP_ACCOUNTS[number];
+      const numberInput=row.querySelector('.slip-account-number');if(numberInput){numberInput.value=info?number:'';numberInput.disabled=true;}
+      const bankInput=row.querySelector('.slip-bank-name');if(bankInput)bankInput.disabled=true;
+      const nameInput=row.querySelector('.slip-account-name');if(nameInput)nameInput.readOnly=true;
       row.querySelector('.slip-bank-name').value=info?.bank||'';
       row.querySelector('.slip-account-name').value=info?.accountName||'';
       validateFormAndSubmitBtn();
@@ -3334,7 +3337,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const info=KNOWN_SLIP_ACCOUNTS[number];
       return !!info && row.querySelector('.slip-bank-name')?.value===info.bank &&
         row.querySelector('.slip-account-name')?.value.trim()===info.accountName &&
-        (row.dataset.ocrAccountNumber===number || !!row.querySelector('[id^="slipManualConfirm_"]')?.checked);
+        row.dataset.ocrAccountNumber===number;
     }
 
     function normalizeAccountOCRText(text) {
@@ -4070,9 +4073,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const dateInput=row.querySelector('.slip-date-input');
       const status=document.getElementById(`slipOcrStatus_${id}`);
       const st=document.getElementById(`slipStatus_${id}`);
-      if(bank) { bank.disabled=false; bank.classList.add('manual-mode'); bank.classList.remove('ocr-locked'); }
-      if(account) {account.readOnly=false;account.classList.add('manual-mode');}
-      const number=row.querySelector('.slip-account-number'); if(number)number.disabled=false;
+      if(bank) { bank.disabled=true; bank.classList.remove('manual-mode'); }
+      if(account) {account.readOnly=true;account.classList.remove('manual-mode');}
+      const number=row.querySelector('.slip-account-number'); if(number)number.disabled=true;
       if(amount) { amount.readOnly=false; amount.classList.add('manual-mode'); amount.classList.remove('ocr-locked'); }
       if(dateInput) { dateInput.readOnly=false; dateInput.classList.add('manual-mode'); dateInput.classList.remove('ocr-locked'); }
       if(status && status.value!=='processing') status.value='manual_pending';
@@ -4343,7 +4346,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(!ocrResults.length) throw new Error('OCR থেকে কোনো লেখা পাওয়া যায়নি।');
 
         const knownAccount=chooseKnownSlipAccount(ocrResults);
-        if(knownAccount?.accountNumber) row.dataset.ocrAccountNumber=knownAccount.accountNumber;
+        if(knownAccount?.accountNumber) row.dataset.ocrAccountNumber=knownAccount.accountNumber;else delete row.dataset.ocrAccountNumber;
         const detectedBank=chooseConsensusBank(ocrResults);
         const bank=knownAccount?.bank || (detectedBank && detectedBank!=='AMBIGUOUS' ? detectedBank : '');
         const amountInfo=chooseConsensusAmount(ocrResults);
@@ -4368,7 +4371,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         console.error('Bank Slip OCR failed:',err);
         if(ocrStatus) ocrStatus.value='failed';
         enableManualSlipEdit(id);
-        document.getElementById('slipSubmitMessage').textContent='OCR সম্পূর্ণ হয়নি। ছবি দেখে সব তথ্য সংশোধন করে অনুমোদিত Account নির্বাচন করুন এবং তথ্য নিশ্চিত করুন।';
+        document.getElementById('slipSubmitMessage').textContent='OCR সম্পূর্ণ হয়নি। পরিষ্কার ছবি দিয়ে আবার চেষ্টা করুন। Bank Name ও অনুমোদিত Account শুধু OCR থেকে আসবে।';
         validateFormAndSubmitBtn();
       }finally{
         // OCR must never leave the main submit button permanently disabled.
