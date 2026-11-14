@@ -1977,7 +1977,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.14.6';
+    const APP_RELEASE_VERSION = '2026.11.14.7';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7196,3 +7196,5 @@ html body #dsoTransferContainer > .dynamic-row > .btn-remove-row{
  width:36px!important;min-width:36px!important;height:36px!important;padding:0!important;margin:0!important;
 }
 </style>
+
+<script src="assets/hisab360-change-history.js?v=20261114"></script>
