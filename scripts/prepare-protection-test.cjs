@@ -9,6 +9,7 @@ const {accessToken,requestJSON}=require('./financial-backup.cjs'),{build}=requir
   const token=await accessToken(account);
   source=await requestJSON('https://collection-app-479e0-default-rtdb.firebaseio.com/.settings/rules.json',{headers:{Authorization:'Bearer '+token}});
  }catch(error){
+  if(process.env.ALLOW_VERSIONED_RULES_TEST!=='true')throw error;
   // Isolated tests can still verify versioned policy without changing production.
   // This is explicitly not evidence of which Rules are currently deployed.
   source=JSON.parse(fs.readFileSync(path.join(__dirname,'../Firebase_User_Management_Rules.json'),'utf8'));
