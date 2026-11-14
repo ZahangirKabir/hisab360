@@ -27,6 +27,7 @@ jobs:
       - name: Prepare isolated Rules copy
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          ALLOW_VERSIONED_RULES_TEST: 'true'
         run: node scripts/prepare-protection-test.cjs
       - name: Test financial edits and deletion rejection
         run: npx firebase emulators:exec --project demo-hisab360-protection --config firebase.protection-test.json --only database 'node scripts/test-protection-emulator.cjs'
