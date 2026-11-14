@@ -1977,7 +1977,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.15.1';
+    const APP_RELEASE_VERSION = '2026.11.15.2';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2828,7 +2828,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
               ${getApprovedAccountOptionsHTML()}
             </select>
             <div class="slip-account-fallback" id="slipAccountFallback_${slipCounter}" hidden>
-              <label for="slipAccountEntry_${slipCounter}">Deposit Account number</label>
+              <label class="slip-field-label" for="slipAccountEntry_${slipCounter}">Deposit Account number</label>
               <input type="text" id="slipAccountEntry_${slipCounter}" class="slip-account-entry" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" placeholder="অ্যাকাউন্ট নম্বর" oninput="verifyManualSlipAccount(${slipCounter})">
               <span class="slip-account-feedback" role="status" aria-live="polite"></span>
             </div>
@@ -7280,4 +7280,12 @@ html body .modal-content :is(input:not([type=checkbox]):not([type=radio]):not([t
 html body .slip-field :is(.slip-bank-name,.slip-account-number):disabled{appearance:none!important;background-image:none!important}
 html body .slip-field :is(.slip-bank-name,.slip-account-number):disabled + button.h360-select b{display:none!important}
 html body .slip-field :is(.slip-bank-name,.slip-account-number):disabled + button.h360-select{cursor:default!important}
+</style>
+
+<style id="deposit-account-standard-field">
+html body .slip-account-fallback{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;gap:0!important;margin-top:12px!important;box-shadow:none!important}
+html body .slip-account-fallback > label.slip-field-label{font-size:12px!important;font-weight:700!important;line-height:1.4!important;min-height:32px!important;margin:0!important}
+html body .slip-box-item .slip-field input.slip-account-entry{padding:6px!important;border:1px solid #ccc!important;border-radius:4px!important;background:#fff!important;color:inherit!important;font-family:inherit!important;font-size:12px!important;box-shadow:none!important}
+html body .slip-account-fallback > .slip-account-feedback{margin-top:6px!important}
+html body .slip-account-fallback > .slip-account-feedback:empty{display:none!important}
 </style>
