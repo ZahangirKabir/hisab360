@@ -181,6 +181,7 @@ await entry.fill('999999999');
 if(await page.evaluate(id=>window.isApprovedSlipAccount(document.getElementById('slipRow_'+id)),fallbackId))throw Error('Unapproved account accepted');
 if(await page.locator('#slipAccountFallback_'+fallbackId+' .slip-account-feedback').innerText()!=='Account number সঠিক না')throw Error('Wrong account feedback missing');
 await entry.fill('1231901053446');
+console.log('Account auto debug',await page.evaluate(id=>{const r=document.getElementById('slipRow_'+id);return {dataset:{...r.dataset},input:r.querySelector('.slip-account-entry').value,handler:r.querySelector('.slip-account-entry').getAttribute('oninput'),status:document.getElementById('slipOcrStatus_'+id).value,bank:r.querySelector('.slip-bank-name').value,feedback:r.querySelector('.slip-account-feedback').textContent,verified:window.verifyManualSlipAccount(id)};},fallbackId));
 if(await page.locator('#slipAccountFallback_'+fallbackId+' button').count())throw Error('Unexpected verify button');
 if(await page.locator('#slipAccountFallback_'+fallbackId+' label').innerText()!=='Deposit Account number')throw Error('Account entry label incorrect');
 if(!await page.evaluate(id=>window.isApprovedSlipAccount(document.getElementById('slipRow_'+id)),fallbackId))throw Error('Automatic account verification failed');
