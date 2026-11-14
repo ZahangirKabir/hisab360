@@ -20,7 +20,15 @@ const adapt=db=>({ref(path=''){const r=path?ref(db,path):ref(db);return {key:r.k
  const dsoDB=environment.authenticatedContext('test-dso',{firebase:{sign_in_provider:'anonymous'},auth_time:Math.floor(Date.now()/1000)}).database(),dsoProtected=Hisab360ProtectedWrites.create(()=>adapt(dsoDB),()=>'test-dso');
  await dsoProtected.ref('ledgerAccounts/2026-11-11_801').transaction(current=>({...current,report:{...current.report,note:'DSO checked'}}));pass('approved DSO can update own daily account with history');
  await assertFails(get(ref(dsoDB,'financialHistory')));await assertFails(get(ref(dsoDB,'ledgerAccounts/2026-11-11_802')));pass('DSO cannot read all history or another DSO account');
- require('../ledger.js');const ledger=globalThis.PortalLedger.create(dsoProtected,{scope:()=>['801']});
+ require('../ledger.js');
+ const adminLedger=globalThis.PortalLedger.create(protectedDB);
+ const adminSlip={bankName:'City',accountNumber:'1504397777001',accountName:'M/S. Mostafa',transactionId:'ADMINREF123456',amt:10,img:'rtdb:'+'a'.repeat(64)};
+ await adminLedger.database.ref('bankSlipRequests/801_2026-11-11_adminupload').transaction(current=>current===null?{userId:'801',date:'2026-11-11',status:'pending',submittedBy:'admin',submittedVia:'admin',slips:[adminSlip]}:undefined);
+ let adminAccount=(await get(ref(db,'ledgerAccounts/2026-11-11_801'))).val();
+ assert.equal(adminAccount.requests['801_2026-11-11_adminupload'].submittedBy,'admin');assert.equal(adminAccount.report.bankDeposit,10);assert.equal(adminAccount.requests['801_2026-11-11_adminupload'].status,'pending');pass('Admin uploads a pending slip for a selected DSO and historical date with audit history');
+ await adminLedger.database.ref('collections/daily_2026-11-11_801').transaction(current=>({...current,cashDeposit:90,notes:{n50:0,n100:0,n200:0,n500:0,n1000:0},adminEditHistory:[{by:'admin',at:Date.now(),changes:['full report edited']}]}));
+ adminAccount=(await get(ref(db,'ledgerAccounts/2026-11-11_801'))).val();assert.equal(adminAccount.report.cashDeposit,90);assert.equal(adminAccount.report.bankDeposit,10);assert.equal(adminAccount.requests['801_2026-11-11_adminupload'].slips[0].img,adminSlip.img);pass('Admin report correction preserves the uploaded request and immutable image');
+ const ledger=globalThis.PortalLedger.create(dsoProtected,{scope:()=>['801']});
  const newReport={...report,date:'2026-11-12'};await ledger.database.ref('collections/daily_2026-11-12_801').transaction(current=>current===null?newReport:undefined);assert((await get(ref(dsoDB,'ledgerAccounts/2026-11-12_801/report'))).exists());pass('new DSO daily report submits through the canonical protected ledger');
  const slip={bankName:'City',transactionId:'REF123456',amt:10,img:'rtdb:'+'a'.repeat(64)};await ledger.database.ref('bankSlipRequests/801_2026-11-12_first').transaction(current=>current===null?{userId:'801',date:'2026-11-12',status:'pending',slips:[slip]}:undefined);pass('new DSO slip request is atomically archived');
  await assert.rejects(ledger.database.ref('bankSlipRequests/801_2026-11-12_duplicate').transaction(()=>({userId:'801',date:'2026-11-12',status:'pending',slips:[slip]})),/আগে জমা/);pass('duplicate slip rejection survives protected writer integration');
