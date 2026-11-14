@@ -167,6 +167,35 @@ for(const width of [320,390,768,1440]){
 console.log('Real seven-field slip form fits both narrow Admin dialogs and DSO pages at 320–2560px.');
 
 
+await page.evaluate(code=>{
+ window.normalizeAccountOCRText=text=>String(text||'').replace(/[০-৯]/g,c=>String('০১২৩৪৫৬৭৮৯'.indexOf(c)));
+ window.recalculateBankDepositFromSlips=()=>{};window.validateSlipManual=()=>{};window.validateFormAndSubmitBtn=()=>{};
+ (0,eval)(code);
+},source.slice(source.indexOf('const KNOWN_SLIP_ACCOUNTS ='),source.indexOf('    function normalizeAccountOCRText(')));
+const fallbackRow=await page.locator('#slipsContainer .slip-box-item').first().getAttribute('id');
+const fallbackId=Number(fallbackRow.split('_').pop());
+await page.evaluate(id=>{document.getElementById('slipOcrStatus_'+id).value='failed';window.showSlipAccountFallback(id);},fallbackId);
+const entry=page.locator('#slipAccountEntry_'+fallbackId);
+if(await entry.inputValue()!==''||await entry.getAttribute('autocomplete')!=='off')throw Error('Fallback must begin empty with autofill disabled');
+await entry.fill('999999999');
+if(await page.evaluate(id=>window.verifyManualSlipAccount(id),fallbackId))throw Error('Unapproved account accepted');
+await entry.fill('1231901053446');
+if(await page.locator('#'+fallbackRow+' .slip-bank-name').inputValue()!=='')throw Error('Account filled before explicit verification');
+if(!await page.evaluate(id=>window.verifyManualSlipAccount(id),fallbackId))throw Error('Approved exact account rejected');
+if(await page.locator('#'+fallbackRow+' .slip-bank-name').inputValue()!=='Pubali Bank'||await page.locator('#'+fallbackRow+' .slip-account-name').inputValue()!=='M/S. Mostafa')throw Error('Approved account did not fill bank and credit name');
+await entry.fill('1504397777001');
+if(await page.evaluate(id=>window.isApprovedSlipAccount(document.getElementById('slipRow_'+id)),fallbackId))throw Error('Edited account retained previous approval');
+await entry.fill('১২৩১৯০১০৫৩৪৪৬');
+if(!await page.evaluate(id=>window.verifyManualSlipAccount(id),fallbackId))throw Error('Bangla account digits rejected');
+for(const width of [320,390,768,1440]){
+ await page.setViewportSize({width,height:900});
+ const box=await page.locator('#slipAccountFallback_'+fallbackId).evaluate(e=>({width:e.clientWidth,scroll:e.scrollWidth}));
+ if(box.scroll>box.width+1)throw Error('Account fallback overflow at '+width);
+}
+await page.evaluate(id=>window.resetSlipAccountFallback(id),fallbackId);
+if(await entry.inputValue()!==''||await page.locator('#slipAccountFallback_'+fallbackId).isVisible())throw Error('Reset retained manual entry');
+if(await page.evaluate(id=>window.verifyManualSlipAccount(id),fallbackId))throw Error('Verification allowed outside OCR fallback');
+console.log('OCR fallback: blank input, explicit exact match, wrong account rejection, Bangla digits, edit invalidation, reset and responsive widths passed.');
 
 await page.goto('about:blank');await page.setContent('<section id="adminPageSettings"></section>');
 await page.evaluate(()=>{
