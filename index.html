@@ -1973,13 +1973,18 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.14.1';
+    const APP_RELEASE_VERSION = '2026.11.14.2';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
     let hostedReleaseEtags = null;
     function updateReleaseGate(){const blocked=firebaseReleaseMismatch||hostedReleaseMismatch;const gate=document.getElementById('releaseGate');gate.style.display=blocked?'flex':'none';
-      if(blocked)document.getElementById('releaseGateMessage').textContent='আপনার অভিজ্ঞতা আরও চমৎকার করতে আমরা অ্যাপটি আপডেট করেছি।';
+      if(blocked)document.getElementById('releaseGateMessage').textContent=currentUser?'নতুন আপডেট এসেছে। নতুন সুবিধা পেতে এখনই আপডেট করুন।':'নতুন আপডেট এসেছে। সর্বশেষ সংস্করণ স্বয়ংক্রিয়ভাবে চালু হচ্ছে…';
+      // Auto-refresh only before login; never discard an active user's unsaved form.
+      if(blocked&&!currentUser&&!loginInProgress&&!window.portalAutoUpdateTimer){
+        let attempted=false;try{const key='portalAutoUpdate:'+APP_RELEASE_VERSION;attempted=Date.now()-Number(sessionStorage.getItem(key)||0)<60000;if(!attempted)sessionStorage.setItem(key,String(Date.now()));}catch{}
+        if(!attempted)window.portalAutoUpdateTimer=setTimeout(()=>{window.portalAutoUpdateTimer=null;if((firebaseReleaseMismatch||hostedReleaseMismatch)&&!currentUser&&!loginInProgress)applyRequiredUpdate();},1400);
+      }
       const login=document.getElementById('loginBtn');if(login&&!loginInProgress)login.disabled=blocked;const restore=document.getElementById('deviceRestoreButton');if(restore)restore.disabled=blocked||loginInProgress||deviceRecoveryBusy;
     }
     let releaseVersionRef = null, releaseSignalRef = null, seenReleaseSignal = null;
@@ -7127,6 +7132,12 @@ html body #dsoTransferContainer > .dynamic-row{
 html body #dsoReceivedContainer > .dynamic-row > :is(select,.h360-select,input),
 html body #dsoTransferContainer > .dynamic-row > :is(select,.h360-select,input){
  width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+}
+html body #dsoReceivedContainer > .dynamic-row > :is(.h360-select,input),
+html body #dsoTransferContainer > .dynamic-row > :is(.h360-select,input){
+ height:36px!important;min-height:36px!important;max-height:36px!important;
+ margin:0!important;padding:6px 9px!important;font:500 13px/1.35 "Segoe UI",sans-serif!important;
+ border-radius:8px!important;
 }
 html body #dsoReceivedContainer > .dynamic-row > .btn-remove-row,
 html body #dsoTransferContainer > .dynamic-row > .btn-remove-row{
