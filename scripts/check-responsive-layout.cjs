@@ -120,10 +120,18 @@ await page.evaluate(code=>{
  window.addSlipRow=()=>{const row=document.createElement('div');row.className='slip-box-item';row.textContent='Slip upload form';document.getElementById('slipsContainer').append(row);};
  (0,eval)(code+';window.testAdminUploadOpen=openAdminSlipUpload;window.testAdminUploadClose=closeAdminSlipUpload;');
 },source.slice(adminUIStart,adminUIEnd));
+
+await page.evaluate(code=>{
+ window.slipCounter=0;window.validateFormAndSubmitBtn=()=>{};
+ window.getBankOptionsHTML=()=>'<option value="">-- Select Bank --</option><option>Pubali Bank</option>';
+ window.getApprovedAccountOptionsHTML=()=>'<option value="">-- OCR থেকে অনুমোদিত অ্যাকাউন্ট আসবে --</option><option>Pubali Bank · 1231901053446 · M/S. Mostafa</option>';
+ (0,eval)(code);
+},source.slice(source.indexOf('function addSlipRow()'),source.indexOf('function removeSlipRow(')));
 await page.evaluate(()=>{window.currentUser='823';window.testAdminUploadOpen();});
 if(await page.locator('#adminSlipUploadModal').count())throw Error('DSO opened Admin upload');
 await page.evaluate(()=>{window.currentUser='admin';window.testAdminUploadOpen();});
 if(!await page.locator('#adminSlipUploadModal #dsoPageSlip').count())throw Error('Admin upload form did not open');
+await page.addScriptTag({content:fs.readFileSync('assets/hisab360-select-menus.js','utf8')});await page.waitForTimeout(80);
 if(!await page.locator('#adminSlipUploadTitle').innerText().then(x=>x.includes('801')&&x.includes('2026-11-10')))throw Error('Admin upload target missing');
 for(const width of [320,390,768,1440]){
  await page.setViewportSize({width,height:900});
@@ -134,6 +142,30 @@ await page.evaluate(()=>window.testAdminUploadClose(true));
 if(!await page.locator('#dsoView #dsoPageSlip').count())throw Error('Shared DSO upload form not restored');
 if(await page.locator('#adminSlipUploadModal').isVisible())throw Error('Admin upload modal failed to close');
 console.log('Admin upload role guard, selected DSO/date, responsive dialog and DSO form restoration passed.');
+
+const checkSlip=async(label)=>{
+ const result=await page.locator('#slipsContainer .slip-field').evaluateAll(fields=>fields.map(field=>{
+  const r=field.getBoundingClientRect(),control=field.querySelector('button.h360-select,input:not([type=file]),.slip-file-label'),c=control?.getBoundingClientRect(),caption=field.querySelector('.slip-field-label')?.getBoundingClientRect();
+  return {width:r.width,fieldRight:r.right,controlRight:c?.right||0,controlTop:c?.top||0,labelBottom:caption?.bottom||0};
+ }));
+ if(result.length!==7||result.some(r=>r.width<100||r.controlRight>r.fieldRight+1||r.controlTop<r.labelBottom-1))throw Error('Slip controls overlap '+JSON.stringify({label,result}));
+};
+for(const width of [320,390,768,1024,1440,2560]){
+ await page.setViewportSize({width,height:900});
+ await page.evaluate(()=>{window.currentUser='admin';window.testAdminUploadOpen();});
+ await page.waitForTimeout(60);await checkSlip('admin '+width);
+ if(width===1024)await page.screenshot({path:'responsive-checks/admin-real-slip-dialog.png'});
+ await page.evaluate(()=>window.testAdminUploadClose(true));
+}
+await page.evaluate(()=>{
+ document.body.dataset.portalMenuRole='dso';document.querySelector('#loginSection').style.display='none';document.querySelector('#appContainer').style.display='block';document.querySelector('#adminView').style.display='none';document.querySelector('#dsoView').style.display='block';document.querySelector('#dsoPageForm').style.display='none';document.querySelector('#dsoPageSlip').style.display='block';
+});
+for(const width of [320,390,768,1440]){
+ await page.setViewportSize({width,height:900});await checkSlip('dso '+width);
+ if(width===390)await page.screenshot({path:'responsive-checks/dso-real-slip-mobile.png'});
+}
+console.log('Real seven-field slip form fits both narrow Admin dialogs and DSO pages at 320–2560px.');
+
 
 
 await page.goto('about:blank');await page.setContent('<section id="adminPageSettings"></section>');
