@@ -1977,7 +1977,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.14.9';
+    const APP_RELEASE_VERSION = '2026.11.15.1';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2828,9 +2828,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
               ${getApprovedAccountOptionsHTML()}
             </select>
             <div class="slip-account-fallback" id="slipAccountFallback_${slipCounter}" hidden>
-              <label for="slipAccountEntry_${slipCounter}">ছবি দেখে অনুমোদিত অ্যাকাউন্ট নম্বর লিখুন</label>
-              <input type="text" id="slipAccountEntry_${slipCounter}" class="slip-account-entry" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" placeholder="অ্যাকাউন্ট নম্বর" oninput="clearManualSlipAccount(${slipCounter})">
-              <button type="button" onclick="verifyManualSlipAccount(${slipCounter})">অ্যাকাউন্ট যাচাই করুন</button>
+              <label for="slipAccountEntry_${slipCounter}">Deposit Account number</label>
+              <input type="text" id="slipAccountEntry_${slipCounter}" class="slip-account-entry" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" placeholder="অ্যাকাউন্ট নম্বর" oninput="verifyManualSlipAccount(${slipCounter})">
               <span class="slip-account-feedback" role="status" aria-live="polite"></span>
             </div>
           </div>
@@ -3371,7 +3370,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       row.dataset.manualAccountAllowed='1';
       const box=document.getElementById('slipAccountFallback_'+id);if(!box)return;
       box.hidden=false;box.querySelector('input').value='';
-      box.querySelector('.slip-account-feedback').textContent='OCR-এ অনুমোদিত অ্যাকাউন্ট পাওয়া যায়নি।';
+      box.querySelector('.slip-account-feedback').textContent='';
       row.querySelector('.slip-bank-name').value='';row.querySelector('.slip-account-name').value='';
     }
     function clearManualSlipAccount(id) {
@@ -3389,7 +3388,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const box=document.getElementById('slipAccountFallback_'+id),input=box.querySelector('input');
       const number=normalizeAccountOCRText(input.value).trim(),info=KNOWN_SLIP_ACCOUNTS[number];
       clearManualSlipAccount(id);
-      if(!/^[0-9]+$/.test(number)||!info){box.querySelector('.slip-account-feedback').textContent='অনুমোদিত অ্যাকাউন্টের সঙ্গে নম্বর মেলেনি।';return false;}
+      if(!number)return false;
+      if(!/^[0-9]+$/.test(number)||!info){box.querySelector('.slip-account-feedback').textContent='Account number সঠিক না';return false;}
       row.dataset.ocrAccountNumber=number;row.dataset.accountVerification='manual_exact_match';
       selectApprovedSlipAccount(id);
       box.querySelector('.slip-account-feedback').textContent='অ্যাকাউন্ট মিলেছে। ছবি দেখে Date ও Amount নিশ্চিত করুন।';
@@ -7274,4 +7274,10 @@ html body .modal-content :is(input:not([type=checkbox]):not([type=radio]):not([t
 .slip-account-fallback{display:flex;flex-direction:column;gap:8px;min-width:0;margin-top:8px;padding:8px;border:1px solid #c7dcd5;border-radius:8px;background:#fff}
 .slip-account-fallback :is(label,span){white-space:normal!important;overflow-wrap:anywhere;font-size:12px;line-height:1.5}
 .slip-account-fallback button{max-width:100%;white-space:normal;padding:8px;border:0;border-radius:6px;background:#00695c;color:white;cursor:pointer}
+</style>
+
+<style id="ocr-fields-without-dropdown-arrow">
+html body .slip-field :is(.slip-bank-name,.slip-account-number):disabled{appearance:none!important;background-image:none!important}
+html body .slip-field :is(.slip-bank-name,.slip-account-number):disabled + button.h360-select b{display:none!important}
+html body .slip-field :is(.slip-bank-name,.slip-account-number):disabled + button.h360-select{cursor:default!important}
 </style>
