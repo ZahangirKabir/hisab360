@@ -1,4 +1,26 @@
 'use strict';
-const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');const {accessToken,requestJSON}=require('./financial-backup.cjs'),{build}=require('./build-protection-rules.cjs');
-(async()=>{const account=JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);if(account.project_id!=='collection-app-479e0')throw Error();const token=await accessToken(account),source=await requestJSON('https://collection-app-479e0-default-rtdb.firebaseio.com/.settings/rules.json',{headers:{Authorization:'Bearer '+token}}),dir=process.env.RUNNER_TEMP;
- fs.writeFileSync(path.join(dir,'original-rules.json'),JSON.stringify(source),{mode:0o600});fs.writeFileSync(path.join(dir,'protected-rules.json'),JSON.stringify(build(source)),{mode:0o600});fs.writeFileSync(path.join(dir,'staged-rules.json'),JSON.stringify(build(source,{enforce:false})),{mode:0o600});fs.writeFileSync('firebase.protection-test.json',JSON.stringify({database:{rules:path.join(dir,'protected-rules.json')},emulators:{database:{port:9000},ui:{enabled:false},singleProjectMode:true}}));fs.writeFileSync(path.join(dir,'rules-fingerprint.txt'),crypto.createHash('sha256').update(JSON.stringify(source)).digest('hex'));console.log('Current Rules copied for isolated emulator tests. Production unchanged.');})().catch(()=>{console.error('Protection test preparation failed. Production unchanged.');process.exitCode=1;});
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const {accessToken,requestJSON}=require('./financial-backup.cjs'),{build}=require('./build-protection-rules.cjs');
+(async()=>{
+ let source,sourceKind='live';
+ try{
+  const account=JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  if(account.project_id!=='collection-app-479e0')throw Error('Project mismatch');
+  const token=await accessToken(account);
+  source=await requestJSON('https://collection-app-479e0-default-rtdb.firebaseio.com/.settings/rules.json',{headers:{Authorization:'Bearer '+token}});
+ }catch(error){
+  // Isolated tests can still verify versioned policy without changing production.
+  // This is explicitly not evidence of which Rules are currently deployed.
+  source=JSON.parse(fs.readFileSync(path.join(__dirname,'../Firebase_User_Management_Rules.json'),'utf8'));
+  sourceKind='versioned-policy';
+  console.warn('Live Rules could not be read. Testing repository policy only; deployed Rules are unverified.');
+ }
+ const dir=process.env.RUNNER_TEMP;
+ fs.writeFileSync(path.join(dir,'rules-source.txt'),sourceKind);
+ fs.writeFileSync(path.join(dir,'original-rules.json'),JSON.stringify(source),{mode:0o600});
+ fs.writeFileSync(path.join(dir,'protected-rules.json'),JSON.stringify(build(source)),{mode:0o600});
+ fs.writeFileSync(path.join(dir,'staged-rules.json'),JSON.stringify(build(source,{enforce:false})),{mode:0o600});
+ fs.writeFileSync('firebase.protection-test.json',JSON.stringify({database:{rules:path.join(dir,'protected-rules.json')},emulators:{database:{port:9000},ui:{enabled:false},singleProjectMode:true}}));
+ fs.writeFileSync(path.join(dir,'rules-fingerprint.txt'),crypto.createHash('sha256').update(JSON.stringify(source)).digest('hex'));
+ console.log('Rules copied for isolated emulator tests; source='+sourceKind+'. Production unchanged.');
+})().catch(()=>{console.error('Protection test preparation failed. Production unchanged.');process.exitCode=1;});
