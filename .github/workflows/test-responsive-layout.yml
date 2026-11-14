@@ -6,6 +6,13 @@ on:
     paths:
       - '.github/workflows/test-responsive-layout.yml'
       - 'scripts/check-responsive-layout.cjs'
+      - 'scripts/check-working-calculator.cjs'
+      - 'scripts/check-financial-integrity.cjs'
+      - 'index.html'
+      - 'Investment.html'
+      - 'release.json'
+      - 'ledger.js'
+      - 'assets/**'
 permissions:
   contents: read
 jobs:
@@ -17,6 +24,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check financial integrity and calculator regressions
+        run: |
+          node scripts/check-financial-integrity.cjs
+          node scripts/check-working-calculator.cjs
       - run: npm install --no-save playwright@1.58.2
       - run: npx playwright install chromium
       - run: node scripts/check-responsive-layout.cjs
