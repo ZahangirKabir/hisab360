@@ -7,6 +7,7 @@ on:
       - '.github/workflows/test-responsive-layout.yml'
       - 'scripts/check-responsive-layout.cjs'
       - 'scripts/check-working-calculator.cjs'
+      - 'scripts/check-working-capital-consent.cjs'
       - 'scripts/check-financial-integrity.cjs'
       - 'index.html'
       - 'Investment.html'
@@ -28,6 +29,7 @@ jobs:
         run: |
           node scripts/check-financial-integrity.cjs
           node scripts/check-working-calculator.cjs
+          node scripts/check-working-capital-consent.cjs
       - run: npm install --no-save playwright@1.58.2
       - run: npx playwright install chromium
       - run: node scripts/check-responsive-layout.cjs
