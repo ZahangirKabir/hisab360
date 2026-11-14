@@ -135,4 +135,20 @@ if(!await page.locator('#dsoView #dsoPageSlip').count())throw Error('Shared DSO 
 if(await page.locator('#adminSlipUploadModal').isVisible())throw Error('Admin upload modal failed to close');
 console.log('Admin upload role guard, selected DSO/date, responsive dialog and DSO form restoration passed.');
 
+
+await page.goto('about:blank');await page.setContent('<section id="adminPageSettings"></section>');
+await page.evaluate(()=>{
+ window.historyRole='823';window.historyReads=0;
+ window.portalInvestmentContext={getUser:()=>window.historyRole,database:{ref(path){
+  const query={orderByChild(){return query},limitToLast(){return query},async once(){window.historyReads++;return {val:()=>path.startsWith('deviceAccess/')?'admin':{event:{actor:'device-test',at:1700000000000,changes:{sample:{before:{amount:1},after:{amount:2}}}}}};}};return query;
+ }}};
+});
+await page.addScriptTag({content:fs.readFileSync('assets/hisab360-change-history.js','utf8')});
+await page.locator('#adminPageSettings button').click();
+if(await page.evaluate(()=>window.historyReads)!==0)throw Error('DSO read financial history');
+await page.evaluate(()=>window.historyRole='admin');await page.locator('#adminPageSettings button').click();
+await page.waitForFunction(()=>document.querySelectorAll('#adminPageSettings table tr').length===4);
+if(await page.locator('#adminPageSettings table').innerText().then(x=>!x.includes('admin')||!x.includes('sample')))throw Error('History account or change keys missing');
+console.log('Change history is read-only, restricted to Admin, and displays account/time/record keys.');
+
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
