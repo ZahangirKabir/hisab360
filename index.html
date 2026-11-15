@@ -858,8 +858,6 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
 }
 </style>
 <style id="device-permission-responsive-v2">
-#deviceAdminContent th:nth-child(4),#deviceAdminContent td[data-label="Status"]{display:none!important}
-#deviceAdminContent th:nth-child(5){width:170px}
 
 #deviceAdminModal .device-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(120px,180px);gap:8px;width:100%;box-sizing:border-box}
 #deviceAdminModal .device-toolbar #deviceSearch,#deviceAdminModal .device-toolbar #deviceStatusFilter{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:42px!important;margin:0!important;padding:8px 10px!important;font-size:14px!important;box-sizing:border-box!important}
@@ -1007,7 +1005,7 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
                 <th colspan="3" class="th-dso dso-breakdown-hidden">DSO BREAKDOWN & DIFF</th>
                 <th colspan="3" class="th-diff">CALCULATION & DIFF</th>
                 <th class="th-info">Slips Details</th>
-                <th class="th-info">Status</th>
+                <th class="th-info daily-report-status-hidden">Status</th>
                 <th class="th-info">Action</th>
               </tr>
               <tr>
@@ -1031,7 +1029,7 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
                 <th class="th-diff">ব্যবধন (Diff)</th>
 
                 <th class="th-info">Slips Sum</th>
-                <th class="th-info">Approval Status</th>
+                <th class="th-info daily-report-status-hidden">Approval Status</th>
                 <th class="th-info">Action</th>
               </tr>
             </thead>
@@ -1331,7 +1329,7 @@ html body select[multiple],html body select[size]:not([size="1"]){background-ima
 @media(forced-colors:active){html body select,html body #adminFilterPanel .filter-group select,html body .filter-panel .filter-group select,html body #app select,html body #bankApp select{appearance:auto!important;background-image:none!important}}
 </style>
 <style>
-#dataTable .dso-breakdown-hidden{display:none!important}
+#dataTable .dso-breakdown-hidden,#dataTable .daily-report-status-hidden{display:none!important}
 #adminFilterPanel #dsoMultiSelectToggle::after{content:''!important;width:12px;height:12px;right:10px;top:50%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%234b7065' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:12px 12px;transform:translateY(-50%)}
 #adminFilterPanel .dso-multiselect.open #dsoMultiSelectToggle::after{transform:translateY(-50%) rotate(180deg)}
 </style>
@@ -2010,7 +2008,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.15.13';
+    const APP_RELEASE_VERSION = '2026.11.15.14';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6017,7 +6015,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           <td class="bg-diff"> ${formatBD(diff)}</td>
 
           <td style="font-weight:bold; color:#00695c;">${slipsList.length} Slips ( ${formatBD(totalSlipAmt)})</td>
-          <td>${statusBadge}</td>
+          <td class="daily-report-status-hidden">${statusBadge}</td>
           <td style="white-space: nowrap;">${actionButtons}</td>
         `;
         fragment.appendChild(tr);
@@ -6043,7 +6041,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         <td class="bg-return"> ${formatBD(totalRetSum)}</td>
         <td class="bg-diff"> ${formatBD(totalDiffSum)}</td>
         <td style="color:#00695c;"> ${formatBD(totalSlipOcrSum)}</td>
-        <td>-</td>
+        <td class="daily-report-status-hidden">-</td>
         <td>-</td>
       `;
       tbody.appendChild(tfootRow);
