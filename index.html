@@ -1977,7 +1977,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.15.6';
+    const APP_RELEASE_VERSION = '2026.11.15.7';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5135,6 +5135,22 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const returned=roundMoney(fields.emReturn+fields.cashDeposit+bankAmount+fields.dsoTransferList.reduce((sum,row)=>sum+Number(row.amount||0),0));
       if(!moneyMatches(received,returned))throw new Error('Receive '+formatBD(received)+' এবং Return/Deposit '+formatBD(returned)+' সমান নয়।');
     }
+
+    async function readDailySubmissionAccount(date,user,timeoutMs=12000){
+      const app=portalFinancialApp,uid=app?.auth().currentUser?.uid;
+      if(!uid||String(currentUser)!==String(user))throw Error('Login পরিবর্তিত হয়েছে। আবার নিজের ID-তে Login করুন।');
+      let timer;
+      try{
+        const value=await Promise.race([
+          readLoginREST(app,'ledgerAccounts/'+portalLedger.accountKey(date,user)),
+          new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('দিনের হিসাব যাচাইয়ের উত্তর পাওয়া যায়নি। আপনার লেখা তথ্য রাখা আছে; সংযোগ ঠিক হলে আবার Submit করুন।')),timeoutMs);})
+        ]);
+        if(portalFinancialApp!==app||app.auth().currentUser?.uid!==uid||String(currentUser)!==String(user))throw Error('Login পরিবর্তিত হয়েছে। আবার নিজের ID-তে Login করুন।');
+        if(value!==null&&(typeof value!=='object'||Array.isArray(value)))throw Error('দিনের হিসাবের গঠন সঠিক নয়। Admin-কে জানান।');
+        return value||{};
+      }finally{clearTimeout(timer);}
+    }
+
     async function submitData() {
       if(isSubmittingData)return;
       if(bankSlipSubmitInProgress){alert('Bank Slip জমা শেষ হলে দিনের হিসাব Submit করুন।');return;}
@@ -5150,14 +5166,12 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         await waitForDatabaseConnection();
         if(String(currentUser)!==user)throw new Error('Login পরিবর্তিত হয়েছে। আবার নিজের ID-তে Login করুন।');
         if(dsoEditModeKey){await submitDsoEdit();return;}
-        if(button)button.textContent='জমা হিসাব যাচাই হচ্ছে…';
-        const [requests,existingKey]=await Promise.all([readUserSlipRequests(user),findDailyCollectionKey(date,user)]);
-        if(String(currentUser)!==user)throw new Error('Login পরিবর্তিত হয়েছে। আবার নিজের ID-তে Login করুন।');
-        if(existingKey){
-          const local=globalAllData?.[existingKey];
-          const existing=local||((await readDatabaseOnce(database.ref('collections/'+existingKey),'দিনের রিপোর্ট')).val());
-          if(existing)throw new Error('আজকের হিসাব ইতিমধ্যে Submit হয়েছে। পরিবর্তনের জন্য Admin Edit Permission নিন।');
-        }
+        if(button)button.textContent='দিনের হিসাব যাচাই হচ্ছে…';
+        // One fresh, bounded server read supplies both requests and report.
+        // A read timeout cannot queue a write or clear the user's input.
+        const account=await readDailySubmissionAccount(date,user);
+        const requests=account.requests||{};
+        if(account.report)throw new Error('আজকের হিসাব ইতিমধ্যে Submit হয়েছে। পরিবর্তনের জন্য Admin Edit Permission নিন।');
         const todayRequests=Object.fromEntries(Object.entries(requests).filter(([_,request])=>request?.date===date && ['pending','approved','approving'].includes(request.status)));
         const totals=uniqueSlipAmounts(todayRequests);
         if(totals.duplicate)throw new Error('একই Bank Slip একাধিকবার আছে। Admin-কে অতিরিক্ত Slip Reject করতে বলুন।');
