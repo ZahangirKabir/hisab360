@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.15.2">
+<meta name="investment-release-version" content="2026.11.15.3">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1124,7 +1124,7 @@ function balanceCalculator(){
  const closingArea=section(form,'Closing Working Capital');closingArea.parentElement.classList.add('calculator-closing');const totalClosing=field(closingArea,'Total Closing','calc_total_closing');totalClosing.disabled=true;
  const results=node('div');results.className='card bank-net-grid';form.append(results);
  const refresh=node('button','↻ Refresh Source Data');refresh.type='button';refresh.className='add-row';form.append(refresh);
- const {save,status}=submitTools(form,box);let loading=true,busy=false,loaded=false,sourceEpoch=0,dsoSyncError=false,editExpected=null,bankDrafts={},previous=null,approved=[],withdrawalRows=[],maValue=0,bankValue=0;
+ const {save,status}=submitTools(form,box);let loading=true,busy=false,loaded=false,sourceEpoch=0,dsoSyncError=false,bankSyncError=false,editExpected=null,bankDrafts={},previous=null,approved=[],withdrawalRows=[],maValue=0,bankValue=0;
  const numeric=x=>[netMA,cashHand,netCash,netBank,totalClosing].includes(x)?Number(String(x.value||'0').replace(/,/g,'')):amount(x.value);let refundManual=false,liftingManual=false;lifting.addEventListener('input',()=>{liftingManual=true;delete netMA.dataset.testManual;});maRefund.addEventListener('input',()=>{refundManual=true;delete netMA.dataset.testManual;});
  const refundTotal=()=>selectedDateMARefundTotal(withdrawalRows,date.value);
 
@@ -1136,11 +1136,31 @@ function balanceCalculator(){
  const countBank=bank=>Math.round((countDsoDeposit(bank)+countRefundDeposit(bank))*100)/100;
  const withdrawalTotal=(bank,via)=>selectedDateBankWithdrawalTotal(withdrawalRows,date.value,bank,via,matching);
  function syncWithdrawalDrafts(){Object.entries(bankDrafts).forEach(([b,x])=>{x.depositDso=countDsoDeposit(b);x.depositRefund=countRefundDeposit(b);x.deposit=countBank(b);x.fundTransfer=withdrawalTotal(b,'APP');x.chequeWithdrawal=withdrawalTotal(b,'Cheque');x.net=Math.round((Number(x.opening||0)+Number(x.deposit||0)-x.fundTransfer-x.chequeWithdrawal-Number(x.bankCharge||0))*100)/100;});}
+ function applyWithdrawalRows(value){
+  withdrawalRows=Object.values(value||{});delete cashBankReceived.dataset.testManual;
+  cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,date.value));
+  if(!liftingManual){lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,date.value));delete netMA.dataset.testManual;}
+  if(!refundManual)maRefund.value=inputMoney(refundTotal());
+  syncWithdrawalDrafts();
+ }
+ function calculatorSourceSignature(){
+  return JSON.stringify({receive:numeric(receive),send:numeric(send),cashIssueDso:numeric(cashIssue),marketCash:numeric(marketTeam),cashFromBank:numeric(cashBankReceived),banks:banks.map(bank=>{const row=bankDrafts[bank]||{};return ['depositDso','depositRefund','fundTransfer','chequeWithdrawal'].map(key=>Number(row[key])||0);})});
+ }
  function watchWithdrawals(selectedDate,epoch){
   window.stopCalculatorWithdrawalSync?.();const ref=database.ref('bankTrackerEntries').orderByChild('date').equalTo(selectedDate);
-  const handler=snap=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}withdrawalRows=Object.values(snap.val()||{});delete cashBankReceived.dataset.testManual;cashBankReceived.value=inputMoney(selectedDateBankCashReceived(withdrawalRows,selectedDate));if(!liftingManual){lifting.value=inputMoney(selectedDateLiftingTotal(withdrawalRows,selectedDate));delete netMA.dataset.testManual;}if(!refundManual)maRefund.value=inputMoney(refundTotal());syncWithdrawalDrafts();choice.onchange();};
+  let bankRevision=0;
+  const failedBank=e=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate)return;bankSyncError=true;status.textContent='Withdrawal হিসাব যাচাই হয়নি: '+e.message;paint();};
+  const handler=async snap=>{
+   if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}
+   const revision=++bankRevision;bankSyncError=true;paint();
+   try{
+    const verified=await window.investmentVerifiedCalculatorRead(bridge,'bankTrackerEntries',selectedDate);
+    if(revision!==bankRevision||!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner)return;
+    applyWithdrawalRows(verified);bankSyncError=false;if(!dsoSyncError)status.textContent='';choice.onchange();
+   }catch(e){if(revision===bankRevision)failedBank(e);}
+  };
   let cancel=()=>{},cancelDso=()=>{};const stop=()=>{cancel();cancelDso();if(window.stopCalculatorWithdrawalSync===stop)window.stopCalculatorWithdrawalSync=null;};
-  window.stopCalculatorWithdrawalSync=stop;cancel=window.investmentWatchData(bridge,'bankTrackerEntries',handler,e=>{if(!form.isConnected||epoch!==sourceEpoch)return;loaded=false;status.textContent='Withdrawal হিসাব লোড হয়নি: '+e.message;paint();},selectedDate);
+  window.stopCalculatorWithdrawalSync=stop;cancel=window.investmentWatchData(bridge,'bankTrackerEntries',handler,failedBank,selectedDate);
   const failedDso=e=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate)return;dsoSyncError=true;status.textContent='DSO Daily Report সিঙ্ক হয়নি: '+e.message;paint();};
   let dsoRevision=0;
   cancelDso=window.investmentWatchData(bridge,'ledgerAccounts',async snap=>{
@@ -1159,7 +1179,7 @@ function balanceCalculator(){
   for(const [bank,entry] of Object.entries(bankDrafts)){entry.depositDso=countDsoDeposit(bank);entry.deposit=countBank(bank);}
  }
  function paint(throwOnError=false){
-  save.disabled=preview||loading||busy||!loaded||dsoSyncError;save.textContent=editExpected?'Update Submit':'Submit';
+  save.disabled=preview||loading||busy||!loaded||dsoSyncError||bankSyncError;save.textContent=editExpected?'Update Submit':'Submit';
   if(loading)return;
   try{
    [netMA,cashHand,netCash,netBank,totalClosing].forEach(input=>delete input.dataset.testManual);
@@ -1202,11 +1222,11 @@ function balanceCalculator(){
   window.stopCalculatorWithdrawalSync?.();withdrawalRows=[];
   if(!date.value){++sourceEpoch;loading=false;loaded=false;save.disabled=true;refresh.disabled=false;status.textContent='প্রথমে তারিখ নির্বাচন করুন।';return;}
   if(preview){loading=false;status.textContent='Admin হিসেবে Collection Portal-এর Investment menu থেকে খুলুন।';paint();return;}
-  const selectedDate=date.value,epoch=++sourceEpoch;editExpected=null;dsoSyncError=false;
+  const selectedDate=date.value,epoch=++sourceEpoch;editExpected=null;dsoSyncError=false;bankSyncError=false;
   loading=true;loaded=false;save.disabled=true;refresh.disabled=true;status.textContent='Opening এবং দিনের হিসাব লোড হচ্ছে…';
   let timer;
   try{
-   const snapshots=await Promise.race([Promise.all([window.investmentAwaitData().then(value=>({val:()=>value})),Promise.resolve({val:()=>({})}),Promise.resolve({val:()=>({})}),window.investmentVerifiedCalculatorRead(bridge,'ledgerAccounts',selectedDate).then(value=>({val:()=>value})),window.investmentReadSnapshot(bridge,'bankTrackerEntries',selectedDate)]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),22000);})]);
+   const snapshots=await Promise.race([Promise.all([window.investmentAwaitData().then(value=>({val:()=>value})),Promise.resolve({val:()=>({})}),Promise.resolve({val:()=>({})}),window.investmentVerifiedCalculatorRead(bridge,'ledgerAccounts',selectedDate).then(value=>({val:()=>value})),window.investmentVerifiedCalculatorRead(bridge,'bankTrackerEntries',selectedDate).then(value=>({val:()=>value}))]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),22000);})]);
    if(epoch!==sourceEpoch||selectedDate!==date.value)return;if(!form.isConnected||String(bridge.getUser())!==owner){loading=false;loaded=false;return;}
    items=snapshots[0].val()||{};withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
@@ -1224,18 +1244,17 @@ function balanceCalculator(){
  refresh.onclick=()=>source(true);
  date.onchange=()=>{editExpected=null;pettySource.value='Cash';for(const input of [cashSalary,cashRoute,cashPetty])input.value='';refundManual=false;liftingManual=false;delete commissionReceived.dataset.testManual;commissionReceived.value='';choice.value='';bankDrafts={};source();};
  form.onsubmit=async event=>{
-  event.preventDefault();if(busy||!loaded||loading||dsoSyncError||preview||!form.reportValidity()||String(bridge.getUser())!==owner)return;
+  event.preventDefault();if(busy||!loaded||loading||dsoSyncError||bankSyncError||preview||!form.reportValidity()||String(bridge.getUser())!==owner)return;
   busy=true;date.disabled=true;paint();
   const submitDate=date.value,submitEpoch=sourceEpoch;
   try{
    status.textContent='Server-এর DSO জমা যাচাই হচ্ছে…';
-   const verified=await window.investmentVerifiedCalculatorRead(bridge,'ledgerAccounts',submitDate);
+   const [verified,verifiedBank]=await Promise.all([window.investmentVerifiedCalculatorRead(bridge,'ledgerAccounts',submitDate),window.investmentVerifiedCalculatorRead(bridge,'bankTrackerEntries',submitDate)]);
    if(!form.isConnected||submitEpoch!==sourceEpoch||date.value!==submitDate||String(bridge.getUser())!==owner)throw Error('হিসাবের পৃষ্ঠা পরিবর্তিত হয়েছে। আবার খুলুন।');
    const latest=selectedDateDsoTotals({},verified,submitDate);
-   const before=JSON.stringify({receive:numeric(receive),send:numeric(send),cashIssueDso:numeric(cashIssue),marketCash:numeric(marketTeam),banks:banks.map(bank=>Number(bankDrafts[bank]?.depositDso)||0)});
-   applyDsoTotals(latest);dsoSyncError=false;choice.onchange();
-   const after=JSON.stringify({receive:numeric(receive),send:numeric(send),cashIssueDso:numeric(cashIssue),marketCash:numeric(marketTeam),banks:banks.map(bank=>Number(bankDrafts[bank]?.depositDso)||0)});
-   if(before!==after)throw Error('DSO জমার নতুন হিসাব এসেছে। হালনাগাদ অঙ্ক দেখে আবার Submit করুন।');
+   const before=calculatorSourceSignature();
+   applyDsoTotals(latest);applyWithdrawalRows(verifiedBank);dsoSyncError=false;bankSyncError=false;choice.onchange();
+   if(before!==calculatorSourceSignature())throw Error('DSO/Bank হিসাব হালনাগাদ হয়েছে। নতুন অঙ্ক দেখে আবার Submit করুন।');
    const headOfficeMovements=collectCashHeadOffice(headOfficeRows,true);paint(true);const ma={opening:numeric(maOpening),lifting:numeric(lifting),commissionReceived:numeric(commissionReceived),b2bReceive:numeric(receive),b2bSend:numeric(send),refund:numeric(maRefund)};
    const net=window.investmentMATotal({...ma,cashCalculation:{cashDepositLifting:numeric(cashLifting),transfers:{petty:numeric(cashPetty),pettySource:pettySource.value||"Cash"}}});
    if(!window.INVESTMENT_MANUAL_TEST&&(net<0||numeric(netCash)<0||numeric(cashHand)<0||Object.values(bankDrafts).some(x=>x.net<0)))throw Error('Net balance ঋণাত্মক। অঙ্কগুলো যাচাই করুন।');
