@@ -23,8 +23,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require financial and source verification before deployment
+        run: |
+          node scripts/check-financial-integrity.cjs
+          node scripts/check-working-calculator.cjs
+          node scripts/check-working-capital-consent.cjs
+          node scripts/test-backup-scope.cjs
   # Single deploy job since we're just deploying
   deploy:
+    needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
