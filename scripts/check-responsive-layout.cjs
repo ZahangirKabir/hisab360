@@ -268,9 +268,12 @@ await page.evaluate(code=>{
 },refreshCode);
 await page.evaluate(()=>window.refreshCurrentData());
 if(await page.evaluate(()=>window.refreshNavigations)!==1)throw Error('Refresh did not apply pending update');
-await page.evaluate(async()=>{window.firebaseReleaseMismatch=false;window.hostedReleaseMismatch=false;await window.refreshCurrentData();});
-if(await page.evaluate(()=>window.dataRefreshes)!==1)throw Error('Data refresh without update failed');
-console.log('Manual updates: no popup, no automatic timer or login block; Refresh applies pending release and otherwise refreshes data.');
+await page.evaluate(async()=>{document.getElementById('refreshDataBtn').disabled=false;window.firebaseReleaseMismatch=false;window.hostedReleaseMismatch=false;window.checkHostedRelease=()=>{throw Error('Update detection unavailable');};await window.refreshCurrentData();});
+if(await page.evaluate(()=>window.refreshNavigations)!==2)throw Error('Refresh must load fresh code even without a detected update');
+if(await page.evaluate(()=>window.dataRefreshes)!==0)throw Error('Refresh fell back to data-only refresh');
+await page.evaluate(()=>window.refreshCurrentData());
+if(await page.evaluate(()=>window.refreshNavigations)!==2)throw Error('Repeated click triggered duplicate navigation');
+console.log('Manual updates: no popup or automatic reload; Refresh always navigates to fresh app code, independent of update detection.');
 
 
 await page.goto('about:blank');await page.setContent('<input id="bankDeposit" value="0"><input id="cashDeposit" value="282000"><button id="subBtn">Submit Data</button>');
