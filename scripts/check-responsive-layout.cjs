@@ -245,4 +245,31 @@ await page.waitForFunction(()=>document.querySelectorAll('#adminPageSettings tab
 if(await page.locator('#adminPageSettings table').innerText().then(x=>!x.includes('admin')||!x.includes('sample')))throw Error('History account or change keys missing');
 console.log('Change history is read-only, restricted to Admin, and displays account/time/record keys.');
 
+
+await page.goto('about:blank');await page.setContent(html);
+const releaseGateCode=source.slice(source.indexOf('    function updateReleaseGate()'),source.indexOf('    let releaseVersionRef'));
+const refreshCode=source.slice(source.indexOf('    async function refreshCurrentData()'),source.indexOf('    function logout()'));
+await page.evaluate(code=>{
+ window.loginInProgress=false;window.deviceRecoveryBusy=false;window.currentUser=null;
+ window.portalAutoUpdateTimer=setTimeout(()=>{window.unexpectedUpdate=true;},500);
+ window.firebaseReleaseMismatch=true;window.hostedReleaseMismatch=true;
+ (0,eval)(code);
+ window.updateReleaseGate();
+},releaseGateCode);
+if(await page.locator('#releaseGate').isVisible())throw Error('Update popup became visible');
+if(!await page.locator('#loginBtn').isEnabled())throw Error('New release blocked login');
+await page.waitForTimeout(550);
+if(await page.evaluate(()=>window.unexpectedUpdate))throw Error('Automatic update timer fired');
+await page.evaluate(code=>{
+ window.currentUser='823';window.activeAdminTab='report';window.refreshNavigations=0;window.dataRefreshes=0;
+ window.checkHostedRelease=async()=>true;window.applyRequiredUpdate=()=>window.refreshNavigations++;
+ window.isPortalReportViewer=()=>false;window.listenRealtimeData=()=>window.dataRefreshes++;
+ (0,eval)(code);
+},refreshCode);
+await page.evaluate(()=>window.refreshCurrentData());
+if(await page.evaluate(()=>window.refreshNavigations)!==1)throw Error('Refresh did not apply pending update');
+await page.evaluate(async()=>{window.firebaseReleaseMismatch=false;window.hostedReleaseMismatch=false;await window.refreshCurrentData();});
+if(await page.evaluate(()=>window.dataRefreshes)!==1)throw Error('Data refresh without update failed');
+console.log('Manual updates: no popup, no automatic timer or login block; Refresh applies pending release and otherwise refreshes data.');
+
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
