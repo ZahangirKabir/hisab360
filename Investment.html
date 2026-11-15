@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.15.3">
+<meta name="investment-release-version" content="2026.11.15.4">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -593,7 +593,7 @@ window.formatInvestmentAmount=function(input){const old=input.value,pos=input.se
  
 </nav><main id="app" hidden><nav id="menu" class="menu" aria-label="Investment submenu"></nav><section id="content"></section></main><p id="bankAccess" hidden></p><main id="bankApp" hidden><nav id="bankMenu" class="menu"></nav><section id="bankContent"></section></main><footer id="investmentCopyright" class="investment-footer" hidden>© 2026 <strong>Zahangir Kabir</strong>. All rights reserved.</footer>
 <script>
-// Keep the authenticated SDK stream; use HTTP only if that connection stalls.
+// Verify the initial/reconnected snapshot on the server, then retain realtime SDK updates.
 window.investmentWatchData=function(bridge,root,onValue,onError,date=''){
  const query=()=>{const ref=bridge.database.ref(root);if(date&&typeof date==='object'){let q=ref.orderByKey();if(date.endAt)q=q.endAt(date.endAt);return q.limitToLast(date.last);}return date?ref.orderByChild('date').equalTo(date):ref;};
  const ref=query(),connection=bridge.database.ref('.info/connected');let active=true,connected=false,reliable=false,denied=false,version=0,timer=null,pending=false;
@@ -602,13 +602,14 @@ window.investmentWatchData=function(bridge,root,onValue,onError,date=''){
  async function read(){
   if(!active||reliable||denied||pending)return;
   pending=true;const revision=version;
-  try{const value=await bridge.readInvestmentData(root,date);if(active&&!denied&&version===revision&&!reliable)onValue({val:()=>value});}
+  try{const value=await bridge.readInvestmentData(root,date);if(active&&!denied&&version===revision&&!reliable){reliable=connected;onValue({val:()=>value});}}
   catch(error){if(active&&version===revision&&!reliable){if(permission(error))denied=true;onError(error);}}
   finally{pending=false;schedule();}
  }
- const changed=snap=>{if(!active||denied)return;version++;reliable=connected;if(reliable){clearTimeout(timer);onValue(snap);}else schedule(1200);};
+ let streamSeen=false;
+ const changed=snap=>{if(!active||denied)return;version++;const first=!streamSeen;streamSeen=true;if(!first&&reliable&&connected){clearTimeout(timer);onValue(snap);}else{reliable=false;schedule(0);}};
  const failed=error=>{if(!active)return;version++;reliable=false;if(permission(error)){denied=true;clearTimeout(timer);onError(error);}else{onError(error);schedule(0);}};
- const connectionChanged=snap=>{if(!active)return;connected=snap.val()===true;if(!connected){reliable=false;schedule(1200);}else if(!reliable&&typeof ref.get==='function'){const revision=version;ref.get().then(value=>{if(active&&connected&&version===revision)changed(value);},failed);}};
+ const connectionChanged=snap=>{if(!active)return;connected=snap.val()===true;if(!connected){reliable=false;schedule(1200);}else if(!reliable)schedule(0);};
  schedule(1200);ref.on('value',changed,failed);connection.on('value',connectionChanged);
  const visible=()=>{if(!document.hidden&&!reliable)schedule(0);};document.addEventListener('visibilitychange',visible);window.addEventListener('online',visible);
  return ()=>{active=false;clearTimeout(timer);ref.off('value',changed);connection.off('value',connectionChanged);document.removeEventListener('visibilitychange',visible);window.removeEventListener('online',visible);};
