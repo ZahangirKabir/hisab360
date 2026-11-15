@@ -50,3 +50,48 @@ async function run(){
 run().catch(e=>{console.error(e);process.exitCode=1;});
 
 })();
+
+(async()=>{
+ const timers=new Map(),callbacks={},values=[],errors=[];let seq=0,server={verified:100},reads=0;
+ const context={window:{},document:{hidden:false,addEventListener(){},removeEventListener(){}},setTimeout:fn=>{timers.set(++seq,fn);return seq;},clearTimeout:id=>timers.delete(id),console};
+ context.window.addEventListener=()=>{};context.window.removeEventListener=()=>{};
+ vm.createContext(context);
+ const begin=html.indexOf('window.investmentWatchData='),end=html.indexOf(' // Calculator money',begin);
+ vm.runInContext(html.slice(begin,end),context);
+ const query={on:(event,fn)=>{callbacks.value=fn;},off(){},orderByChild(){return this;},equalTo(){return this;}};
+ const connection={on:(event,fn)=>{callbacks.connection=fn;},off(){}};
+ const bridge={database:{ref:path=>path==='.info/connected'?connection:query},readInvestmentData:async()=>{reads++;if(server instanceof Error)throw server;return server;}};
+ const stop=context.window.investmentWatchData(bridge,'investmentEntries',snap=>values.push(snap.val()),error=>errors.push(error),'2026-11-15');
+ const tick=async()=>{const entry=[...timers.entries()].at(-1);assert(entry,'Expected verification timer');timers.delete(entry[0]);await entry[1]();};
+ callbacks.connection({val:()=>true});callbacks.value({val:()=>({cached:0})});assert.equal(values.length,0,'Initial SDK cache must not be published');
+ await tick();assert.equal(values.at(-1).verified,100);assert.equal(reads,1);
+ callbacks.value({val:()=>({verified:200})});assert.equal(values.at(-1).verified,200,'Verified live connection keeps realtime updates');
+ callbacks.connection({val:()=>false});callbacks.value({val:()=>({cached:0})});assert.equal(values.at(-1).verified,200,'Disconnected cache cannot clear displayed data');
+ server={verified:300};callbacks.connection({val:()=>true});await tick();assert.equal(values.at(-1).verified,300,'Reconnect verifies server first');
+ callbacks.connection({val:()=>false});server=Error('offline');await tick();assert.equal(values.at(-1).verified,300);assert.equal(errors.length,1);
+ stop();assert.equal(timers.size,0);console.log('Initial financial snapshot, realtime updates, reconnect verification, offline retention and cleanup checks passed.');
+})().catch(error=>{console.error(error);process.exitCode=1;});
+
+(()=>{
+ const source=fs.readFileSync(require('path').join(__dirname,'../assets/hisab360-user-management-v3.js'),'utf8');
+ let registryCallback,reloads=0,reattached=0;
+ const context={window:{},SUB_ADMIN_GROUPS:{adminSadar:new Set(['801']),adminSaturia:new Set(['802'])},portalDsoRegistry:{},currentUser:'adminSadar',realtimeListenerAttached:true,refreshPortalDsoTransferOptions(){},populateDsoDropdown(){},portalDsoIds:()=>['801','802','846'],isGroupAdmin:id=>id==='adminSadar',listenRealtimeData:()=>reattached++,refreshCurrentData:()=>{reloads++;return Promise.resolve();},document:{getElementById:()=>null},firebase:{app:()=>({database:()=>({ref:()=>({on:(event,fn)=>registryCallback=fn})})})}};
+ vm.createContext(context);vm.runInContext(source,context);
+ const assignments={'846':{assignedAdmin:'adminSadar',enabled:true}};
+ registryCallback({val:()=>assignments});assert.equal(reloads,0,'Assignment sync must never navigate/reload');assert.equal(reattached,1);assert(context.SUB_ADMIN_GROUPS.adminSadar.has('846'));
+ registryCallback({val:()=>assignments});assert.equal(reattached,1,'Unchanged registry must not restart listeners');
+ console.log('Group assignment sync updates scoped data without reloading; unchanged registry does not restart listeners.');
+})();
+
+(()=>{
+ const path=require('path');let count=0;
+ for(const directory of ['assets','scripts','setup'])for(const name of fs.readdirSync(path.join(__dirname,'..',directory)).filter(name=>/\.(js|cjs)$/.test(name))){
+  if(directory==='assets'&&name==='vendor')continue;
+  new vm.Script(fs.readFileSync(path.join(__dirname,'..',directory,name),'utf8'),{filename:directory+'/'+name});count++;
+ }
+ const source=fs.readFileSync(path.join(__dirname,'apply-data-protection.cjs'),'utf8'),start=source.indexOf('function recentProtectionBackup('),end=source.indexOf('const expectedRelease=',start),ctx={Date,Number};vm.createContext(ctx);vm.runInContext(source.slice(start,end),ctx);
+ const now=Date.parse('2026-11-15T12:00:00Z');
+ assert.equal(ctx.recentProtectionBackup({restoreVerified:true,lastFullAt:'2026-11-15T11:00:00Z'},now),true);
+ for(const backup of [{restoreVerified:true},{restoreVerified:true,lastFullAt:'invalid'},{restoreVerified:true,lastFullAt:'2026-11-14T11:00:00Z'},{restoreVerified:true,lastFullAt:'2026-11-16T11:00:00Z'},{restoreVerified:false,lastFullAt:'2026-11-15T11:00:00Z'}])assert.equal(ctx.recentProtectionBackup(backup,now),false);
+ console.log(count+' standalone scripts parse; missing, invalid, stale, future and unverified protection backups rejected.');
+})();
