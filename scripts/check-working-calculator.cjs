@@ -25,14 +25,26 @@ async function run(){
  const pending=c.window.investmentVerifiedCalculatorRead({readInvestmentData:()=>new Promise(()=>{})},'ledgerAccounts','2026-11-15');timeout();await assert.rejects(pending,/timeout/);
  const formStart=html.indexOf('function balanceCalculator('),submitStart=html.indexOf(' form.onsubmit=async event=>',formStart),end=html.indexOf('   const headOfficeMovements=',submitStart);
  const handler=html.slice(submitStart,end)+"return 'verified';}catch(e){return e.message;}finally{busy=false;date.disabled=false;paint();}};";
- Object.assign(c,{busy:false,loaded:true,loading:false,dsoSyncError:false,preview:false,owner:'admin',bridge:{getUser:()=> 'admin'},date:{value:'2026-11-15'},sourceEpoch:1,form:{isConnected:true,reportValidity:()=>true},paint:()=>{},status:{textContent:''},numeric:x=>Number(x.value)||0,banks:['Islami'],bankDrafts:{Islami:{depositDso:0}},receive:{value:0},send:{value:0},cashIssue:{value:0},marketTeam:{value:0},choice:{onchange:()=>{}},selectedDateDsoTotals:(_,value)=>value});
+ Object.assign(c,{busy:false,loaded:true,loading:false,dsoSyncError:false,bankSyncError:false,preview:false,owner:'admin',bridge:{getUser:()=> 'admin'},date:{value:'2026-11-15'},sourceEpoch:1,form:{isConnected:true,reportValidity:()=>true},paint:()=>{},status:{textContent:''},numeric:x=>Number(x.value)||0,banks:['Islami'],bankDrafts:{Islami:{depositDso:0}},receive:{value:0},send:{value:0},cashIssue:{value:0},marketTeam:{value:0},choice:{onchange:()=>{}},selectedDateDsoTotals:(_,value)=>value});
  c.applyDsoTotals=t=>{c.receive.value=t.receive;c.send.value=t.send;c.cashIssue.value=t.cashIssueDso;c.marketTeam.value=t.marketCash;c.bankDrafts.Islami.depositDso=t.deposit;};
  const totals={receive:0,send:0,cashIssueDso:0,marketCash:0,deposit:3696500};
- c.window.investmentVerifiedCalculatorRead=async()=>totals;vm.runInContext(handler,c);
+ c.calculatorSourceSignature=()=>JSON.stringify({deposit:c.bankDrafts.Islami.depositDso,receive:c.receive.value,bank:c.cashBankReceived?.value||0});
+ c.applyWithdrawalRows=()=>{};c.window.investmentVerifiedCalculatorRead=async()=>totals;vm.runInContext(handler,c);
  assert.match(await c.form.onsubmit({preventDefault(){}}),/আবার Submit/,'Stale zero must block saving');assert.equal(c.bankDrafts.Islami.depositDso,3696500,'Fresh deposit must replace stale zero');
  assert.equal(await c.form.onsubmit({preventDefault(){}}),'verified','Unchanged server totals pass verification');
+ c.cashBankReceived={value:0};c.applyWithdrawalRows=()=>{c.cashBankReceived.value=3640000;};
+ assert.match(await c.form.onsubmit({preventDefault(){}}),/আবার Submit/,'Changed bank source must block save');assert.equal(c.cashBankReceived.value,3640000);
  c.window.investmentVerifiedCalculatorRead=async()=>{throw Error('offline');};
  assert.equal(await c.form.onsubmit({preventDefault(){}}),'offline');assert.equal(c.bankDrafts.Islami.depositDso,3696500,'Offline read must retain prior amount');assert.equal(c.busy,false);assert.equal(c.date.disabled,false);
+ // A stale SDK bank snapshot must be verified before replacing displayed money.
+ Object.assign(c,{selectedDate:'2026-11-15',epoch:1,bankRevision:0,bankSyncError:false,cashBankReceived:{value:3640000},status:{textContent:''},stop:()=>{},failedBank:e=>{c.bankSyncError=true;c.status.textContent=e.message;}});
+ c.applyWithdrawalRows=value=>{c.cashBankReceived.value=value.cash;};
+ c.window.investmentVerifiedCalculatorRead=async()=>({cash:3640000});
+ const watchStart=html.indexOf('  const handler=async snap=>',html.indexOf(' function watchWithdrawals(')),watchEnd=html.indexOf('  let cancel=',watchStart);
+ vm.runInContext(html.slice(watchStart,watchEnd).replace('const handler=','handler='),c);
+ await c.handler({val:()=>({})});assert.equal(c.cashBankReceived.value,3640000,'Empty cached bank snapshot must not clear server amount');assert.equal(c.bankSyncError,false);
+ c.window.investmentVerifiedCalculatorRead=async()=>{throw Error('bank offline');};await c.handler({val:()=>({})});assert.equal(c.cashBankReceived.value,3640000);assert.equal(c.bankSyncError,true,'Unverified bank data must disable saving');
+ c.window.investmentVerifiedCalculatorRead=async()=>({cash:120});await c.handler({val:()=>({})});assert.equal(c.cashBankReceived.value,120);assert.equal(c.bankSyncError,false,'Successful verification must restore saving');
  console.log('Calculator verification passed: authenticated read; missing bridge; offline; timeout; stale deposit blocks save; corrected retry; amount retained on failure.');
 }
 run().catch(e=>{console.error(e);process.exitCode=1;});
