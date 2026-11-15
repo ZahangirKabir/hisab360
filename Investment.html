@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.14.7">
+<meta name="investment-release-version" content="2026.11.15.1">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -992,14 +992,39 @@ function selectedDateDsoTotals(legacy,ledger,selectedDate){
  const moneyValue=value=>{const n=Number(String(value??0).replace(/,/g,''));if(!Number.isFinite(n))throw Error('DSO B2B amount সঠিক নয়।');return Math.round(n*100);};
  let received=0,sent=0,cashIssued=0;for(const report of reports.values()){received+=moneyValue(report.emReturn);sent+=moneyValue(report.emReceived);cashIssued+=moneyValue(report.cashReceived);}
  const marketCash=Object.fromEntries(Object.entries(teams).map(([team,ids])=>[team,ids.reduce((sum,id)=>sum+moneyValue(reports.get(id)?.cashReturn??reports.get(id)?.cashDeposit),0)/100]));
- const bankDeposits=[];for(const [uid,report] of reports){const account=accounts.get(uid),slips=report.bankSlips||report.slips;
-  if(Array.isArray(slips)&&slips.length){for(const slip of slips){
-   // Linked requests are authoritative; pending/rejected slips cannot fund a bank balance.
-   const status=slip.requestKey?(account?.requests?.[slip.requestKey]?.status??(report.approvedSlipRequests?.[slip.requestKey]?'approved':'pending')):slip.status;
-   if(status&&status!=='approved')continue;
-   bankDeposits.push({bankName:slip.bankName||report.bankName,amount:moneyValue(slip.amt??slip.amount)/100});
-  }}else if(Number(report.bankDeposit)>0)bankDeposits.push({bankName:report.bankName,amount:moneyValue(report.bankDeposit)/100});
+
+ // Approved requests are deposits even when the DSO's daily report is not yet submitted.
+ // Report-linked copies and repeated transaction IDs must fund the bank only once.
+ const bankDeposits=[],seenTransactions=new Set(),seenImages=new Set();
+ const cleanId=value=>String(value||'').replace(/[০-৯]/g,c=>'০১২৩৪৫৬৭৮৯'.indexOf(c)).toUpperCase().replace(/[^A-Z0-9]/g,'');
+ const bankIdentity=value=>String(value||'').trim().toLowerCase().replace(/[^a-z]/g,'').replace(/bank(?:plc|limited|ltd)?$/,'').replace(/^agrani$/,'agroni');
+ const addDeposit=(slip,fallbackBank)=>{
+  const bankName=slip.bankName||fallbackBank,amount=moneyValue(slip.amt??slip.amount)/100;
+  if(amount<=0)return;
+  if(!bankName)throw Error('অনুমোদিত Bank Slip-এর Bank Name পাওয়া যায়নি।');
+  const transaction=cleanId(slip.transactionId),identity=transaction?bankIdentity(bankName)+':'+transaction:'',image=String(slip.img||'');
+  if(identity&&seenTransactions.has(identity)||image&&seenImages.has(image))return;
+  if(identity)seenTransactions.add(identity);if(image)seenImages.add(image);
+  bankDeposits.push({bankName,amount});
+ };
+ for(const [uid,account]of accounts){
+  for(const request of Object.values(account.requests||{})){
+   if(request?.status!=='approved')continue;
+   for(const slip of request.slips||[])addDeposit(slip,request.bankName);
+  }
  }
+ for(const [uid,report]of reports){
+  const account=accounts.get(uid),slips=report.bankSlips||report.slips;
+  if(Array.isArray(slips)&&slips.length){
+   for(const slip of slips){
+    if(slip.requestKey&&account?.requests?.[slip.requestKey]?.slips?.length)continue;
+    const status=slip.requestKey?(account?.requests?.[slip.requestKey]?.status??(report.approvedSlipRequests?.[slip.requestKey]?'approved':'pending')):slip.status;
+    if(status&&status!=='approved')continue;
+    addDeposit(slip,report.bankName);
+   }
+  }else if(Number(report.bankDeposit)>0&&!Object.keys(account?.requests||{}).length)addDeposit({amount:report.bankDeposit},report.bankName);
+ }
+
  return {receive:received/100,send:sent/100,count:reports.size,cashIssueDso:cashIssued/100,marketCash,bankDeposits};
 }
 
