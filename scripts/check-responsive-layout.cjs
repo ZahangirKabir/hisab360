@@ -144,8 +144,11 @@ if(await page.locator('#adminSlipUploadModal').isVisible())throw Error('Admin up
 console.log('Admin upload role guard, selected DSO/date, responsive dialog and DSO form restoration passed.');
 
 const checkSlip=async(label)=>{
+ // Enhancement runs on animation frames after a shared form is moved.
+ // Measure the rendered control, never a hidden fallback input/native select.
+ await page.waitForFunction(()=>[...document.querySelectorAll('#slipsContainer .slip-field')].every(field=>[...field.querySelectorAll('button.h360-select,select:not([aria-hidden=true]),input:not([type=file]),.slip-file-label')].some(control=>control.getBoundingClientRect().width>10)));
  const result=await page.locator('#slipsContainer .slip-field').evaluateAll(fields=>fields.map(field=>{
-  const r=field.getBoundingClientRect(),control=field.querySelector('button.h360-select,input:not([type=file]),.slip-file-label'),c=control?.getBoundingClientRect(),caption=field.querySelector('.slip-field-label')?.getBoundingClientRect();
+  const r=field.getBoundingClientRect(),control=[...field.querySelectorAll('button.h360-select,select:not([aria-hidden=true]),input:not([type=file]),.slip-file-label')].find(control=>control.getBoundingClientRect().width>10),c=control?.getBoundingClientRect(),caption=field.querySelector('.slip-field-label')?.getBoundingClientRect();
   return {width:r.width,fieldRight:r.right,controlRight:c?.right||0,controlTop:c?.top||0,labelBottom:caption?.bottom||0};
  }));
  if(result.length!==7||result.some(r=>r.width<100||r.controlRight>r.fieldRight+1||r.controlTop<r.labelBottom-1))throw Error('Slip controls overlap '+JSON.stringify({label,result}));
