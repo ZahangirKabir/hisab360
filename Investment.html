@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.15.1">
+<meta name="investment-release-version" content="2026.11.15.2">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -613,6 +613,13 @@ window.investmentWatchData=function(bridge,root,onValue,onError,date=''){
  const visible=()=>{if(!document.hidden&&!reliable)schedule(0);};document.addEventListener('visibilitychange',visible);window.addEventListener('online',visible);
  return ()=>{active=false;clearTimeout(timer);ref.off('value',changed);connection.off('value',connectionChanged);document.removeEventListener('visibilitychange',visible);window.removeEventListener('online',visible);};
 };
+
+ // Calculator money must come from an authenticated server read, never an SDK cache.
+ window.investmentVerifiedCalculatorRead=async function(bridge,root,date){
+  if(typeof bridge.readInvestmentData!=='function')throw Error('Server verification পাওয়া যায়নি। অ্যাপ Refresh করুন।');
+  let timer;try{return await Promise.race([bridge.readInvestmentData(root,date),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Server verification timeout. আবার Refresh করুন।')),15000);})]);}finally{clearTimeout(timer);}
+ };
+
 window.investmentReadSnapshot=function(bridge,root,date=''){
  return new Promise((resolve,reject)=>{let stop=null,done=false;const timer=setTimeout(()=>finish(Error('Source data load timeout. আবার চেষ্টা করুন।')),20000);
  const finish=(error,snap)=>{if(done)return;done=true;clearTimeout(timer);stop?.();error?reject(error):resolve(snap);};
@@ -1135,9 +1142,15 @@ function balanceCalculator(){
   let cancel=()=>{},cancelDso=()=>{};const stop=()=>{cancel();cancelDso();if(window.stopCalculatorWithdrawalSync===stop)window.stopCalculatorWithdrawalSync=null;};
   window.stopCalculatorWithdrawalSync=stop;cancel=window.investmentWatchData(bridge,'bankTrackerEntries',handler,e=>{if(!form.isConnected||epoch!==sourceEpoch)return;loaded=false;status.textContent='Withdrawal হিসাব লোড হয়নি: '+e.message;paint();},selectedDate);
   const failedDso=e=>{if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate)return;dsoSyncError=true;status.textContent='DSO Daily Report সিঙ্ক হয়নি: '+e.message;paint();};
-  cancelDso=window.investmentWatchData(bridge,'ledgerAccounts',snap=>{
+  let dsoRevision=0;
+  cancelDso=window.investmentWatchData(bridge,'ledgerAccounts',async snap=>{
    if(!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner){stop();return;}
-   try{applyDsoTotals(selectedDateDsoTotals({},snap.val(),selectedDate));if(dsoSyncError)status.textContent='';dsoSyncError=false;choice.onchange();}catch(e){failedDso(e);}
+   const revision=++dsoRevision;dsoSyncError=true;paint();
+   try{
+    const verified=await window.investmentVerifiedCalculatorRead(bridge,'ledgerAccounts',selectedDate);
+    if(revision!==dsoRevision||!form.isConnected||epoch!==sourceEpoch||date.value!==selectedDate||String(bridge.getUser())!==owner)return;
+    applyDsoTotals(selectedDateDsoTotals({},verified,selectedDate));status.textContent='';dsoSyncError=false;choice.onchange();
+   }catch(e){if(revision===dsoRevision)failedDso(e);}
   },failedDso,selectedDate);
  }
  function applyDsoTotals(totals){
@@ -1193,7 +1206,7 @@ function balanceCalculator(){
   loading=true;loaded=false;save.disabled=true;refresh.disabled=true;status.textContent='Opening এবং দিনের হিসাব লোড হচ্ছে…';
   let timer;
   try{
-   const snapshots=await Promise.race([Promise.all([window.investmentAwaitData().then(value=>({val:()=>value})),Promise.resolve({val:()=>({})}),Promise.resolve({val:()=>({})}),window.investmentReadSnapshot(bridge,'ledgerAccounts',selectedDate),window.investmentReadSnapshot(bridge,'bankTrackerEntries',selectedDate)]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),22000);})]);
+   const snapshots=await Promise.race([Promise.all([window.investmentAwaitData().then(value=>({val:()=>value})),Promise.resolve({val:()=>({})}),Promise.resolve({val:()=>({})}),window.investmentVerifiedCalculatorRead(bridge,'ledgerAccounts',selectedDate).then(value=>({val:()=>value})),window.investmentReadSnapshot(bridge,'bankTrackerEntries',selectedDate)]),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Source data load timeout. Refresh করুন।')),22000);})]);
    if(epoch!==sourceEpoch||selectedDate!==date.value)return;if(!form.isConnected||String(bridge.getUser())!==owner){loading=false;loaded=false;return;}
    items=snapshots[0].val()||{};withdrawalRows=Object.values(snapshots[4].val()||{});dataReady=true;previous=prior();
    const totals=selectedDateDsoTotals(snapshots[1].val(),snapshots[3].val(),selectedDate);
@@ -1212,7 +1225,18 @@ function balanceCalculator(){
  date.onchange=()=>{editExpected=null;pettySource.value='Cash';for(const input of [cashSalary,cashRoute,cashPetty])input.value='';refundManual=false;liftingManual=false;delete commissionReceived.dataset.testManual;commissionReceived.value='';choice.value='';bankDrafts={};source();};
  form.onsubmit=async event=>{
   event.preventDefault();if(busy||!loaded||loading||dsoSyncError||preview||!form.reportValidity()||String(bridge.getUser())!==owner)return;
-  try{const headOfficeMovements=collectCashHeadOffice(headOfficeRows,true);paint(true);const ma={opening:numeric(maOpening),lifting:numeric(lifting),commissionReceived:numeric(commissionReceived),b2bReceive:numeric(receive),b2bSend:numeric(send),refund:numeric(maRefund)};
+  busy=true;date.disabled=true;paint();
+  const submitDate=date.value,submitEpoch=sourceEpoch;
+  try{
+   status.textContent='Server-এর DSO জমা যাচাই হচ্ছে…';
+   const verified=await window.investmentVerifiedCalculatorRead(bridge,'ledgerAccounts',submitDate);
+   if(!form.isConnected||submitEpoch!==sourceEpoch||date.value!==submitDate||String(bridge.getUser())!==owner)throw Error('হিসাবের পৃষ্ঠা পরিবর্তিত হয়েছে। আবার খুলুন।');
+   const latest=selectedDateDsoTotals({},verified,submitDate);
+   const before=JSON.stringify({receive:numeric(receive),send:numeric(send),cashIssueDso:numeric(cashIssue),marketCash:numeric(marketTeam),banks:banks.map(bank=>Number(bankDrafts[bank]?.depositDso)||0)});
+   applyDsoTotals(latest);dsoSyncError=false;choice.onchange();
+   const after=JSON.stringify({receive:numeric(receive),send:numeric(send),cashIssueDso:numeric(cashIssue),marketCash:numeric(marketTeam),banks:banks.map(bank=>Number(bankDrafts[bank]?.depositDso)||0)});
+   if(before!==after)throw Error('DSO জমার নতুন হিসাব এসেছে। হালনাগাদ অঙ্ক দেখে আবার Submit করুন।');
+   const headOfficeMovements=collectCashHeadOffice(headOfficeRows,true);paint(true);const ma={opening:numeric(maOpening),lifting:numeric(lifting),commissionReceived:numeric(commissionReceived),b2bReceive:numeric(receive),b2bSend:numeric(send),refund:numeric(maRefund)};
    const net=window.investmentMATotal({...ma,cashCalculation:{cashDepositLifting:numeric(cashLifting),transfers:{petty:numeric(cashPetty),pettySource:pettySource.value||"Cash"}}});
    if(!window.INVESTMENT_MANUAL_TEST&&(net<0||numeric(netCash)<0||numeric(cashHand)<0||Object.values(bankDrafts).some(x=>x.net<0)))throw Error('Net balance ঋণাত্মক। অঙ্কগুলো যাচাই করুন।');
    busy=true;date.disabled=true;paint();status.textContent='Saving…';
