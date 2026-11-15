@@ -272,4 +272,36 @@ await page.evaluate(async()=>{window.firebaseReleaseMismatch=false;window.hosted
 if(await page.evaluate(()=>window.dataRefreshes)!==1)throw Error('Data refresh without update failed');
 console.log('Manual updates: no popup, no automatic timer or login block; Refresh applies pending release and otherwise refreshes data.');
 
+
+await page.goto('about:blank');await page.setContent('<input id="bankDeposit" value="0"><input id="cashDeposit" value="282000"><button id="subBtn">Submit Data</button>');
+const submitNames=['readDailySubmissionAccount','submitData','assertDailyBalance'];
+const submitCode=submitNames.map(name=>{const start=source.indexOf('    '+(name==='assertDailyBalance'?'':'async ')+'function '+name+'('),end=source.indexOf('\n    }',start)+6;return source.slice(start,end);}).join('\n');
+await page.evaluate(code=>{
+ window.currentUser='846';window.isSubmittingData=false;window.bankSlipSubmitInProgress=false;window.dsoEditModeKey=null;window.globalAllData={};window.submittedBankAmount=0;window.justSubmittedSlipBaseline=null;
+ window.isGroupAdmin=()=>false;window.getLocalDateString=()=> '2026-11-15';window.roundMoney=n=>Math.round(n*100)/100;window.moneyMatches=(a,b)=>Math.round(a*100)===Math.round(b*100);window.formatBD=String;window.parseRawNumber=Number;
+ window.captureDailyFields=()=>({emReceived:0,cashReceived:282000,emReturn:0,cashDeposit:282000,dsoReceivedList:[],dsoTransferList:[],notes:{n1000:282},totalCash:282000});
+ window.alerts=[];window.alert=x=>window.alerts.push(x);window.describeSubmitError=e=>e.message;
+ window.lockSubmissionInputs=()=>{document.getElementById('cashDeposit').disabled=true;return ()=>document.getElementById('cashDeposit').disabled=false;};
+ window.waitForDatabaseConnection=async()=>{};window.resetCount=0;window.resetForm=()=>window.resetCount++;
+ window.refreshSubmittedBankAmount=()=>{};window.validateFormAndSubmitBtn=()=>document.getElementById('subBtn').disabled=window.isSubmittingData;
+ window.portalFinancialApp={auth:()=>({currentUser:{uid:'device846'}})};window.portalLedger={accountKey:(d,u)=>d+'_'+u};
+ window.readMode='success';window.readPaths=[];window.readLoginREST=async(app,path)=>{window.readPaths.push(path);if(window.readMode==='stall')return new Promise(r=>window.lateRead=r);if(window.readMode==='error')throw Error('Server unavailable');if(window.readMode==='duplicate')return {report:{userId:'846'},requests:{}};return {requests:{}};};
+ window.uniqueSlipAmounts=()=>({total:0,duplicate:false});window.writes=0;
+ window.database={ref:()=>({transaction:async fn=>{window.writes++;const value=fn(null);return {committed:true,snapshot:{val:()=>value}};},set:async()=>{}})};
+ window.confirmDatabaseWrite=p=>p;
+ (0,eval)(code);
+ const bounded=window.readDailySubmissionAccount;window.readDailySubmissionAccount=(date,user)=>bounded(date,user,30);
+},submitCode);
+await page.evaluate(()=>window.submitData());
+if(await page.evaluate(()=>window.writes)!==1||await page.evaluate(()=>window.resetCount)!==1)throw Error('Cash-only report failed');
+for(const mode of ['duplicate','error','stall']){
+ await page.evaluate(async mode=>{window.readMode=mode;window.alerts=[];await window.submitData();},mode);
+ const state=await page.evaluate(()=>({writes:window.writes,resets:window.resetCount,busy:window.isSubmittingData,disabled:document.getElementById('cashDeposit').disabled,buttonDisabled:document.getElementById('subBtn').disabled,value:document.getElementById('cashDeposit').value,alerts:window.alerts}));
+ if(state.writes!==1||state.resets!==1||state.busy||state.disabled||state.buttonDisabled||state.value!=='282000'||state.alerts.length!==1)throw Error('Submission read failure lost form or wrote data '+JSON.stringify({mode,state}));
+}
+await page.evaluate(()=>window.lateRead({requests:{}}));await page.waitForTimeout(40);
+if(await page.evaluate(()=>window.writes)!==1)throw Error('Late read saved a timed-out report');
+if(await page.evaluate(()=>window.readPaths.some(path=>path!=='ledgerAccounts/2026-11-15_846')))throw Error('Read escaped DSO daily account');
+console.log('DSO 846 submission: fresh daily account, cash-only save, duplicate prevention, read failure/timeout unlock, preserved fields and ignored late reads passed.');
+
 console.log(JSON.stringify(results));await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
