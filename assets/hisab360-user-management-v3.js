@@ -13,7 +13,7 @@
   if(previous!==JSON.stringify(portalDsoRegistry)&&currentUser){
    try{populateDsoDropdown({});}catch(_){}
    const end=document.getElementById('filterDsoEnd');if(end&&Number(end.value)<Number(portalDsoIds().at(-1)))end.value=portalDsoIds().at(-1);
-   if(isGroupAdmin(currentUser))refreshCurrentData().catch(()=>{});
+   if(isGroupAdmin(currentUser)){realtimeListenerAttached=false;listenRealtimeData();}
   }
  }
  try{firebase.app().database().ref('appConfig/dsoAssignments').on('value',snapshot=>applyRegistry(snapshot.val()),()=>{});}catch(_){}
