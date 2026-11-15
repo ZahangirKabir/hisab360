@@ -1977,7 +1977,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.15.7';
+    const APP_RELEASE_VERSION = '2026.11.15.8';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2688,38 +2688,16 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
     async function refreshCurrentData() {
       const btn=document.getElementById('refreshDataBtn');
+      if(btn?.disabled)return;
       if(btn){btn.disabled=true;btn.textContent='⟳ Loading...';}
-      try{
-        await checkHostedRelease(true);
-        if(hostedReleaseMismatch||firebaseReleaseMismatch){applyRequiredUpdate();return;}
-        if((currentUser==='admin'||isPortalReportViewer())&&activeAdminTab==='investment'){
-          const frame=document.getElementById('investmentFrame');
-          if(!frame)throw Error('Investment page পাওয়া যায়নি।');
-          await new Promise((resolve,reject)=>{
-            let timer;
-            const cleanup=()=>{clearTimeout(timer);frame.removeEventListener('load',loaded);frame.removeEventListener('error',failed);};
-            const loaded=()=>{cleanup();resolve();};
-            const failed=()=>{cleanup();reject(Error('Investment refresh হয়নি। আবার চেষ্টা করুন।'));};
-            frame.addEventListener('load',loaded);frame.addEventListener('error',failed);
-            timer=setTimeout(()=>{cleanup();reject(Error('Investment load হতে সময় লাগছে। আবার Refresh করুন।'));},20000);
-            const url=new URL('Investment.html',location.href);url.searchParams.set('updated',Date.now().toString());frame.src=url.href;
-          });
-          return;
-        }
-        if(currentUser==='admin'){
-          const date=document.getElementById('filterDate')?.value || getLocalDateString();
-          let mode=masterAdminDataMode || 'date';
-          if(mode==='date') loadMasterAdminData('date',date,true);
-          else loadMasterAdminData(mode,'',true);
-        }else{
-          // Re-attach the same scoped realtime query instead of reloading the page.
-          realtimeListenerAttached=false;
-          listenRealtimeData();
-        }
-
-      }catch(e){ console.error('Refresh failed:',e);alert(e.message||'Refresh হয়নি। আবার চেষ্টা করুন।'); }
-      finally{
+      // A user's Refresh always requests a fresh app shell. Release detection is
+      // advisory: cached HEAD responses, a stalled check or a newly mounted frame
+      // must never turn this explicit update action into a data-only refresh.
+      // The existing authenticated tab session is restored by the normal boot.
+      try{applyRequiredUpdate();}
+      catch(e){
         if(btn){btn.disabled=false;btn.textContent='🔄 Refresh';}
+        console.error('Refresh failed:',e);alert(e.message||'Refresh হয়নি। আবার চেষ্টা করুন।');
       }
     }
 
