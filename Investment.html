@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.15.4">
+<meta name="investment-release-version" content="2026.11.16.1">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -997,50 +997,32 @@ function selectedDateDsoTotals(legacy,ledger,selectedDate){
   reports.delete(uid);accounts.set(uid,account);
   if(account.report)reports.set(uid,account.report);
  }
- const moneyValue=value=>{const n=Number(String(value??0).replace(/,/g,''));if(!Number.isFinite(n))throw Error('DSO B2B amount সঠিক নয়।');return Math.round(n*100);};
+ const moneyValue=value=>{const n=Number(String(value??0).replace(/[০-৯]/g,c=>'০১২৩৪৫৬৭৮৯'.indexOf(c)).replace(/,/g,''));if(!Number.isFinite(n))throw Error('DSO B2B amount সঠিক নয়।');return Math.round(n*100);};
  let received=0,sent=0,cashIssued=0;for(const report of reports.values()){received+=moneyValue(report.emReturn);sent+=moneyValue(report.emReceived);cashIssued+=moneyValue(report.cashReceived);}
  const marketCash=Object.fromEntries(Object.entries(teams).map(([team,ids])=>[team,ids.reduce((sum,id)=>sum+moneyValue(reports.get(id)?.cashReturn??reports.get(id)?.cashDeposit),0)/100]));
 
- // Approved requests are deposits even when the DSO's daily report is not yet submitted.
- // Report-linked copies and repeated transaction IDs must fund the bank only once.
- const bankDeposits=[],seenTransactions=new Set(),seenImages=new Set();
- const cleanId=value=>String(value||'').replace(/[০-৯]/g,c=>'০১২৩৪৫৬৭৮৯'.indexOf(c)).toUpperCase().replace(/[^A-Z0-9]/g,'');
- const bankIdentity=value=>String(value||'').trim().toLowerCase().replace(/[^a-z]/g,'').replace(/bank(?:plc|limited|ltd)?$/,'').replace(/^agrani$/,'agroni');
+ // Match Bank Details: use the canonical daily report's slips, or its legacy
+ // bankDeposit fallback. Approval and request-only accounts are not a second source.
+ const bankDeposits=[];
  const addDeposit=(slip,fallbackBank)=>{
-  const bankName=slip.bankName||fallbackBank,amount=moneyValue(slip.amt??slip.amount)/100;
-  if(amount<=0)return;
-  if(!bankName)throw Error('অনুমোদিত Bank Slip-এর Bank Name পাওয়া যায়নি।');
-  const transaction=cleanId(slip.transactionId),identity=transaction?bankIdentity(bankName)+':'+transaction:'',image=String(slip.img||'');
-  if(identity&&seenTransactions.has(identity)||image&&seenImages.has(image))return;
-  if(identity)seenTransactions.add(identity);if(image)seenImages.add(image);
+  const bankName=String(slip.bankName||fallbackBank||'Unknown Bank').trim();
+  const amount=moneyValue(slip.amt??slip.amount)/100;
   bankDeposits.push({bankName,amount});
  };
- for(const [uid,account]of accounts){
-  for(const request of Object.values(account.requests||{})){
-   if(request?.status!=='approved')continue;
-   for(const slip of request.slips||[])addDeposit(slip,request.bankName);
-  }
- }
- for(const [uid,report]of reports){
-  const account=accounts.get(uid),slips=report.bankSlips||report.slips;
-  if(Array.isArray(slips)&&slips.length){
-   for(const slip of slips){
-    if(slip.requestKey&&account?.requests?.[slip.requestKey]?.slips?.length)continue;
-    const status=slip.requestKey?(account?.requests?.[slip.requestKey]?.status??(report.approvedSlipRequests?.[slip.requestKey]?'approved':'pending')):slip.status;
-    if(status&&status!=='approved')continue;
-    addDeposit(slip,report.bankName);
-   }
-  }else if(Number(report.bankDeposit)>0&&!Object.keys(account?.requests||{}).length)addDeposit({amount:report.bankDeposit},report.bankName);
+ for(const report of reports.values()){
+  const slips=report.slips||[];
+  if(slips.length){for(const slip of slips)addDeposit(slip,report.bankName);}
+  else if(moneyValue(report.bankDeposit)>0)addDeposit({amount:report.bankDeposit},report.bankName);
  }
 
  return {receive:received/100,send:sent/100,count:reports.size,cashIssueDso:cashIssued/100,marketCash,bankDeposits};
 }
 
 function selectedDateLiftingTotal(entries,date){return Object.values(entries||{}).filter(x=>x?.type==='withdrawal'&&x.scope==='company'&&x.date===date).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)?x.reasonAmounts.filter(r=>String(r.reason||'').trim().toLowerCase()==='for lifting').reduce((n,r)=>n+Math.round((Number(r.amount)||0)*100),0):String(x.purpose||'').trim().toLowerCase()==='for lifting'?Math.round((Number(x.amount)||0)*100):0),0)/100;}
-function selectedDateBankCashReceived(entries,date){const accepted=reason=>['for dso cash','refund','dh volt'].includes(String(reason||'').trim().toLowerCase().replace(/\s+/g,' '));const cents=value=>Math.round((Number(String(value??0).replace(/,/g,''))||0)*100);return Object.values(entries||{}).filter(x=>['withdrawal','cheque'].includes(x?.type)&&x.scope==='company'&&x.date===date).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)&&x.reasonAmounts.length?x.reasonAmounts.filter(r=>accepted(r.reason)).reduce((n,r)=>n+cents(r.amount),0):accepted(x.purpose)?cents(x.amount):0),0)/100;}
+function selectedDateBankCashReceived(entries,date){const accepted=reason=>['for dso cash','refund','dh volt'].includes(String(reason||'').trim().toLowerCase().replace(/\s+/g,' '));const cents=value=>Math.round((Number(String(value??0).replace(/[০-৯]/g,c=>'০১২৩৪৫৬৭৮৯'.indexOf(c)).replace(/,/g,''))||0)*100);return Object.values(entries||{}).filter(x=>['withdrawal','cheque'].includes(x?.type)&&x.scope==='company'&&x.date===date).reduce((sum,x)=>sum+(Array.isArray(x.reasonAmounts)&&x.reasonAmounts.length?x.reasonAmounts.filter(r=>accepted(r.reason)).reduce((n,r)=>n+cents(r.amount),0):accepted(x.purpose)?cents(x.amount):0),0)/100;}
 function selectedDateMARefundTotal(entries,date){
  const isRefund=value=>String(value||'').trim().toLowerCase()==='refund';
- const cents=value=>Math.round((Number(String(value??0).replace(/,/g,''))||0)*100);
+ const cents=value=>Math.round((Number(String(value??0).replace(/[০-৯]/g,c=>'০১২৩৪৫৬৭৮৯'.indexOf(c)).replace(/,/g,''))||0)*100);
  return Object.values(entries||{}).filter(row=>row?.scope==='company'&&row.date===date).reduce((sum,row)=>{
   if(row.type==='deposit')return sum+(isRefund(row.depositType)?cents(row.amount):0);
   if(row.type!=='withdrawal')return sum;
