@@ -76,3 +76,12 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  html body #appContainer #dataTable thead tr:nth-child(2) th{top:auto!important}
  html body :is([role=dialog],.modal-content,.cheque-dialog) .finance-native-table-scroll table thead :is(th,td){top:var(--finance-header-row-top,0px)!important}
 }
+
+/* Period controls already sit beside the visible report title. */
+@media screen{
+ html body #investmentPageHeading>.capital-header-period::before,
+ html body :is(#app,#bankApp) .report-filter::before{display:none!important;content:none!important}
+ html body #investmentPageHeading>.capital-header-period,
+ html body :is(#app,#bankApp) .report-filter{padding-top:0!important}
+ html body #app #content>.capital-filter-in-heading{display:none!important}
+}
