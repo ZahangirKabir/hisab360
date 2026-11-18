@@ -20,30 +20,41 @@
   for(const el of [top,panel,heading])if(el&&!chromeObserved.has(el)){chromeObserved.add(el);chromeResize?.observe(el);}
   stack+=parentStack;setVar(root,'--finance-global-stack-height',stack+'px');return stack;
  }
- function fitReport(el,chromeHeight){
+ function fitRegion(el){
    if(!el.getBoundingClientRect().width)return;
-   let frameTop=0,viewHeight=innerHeight;try{if(parent!==window&&parent.location.origin===location.origin){frameTop=window.frameElement.getBoundingClientRect().top;viewHeight=parent.innerHeight;}}catch(_){}
-   const modal=!!el.closest('[role=dialog],.modal-content,.cheque-dialog');
+   let frameTop=0,viewHeight=window.visualViewport?.height||innerHeight;
+   try{if(parent!==window&&parent.location.origin===location.origin){frameTop=window.frameElement.getBoundingClientRect().top;viewHeight=parent.visualViewport?.height||parent.innerHeight;}}catch(_){}
+   const rect=el.getBoundingClientRect();
+   let flowBottom=rect.bottom;
+   for(const child of document.body.children){const style=getComputedStyle(child);if(!child.getClientRects().length||['fixed','absolute'].includes(style.position))continue;flowBottom=Math.max(flowBottom,child.getBoundingClientRect().bottom+(parseFloat(style.marginBottom)||0));}
+   const reserve=Math.max(36,flowBottom-rect.bottom+(parseFloat(getComputedStyle(document.body).paddingBottom)||0)+24);
+   const available=Math.max(160,Math.floor(viewHeight-Math.max(0,rect.top+frameTop)-reserve));
+   setVar(el,'--finance-region-height',available+'px');
+ }
+ function fitReport(el){
+   fitRegion(el);
    for(const table of el.querySelectorAll('table')){
     const header=table.tHead;if(!header)continue;
-    const rect=table.getBoundingClientRect(),height=header.getBoundingClientRect().height;
-    const short=rect.height<=Math.max(120,viewHeight-chromeHeight-12);if(table.classList.contains('finance-short-report')!==short)table.classList.toggle('finance-short-report',short);
-    const shift=modal||short?0:Math.max(0,Math.min(chromeHeight-rect.top-frameTop,rect.height-height));
-    const value=Math.round(shift*100)/100+'px';
-    if(table.style.getPropertyValue('--finance-page-header-shift')!==value)table.style.setProperty('--finance-page-header-shift',value);
-    let offset=0;for(const row of header.rows){for(const cell of row.cells)if(cell.style.getPropertyValue('--finance-header-row-top')!==offset+'px')cell.style.setProperty('--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}
+    table.classList.remove('finance-short-report');
+    setVar(table,'--finance-page-header-shift','0px');
+    let offset=0;for(const row of header.rows){for(const cell of row.cells)setVar(cell,'--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}
    }
  }
  function bind(){
   const chromeHeight=syncChrome();
   for(const target of reportObserved)if(!target.isConnected){reportResize?.unobserve(target);reportObserved.delete(target);}
+  for(const form of document.querySelectorAll('#content form,#bankContent form,#appContainer form,#dsoPageForm,#dsoPageSlip,#dsoPageSettings')){
+   if(form.closest('[role=dialog],.modal-content,.cheque-dialog')||form.parentElement.closest('.finance-form-scroll'))continue;
+   if(!form.classList.contains('finance-form-scroll'))form.classList.add('finance-form-scroll');fitRegion(form);
+   if(!reportObserved.has(form)){reportObserved.add(form);reportResize?.observe(form);}
+  }
   for(const el of document.querySelectorAll('.table-container,.scroll')){
    if(!el.querySelector('table'))continue;
    for(const target of [el,...el.querySelectorAll('table')])if(!reportObserved.has(target)){reportObserved.add(target);reportResize?.observe(target);}
-   fitReport(el,chromeHeight);if(bound.has(el))continue;bound.add(el);
+   fitReport(el);if(bound.has(el))continue;bound.add(el);
    el.classList.remove('finance-shared-scroll-target');el.classList.add('finance-native-table-scroll');
    if(!el.hasAttribute('tabindex'))el.tabIndex=0;
-   if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label','Report table — scroll left or right; use page scrolling for more rows');
+   if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label','Report table — scroll for more rows and columns');
    let drag=null;
    const finish=()=>{if(drag){drag=null;el.classList.remove('finance-table-dragging');}};
    el.addEventListener('pointerdown',event=>{
@@ -63,6 +74,7 @@
  let queued=false;
  const schedule=()=>{if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;bind();});}};
  new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class']});
+ window.visualViewport?.addEventListener('resize',schedule);
  window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,{passive:true});document.fonts?.ready.then(schedule);
  try{if(parent!==window&&parent.location.origin===location.origin){parent.addEventListener('resize',schedule);parent.addEventListener('scroll',schedule,{passive:true});window.addEventListener('pagehide',()=>{parent.removeEventListener('resize',schedule);parent.removeEventListener('scroll',schedule);},{once:true});}}catch(_){}
  bind();
