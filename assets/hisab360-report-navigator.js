@@ -2,9 +2,10 @@
 (()=>{
  'use strict';
  document.getElementById('financeReportNavigator')?.remove();
- const bound=new WeakSet(),chromeObserved=new WeakSet();
+ const bound=new WeakSet(),chromeObserved=new WeakSet(),reportObserved=new Set();
  const setVar=(el,name,value)=>{if(el.style.getPropertyValue(name)!==value)el.style.setProperty(name,value);};
  const chromeResize=typeof ResizeObserver==='function'?new ResizeObserver(()=>schedule()):null;
+ const reportResize=typeof ResizeObserver==='function'?new ResizeObserver(()=>schedule()):null;
  const visibleHeight=el=>el&&el.getClientRects().length?el.getBoundingClientRect().height:0;
  function syncChrome(){
   const root=document.documentElement,top=document.querySelector('#appContainer>.portal-sticky-top'),panel=document.getElementById('adminFilterPanel');
@@ -35,8 +36,11 @@
  }
  function bind(){
   const chromeHeight=syncChrome();
+  for(const target of reportObserved)if(!target.isConnected){reportResize?.unobserve(target);reportObserved.delete(target);}
   for(const el of document.querySelectorAll('.table-container,.scroll')){
-   if(!el.querySelector('table'))continue;fitReport(el,chromeHeight);if(bound.has(el))continue;bound.add(el);
+   if(!el.querySelector('table'))continue;
+   for(const target of [el,...el.querySelectorAll('table')])if(!reportObserved.has(target)){reportObserved.add(target);reportResize?.observe(target);}
+   fitReport(el,chromeHeight);if(bound.has(el))continue;bound.add(el);
    el.classList.remove('finance-shared-scroll-target');el.classList.add('finance-native-table-scroll');
    if(!el.hasAttribute('tabindex'))el.tabIndex=0;
    if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label','Report table — scroll left or right; use page scrolling for more rows');
