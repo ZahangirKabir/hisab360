@@ -34,4 +34,8 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
 
 @media screen{html body :is(#appContainer .table-container,#app .scroll,#bankApp .scroll){overflow:auto!important;touch-action:pan-x pan-y!important;scrollbar-width:auto!important;overscroll-behavior:contain}html body .finance-table-dragging,html body .finance-table-dragging *{cursor:grabbing!important;user-select:none!important}html body .finance-native-table-scroll:focus-visible{outline:2px solid #39876a;outline-offset:2px}#financeReportNavigator{display:none!important}}
 
-@media screen{html body :is(#app .scroll,#bankApp .scroll){max-height:70vh!important}}
+@media screen{html body :is(#app .scroll,#bankApp .scroll){max-height:var(--finance-report-available-height,calc(100dvh - 140px))!important}}
+
+@media screen{html body .finance-native-table-scroll{overflow:auto!important;scrollbar-gutter:stable;overscroll-behavior:auto!important}html body .finance-native-table-scroll table{overflow:visible!important}html body .finance-native-table-scroll table thead th,html body .finance-native-table-scroll table thead td{position:sticky!important;top:var(--finance-header-row-top,0px)!important;z-index:5!important;background-clip:padding-box;box-shadow:0 1px 0 #c5d8cf}html body .finance-native-table-scroll table thead :is(th,td):first-child{z-index:7!important}html body #app .scroll,html body #bankApp .scroll{margin-bottom:0!important}}
+
+@media screen{html body .finance-native-table-scroll{padding-top:0!important}html body .finance-native-table-scroll table thead th,html body .finance-native-table-scroll table thead td{background:#eaf1f0!important}html body .finance-native-table-scroll table thead tr:nth-child(2) :is(th,td){background:#f1f6f3!important}}
