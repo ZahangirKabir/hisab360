@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/test-responsive-layout.yml'
       - 'scripts/check-responsive-layout.cjs'
+      - 'scripts/check-report-navigation.cjs'
       - 'scripts/check-working-calculator.cjs'
       - 'scripts/check-working-capital-consent.cjs'
       - 'scripts/check-financial-integrity.cjs'
@@ -33,6 +34,7 @@ jobs:
       - run: npm install --no-save playwright@1.58.2
       - run: npx playwright install chromium
       - run: node scripts/check-responsive-layout.cjs
+      - run: node scripts/check-report-navigation.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
