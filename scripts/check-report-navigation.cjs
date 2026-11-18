@@ -23,14 +23,14 @@ const fs=require('node:fs');
    }
   },id);
   await page.addScriptTag({content:js});await page.waitForTimeout(100);
-  await page.evaluate(()=>window.scrollTo(0,450));await page.waitForTimeout(100);
+  await page.evaluate(()=>document.querySelectorAll('.finance-native-table-scroll').forEach(b=>b.scrollTop=450));await page.waitForTimeout(100);
   const state=await page.evaluate(id=>{
    const tables=[...document.getElementById(id).querySelectorAll('table')].filter(t=>t.getBoundingClientRect().width);
    return {overflow:document.documentElement.scrollWidth>innerWidth+1,tables:tables.map(t=>{
-    const box=t.closest('.table-container'),rows=[...t.tHead.rows];return {bound:box.classList.contains('finance-native-table-scroll'),nested:box.scrollHeight>box.clientHeight+2,gaps:rows.slice(1).map((r,i)=>r.cells[0].getBoundingClientRect().top-rows[i].cells[0].getBoundingClientRect().bottom),headerTop:rows[0].cells[0].getBoundingClientRect().top,expectedTop:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--finance-global-stack-height'))||0};
+    const box=t.closest('.table-container'),rows=[...t.tHead.rows];return {bound:box.classList.contains('finance-native-table-scroll'),nested:box.scrollHeight>box.clientHeight+2,insideForm:!!box.closest('.finance-form-scroll'),gaps:rows.slice(1).map((r,i)=>r.cells[0].getBoundingClientRect().top-rows[i].cells[0].getBoundingClientRect().bottom),headerTop:rows[0].cells[0].getBoundingClientRect().top,expectedTop:box.getBoundingClientRect().top+box.clientTop};
    })};
   },id);
-  if(state.overflow||state.tables.some(t=>!t.bound||t.nested||t.gaps.some(g=>Math.abs(g)>1)||Math.abs(t.headerTop-t.expectedTop)>2))throw Error('Report scroll/header failure '+JSON.stringify({width,id,state}));
+  if(state.overflow||state.tables.some(t=>!t.bound||(!t.nested&&!t.insideForm)||t.gaps.some(g=>Math.abs(g)>1)||(!t.insideForm&&Math.abs(t.headerTop-t.expectedTop)>2)))throw Error('Report scroll/header failure '+JSON.stringify({width,id,state}));
   if(id==='adminPageReport'){
    // Visibility and dimensions change without a scroll/resize event.
    await page.evaluate(()=>{const p=document.getElementById('adminFilterPanel');p.classList.remove('is-collapsed');p.style.display='grid';});await page.waitForTimeout(100);
@@ -39,14 +39,12 @@ const fs=require('node:fs');
   }
   checked++;
  }
- // Exercise report observer delivery after a style-only hidden-to-visible change.
- await page.setContent('<style>.table-container{display:none;height:auto;overflow:auto}th,td{padding:15px}body{margin:0}</style><div style="height:1200px"></div><div class="table-container"><table><thead><tr><th>Header</th></tr></thead><tbody>'+Array.from({length:50},()=>'<tr><td>1,000</td></tr>').join('')+'</tbody></table></div>');
- await page.addStyleTag({content:css});await page.addScriptTag({content:js});await page.evaluate(()=>window.scrollTo(0,1400));await page.waitForTimeout(80);
- await page.evaluate(()=>document.querySelector('.table-container').style.display='block');await page.waitForTimeout(100);
- const shift=await page.locator('table').evaluate(t=>parseFloat(t.style.getPropertyValue('--finance-page-header-shift'))||0);
- // Browser clamps the initial scroll while hidden; scroll once, then hide/show at the same position.
- await page.evaluate(()=>window.scrollTo(0,1400));await page.waitForTimeout(80);await page.evaluate(()=>{const box=document.querySelector('.table-container');box.style.visibility='hidden';box.style.width='80%';});await page.waitForTimeout(80);await page.evaluate(()=>document.querySelector('.table-container').style.visibility='visible');await page.waitForTimeout(80);
- const resumed=await page.locator('table').evaluate(t=>parseFloat(t.style.getPropertyValue('--finance-page-header-shift'))||0);if(resumed<100)throw Error('Resized report did not refresh its header '+JSON.stringify({shift,resumed}));
+ // Fitting content has no scroll range; adding rows creates a local range.
+ await page.setContent('<div class="table-container"><table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>1,000</td></tr></tbody></table></div>');
+ await page.addStyleTag({content:css});await page.addScriptTag({content:js});await page.waitForTimeout(100);
+ let range=await page.locator('.table-container').evaluate(e=>e.scrollHeight-e.clientHeight);if(range>1)throw Error('Short report has an unnecessary scrollbar');
+ await page.evaluate(()=>document.querySelector('tbody').innerHTML=Array.from({length:100},()=>'<tr><td style="padding:12px">1,000</td></tr>').join(''));await page.waitForTimeout(100);
+ range=await page.locator('.table-container').evaluate(e=>e.scrollHeight-e.clientHeight);if(range<100)throw Error('Long report has no local scrollbar');
  // Use the actual Investment runtime to detect cascade conflicts in title controls.
  await page.goto('file://'+process.cwd()+'/Investment.html');
  for(const width of [390,1280]){
@@ -60,6 +58,9 @@ const fs=require('node:fs');
   const layout=await page.evaluate(()=>({caption:getComputedStyle(document.querySelector('#investmentPageHeading .capital-header-period'),'::before').content,emptyHeading:getComputedStyle(document.querySelector('#content>.capital-filter-in-heading')).display,exportReady:typeof window.exportWorkingCapital}));
   if(!['none','normal'].includes(layout.caption)||layout.emptyHeading!=='none'||layout.exportReady!=='function')throw Error('Capital report title/period/export failed '+JSON.stringify({width,layout}));
  }
- console.log(checked+' populated report/viewport combinations: page scrolling, contiguous grouped headers, sticky positions and filter toggles passed; style-only resize refresh passed.');
+ await page.evaluate(()=>window.openInvestmentPage('calculator'));await page.waitForTimeout(100);
+ const form=await page.locator('#balanceCalculatorForm').evaluate(e=>({bounded:parseFloat(getComputedStyle(e).maxHeight)<innerHeight,overflow:getComputedStyle(e).overflowY,range:e.scrollHeight-e.clientHeight}));
+ if(!form.bounded||form.overflow!=='auto'||form.range<1)throw Error('Calculator form scroll missing '+JSON.stringify(form));
+ console.log(checked+' populated report/viewport combinations: conditional local scrolling, contiguous grouped headers, sticky positions and filter toggles passed.');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
