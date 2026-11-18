@@ -1084,47 +1084,7 @@ function collectCashHeadOffice(rows,validate=false){
  window.cashHeadOfficeAdjustment(values,validate);return values;
 }
 
-function calculatorHistoryRows(records,date=''){
- return Object.values(records||{}).filter(x=>x?.scope==='company'&&x.type==='calculator'&&validWorkingDate(x.date)&&(!date||x.date===date)).sort((a,b)=>b.date.localeCompare(a.date));
-}
-function calculatorHistory(){
- const box=card('Saved Working Capital'),filters=node('div');filters.className='fields';
- const date=field(filters,'Date','calculator_history_date','date');date.value='';
- const all=node('button','All Dates');all.type='button';all.className='add-row';all.onclick=()=>{date.value='';renderCalculatorHistory();};filters.append(all);box.append(filters);
- const list=node('div');list.id='calculatorHistory';list.className='scroll';list.setAttribute('aria-live','polite');box.append(list);date.onchange=renderCalculatorHistory;
- renderCalculatorHistory();
-}
-function renderCalculatorHistory(){
- const list=document.getElementById('calculatorHistory');if(!list)return;list.replaceChildren();
- if(dataLoadError){list.append(node('p',dataLoadError));return;}
- if(!dataReady){list.append(node('p','সংরক্ষিত হিসাব লোড হচ্ছে…'));return;}
- const rows=calculatorHistoryRows(items,document.querySelector('[name=calculator_history_date]')?.value||'');
- if(!rows.length){list.append(node('p','এই তারিখে সংরক্ষিত হিসাব নেই।'));return;}
- const table=node('table'),head=node('thead'),headers=node('tr');
- for(const label of ['Date','Net MA','Net Cash','Net Bank','Working Capital','Details / Edit'])headers.append(node('th',label));head.append(headers);table.append(head);
- const body=node('tbody');
- for(const record of rows){
-  const row=node('tr'),cash=record.cashCalculation||{},bankTotal=Object.values(record.bankCalculations||{}).reduce((sum,x)=>sum+(Number(x?.net)||0),0);
-  const shortDate=record.date.slice(8,10)+'/'+record.date.slice(5,7)+'/'+record.date.slice(2,4);
-  for(const value of [shortDate,money(record.netMA),money(cash.netCash),money(bankTotal),money(record.totalClosing)])row.append(node('td',value));
-  const actions=node('td'),view=node('button','View'),edit=node('button','Edit');view.type=edit.type='button';view.className=edit.className='add-row';
-  const detailsRow=node('tr'),detailsCell=node('td');detailsCell.colSpan=6;detailsRow.hidden=true;
-  view.setAttribute('aria-expanded','false');view.onclick=()=>{detailsRow.hidden=!detailsRow.hidden;view.setAttribute('aria-expanded',String(!detailsRow.hidden));};
-  const details=node('div');details.className='calculator-saved-details';
-  const group=(title,values)=>{details.append(node('h3',title));const t=node('table'),b=node('tbody');for(const [label,value]of values){const r=node('tr');r.append(node('th',label),node('td',typeof value==='number'?money(value):value));b.append(r);}t.append(b);details.append(t);};
-  group('MA Balance Calculation', [['MA Opening Balance',Number(record.opening)||0],['Lifting',Number(record.lifting)||0],['Commission Received',Number(record.commissionReceived)||0],['Refund',Number(record.refund)||0],['B2B Receive',Number(record.b2bReceive)||0],['B2B Send',Number(record.b2bSend)||0],['Net MA Balance',Number(record.netMA)||0]]);
-  group('Cash Calculation',[['Opening Cash',Number(cash.openingCash)||0],['Cash Received from Bank',Number(cash.cashReceivedFromBank)||0],['Cash Received from Head Office',Number(cash.cashReceivedFromHeadOffice)||0],['Cash Issue DSO',Number(cash.cashIssueDso)||0],['Cash Deposit Lifting',Number(cash.cashDepositLifting)||0],['Cash In Hand',Number(cash.cashInHand)||0],['Market Cash',Number(cash.marketCash?.total)||0],['Petty Cash Transfer',Number(cash.transfers?.petty)||0],['Petty Cash Source',cash.transfers?.pettySource||'Cash'],['Net Cash',Number(cash.netCash)||0]]);
-  for(const movement of cash.headOfficeMovements||[])group('Head Office',[['Direction',movement.direction||'—'],['Bank / Person',movement.bankName||movement.personName||'—'],['Amount',Number(movement.amount)||0]]);
-  for(const [name,bank]of Object.entries(record.bankCalculations||{}))group(name,[['Opening Balance',Number(bank.opening)||0],['Bank Deposit-DSO',Number(bank.depositDso??bank.deposit)||0],['Bank Deposit-Refund',Number(bank.depositRefund)||0],['Fund Transfer',Number(bank.fundTransfer)||0],['Withdraw by Cheque',Number(bank.chequeWithdrawal)||0],['Bank Charge',Number(bank.bankCharge)||0],['Head Office Adjustment',Number(bank.headOfficeAdjustment)||0],['Petty Cash Debit',Number(bank.pettyCashDebit)||0],['Net Bank Balance',Number(bank.net)||0]]);
-  detailsCell.append(details);detailsRow.append(detailsCell);
-  edit.disabled=readOnly||preview;edit.onclick=()=>{const input=document.querySelector('#balanceCalculatorForm [name=calc_date]');if(!input||input.disabled)return;input.value=record.date;input.dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('balanceCalculatorForm').scrollIntoView({behavior:'smooth',block:'start'});};
-  actions.append(view,edit);row.append(actions);body.append(row,detailsRow);
- }
- table.append(body);list.append(table);
-}
-
 function balanceCalculator(){
- calculatorHistory();
  const box=card('Working Balance Calculator'),form=node('form');form.id='balanceCalculatorForm';box.classList.add('investment-form-card');box.classList.add('calculator-page');
  const top=section(form,'Date'),date=field(top,'Date','calc_date','date',true);date.readOnly=false;date.value='';top.classList.add('compact-capital-date');installSubmissionDatePicker(date,'calculator');
  const maArea=section(form,'MA Balance Calculation');
@@ -1285,7 +1245,7 @@ function balanceCalculator(){
    busy=true;date.disabled=true;paint();status.textContent='Saving…';
    const record={...(editExpected||{}),type:'calculator',scope:'company',date:date.value,...ma,netMA:net,cashCalculation:{transfers:{salary:numeric(cashSalary),routeConvence:numeric(cashRoute),petty:numeric(cashPetty),pettySource:pettySource.value||"Cash"},headOfficeMovements,openingCash:numeric(cashOpening),cashReceivedFromBank:numeric(cashBankReceived),cashReceivedFromHeadOffice:numeric(cashHeadOfficeReceived),cashIssueDso:numeric(cashIssue),cashDepositLifting:numeric(cashLifting),cashInHand:numeric(cashHand),marketCash:{total:numeric(marketTeam)},netCash:numeric(netCash)},totalClosing:numeric(totalClosing),bankCalculations:JSON.parse(JSON.stringify(bankDrafts)),updatedAt:bridge.serverTimestamp,updatedBy:owner};
    const calculatorKey=date.value+'_calculator';const result=await window.investmentCommitRecord(bridge,'investmentEntries',calculatorKey,record,{createOnly:!editExpected,expected:editExpected});
-   const submittedDate=record.date;rememberWorkingDate(submittedDate);items[submittedDate+'_calculator']=result.value;(window.openInvestmentPage||show)('capital');const capitalDate=document.querySelector('#capitalForm [name=capital_date]');if(capitalDate){capitalDate.value=submittedDate;capitalDate.dispatchEvent(new Event('change',{bubbles:true}));}
+   const submittedDate=record.date;rememberWorkingDate(submittedDate);items[submittedDate+'_calculator']=result.value;editExpected=JSON.parse(JSON.stringify(result.value));status.textContent='✅ '+submittedDate+' তারিখের হিসাব Save হয়েছে। এই ফর্মেই সংশোধন করে Update Submit করতে পারবেন।';
   }catch(e){status.textContent='Submit হয়নি: '+e.message;}finally{busy=false;date.disabled=false;paint();}
  };
  source();
@@ -1496,7 +1456,7 @@ function renderInvestmentOverview(list,month){
  for(const [label,value]of [...lines,['Petty Cash Balance',petty]])body.append(row('td',label,money(Number(value)||0)));
  const foot=node('tfoot');foot.append(row('th','Total Investment',money(total)));table.append(body,foot);list.append(table);
 }
-function render(){if(page==='calculator'){renderCalculatorHistory();return;}if(page==='headOfficeReport'){renderHeadOfficeReport();return;}if(['declaration','petty','pettyReport','pettyTypeReport'].includes(page)){renderPetty();return;}
+function render(){if(page==='headOfficeReport'){renderHeadOfficeReport();return;}if(['declaration','petty','pettyReport','pettyTypeReport'].includes(page)){renderPetty();return;}
  const list=document.getElementById('investList');if(!list)return;list.replaceChildren();const month=document.getElementById('investMonth')?.value||'';
  if(page==='total'){renderInvestmentOverview(list,month);return;}
  const capitalMode=document.querySelector('.report-filter')?.dataset.mode||'';
