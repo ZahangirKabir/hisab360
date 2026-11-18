@@ -85,3 +85,29 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  html body :is(#app,#bankApp) .report-filter{padding-top:0!important}
  html body #app #content>.capital-filter-in-heading{display:none!important}
 }
+
+
+/* Scroll the overflowing form/report itself; fitting content has no scrollbar. */
+@media screen{
+ html body .finance-form-scroll,
+ html body .finance-native-table-scroll,
+ html body :is(#appContainer .table-container,#app .scroll,#bankApp .scroll).finance-native-table-scroll{
+  box-sizing:border-box!important;min-width:0!important;max-width:100%!important;
+  height:auto!important;min-height:0!important;max-height:var(--finance-region-height,calc(100dvh - 160px))!important;
+  overflow:auto!important;overscroll-behavior:auto!important;scrollbar-gutter:auto!important;
+  scrollbar-width:auto!important;scrollbar-color:#92979d #f4f5f6;
+ }
+ html body :is(#appContainer,#app,#bankApp) .finance-form-scroll .finance-native-table-scroll{max-height:none!important;overflow-y:hidden!important}
+ html body .finance-native-table-scroll table thead :is(th,td),
+ html body #appContainer #dataTable thead tr th,
+ html body #appContainer #dataTable thead tr:nth-child(2) th{
+  position:sticky!important;top:var(--finance-header-row-top,0px)!important;transform:none!important;will-change:auto!important;
+ }
+ html body .finance-form-scroll::-webkit-scrollbar{width:12px;height:12px}
+ html body .finance-form-scroll::-webkit-scrollbar-thumb{background:#92979d;border:3px solid #f4f5f6;border-radius:8px}
+ html body .finance-form-scroll::-webkit-scrollbar-track{background:#f4f5f6}
+}
+@media print{
+ .finance-form-scroll,.finance-native-table-scroll{height:auto!important;max-height:none!important;overflow:visible!important}
+ .finance-native-table-scroll table thead :is(th,td){position:static!important;transform:none!important}
+}
