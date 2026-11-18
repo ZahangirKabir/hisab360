@@ -27,7 +27,7 @@
    const rect=el.getBoundingClientRect();
    let flowBottom=rect.bottom;
    for(const child of document.body.children){const style=getComputedStyle(child);if(!child.getClientRects().length||['fixed','absolute'].includes(style.position))continue;flowBottom=Math.max(flowBottom,child.getBoundingClientRect().bottom+(parseFloat(style.marginBottom)||0));}
-   const reserve=Math.max(36,flowBottom-rect.bottom+(parseFloat(getComputedStyle(document.body).paddingBottom)||0)+16);
+   const reserve=Math.max(36,flowBottom-rect.bottom+(parseFloat(getComputedStyle(document.body).paddingBottom)||0)+24);
    const available=Math.max(160,Math.floor(viewHeight-Math.max(0,rect.top+frameTop)-reserve));
    setVar(el,'--finance-region-height',available+'px');
  }
