@@ -16,7 +16,7 @@ html body #balanceCalculatorForm .fields{gap:9px 12px!important}
 html body :is(.report-filter,.bank-filters,.compact-capital-date) :is(.smart-period-trigger,.submission-date-trigger){height:34px!important;min-height:34px!important;padding:5px 9px!important;border-radius:7px!important;font-size:12px!important}
 html body .report-filter>.smart-period-wrapper{flex:0 1 165px!important;width:165px!important}
 html body :is(.table-container,.scroll){overflow-y:auto!important}
-html body .finance-shared-scroll-target{scrollbar-width:thin!important}
+html body .finance-shared-scroll-target{scrollbar-width:auto!important}
 html body .finance-shared-scroll-target::-webkit-scrollbar{width:10px}
 html body .finance-shared-scroll-target::-webkit-scrollbar:horizontal{height:0}
 html body .finance-shared-scroll-target::-webkit-scrollbar-thumb{background:#80a795;border-radius:8px}
