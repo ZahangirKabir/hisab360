@@ -1,0 +1,27 @@
+/* Shared finance forms, report periods and one horizontal report navigator. */
+@media screen{
+html{scrollbar-color:#80a795 #edf3ef;scrollbar-width:thin;scroll-padding-bottom:36px}
+body{padding-bottom:32px!important}
+html body :is(.report-filter,.bank-filters){position:relative;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:7px!important;padding:25px 0 10px!important;margin:8px 0 12px!important;border:0!important;border-top:1px solid #e2eae5!important;border-radius:0!important;background:transparent!important;overflow:visible!important;box-shadow:none!important}
+html body :is(.report-filter,.bank-filters)::before{content:'Report Period';position:absolute;top:5px;left:0;padding-left:10px;border-left:3px solid #72a78e;color:#365c4c;font-size:11px;font-weight:650;line-height:14px}
+html body .bank-filters::before{content:'Report Filters'}
+html body :is(.report-filter,.bank-filters)>button{min-height:32px!important;margin:0!important;padding:5px 10px!important;border:1px solid #dbe5df!important;border-radius:7px!important;background:#f5f8f6!important;color:#486652!important;font-size:11px!important;box-shadow:none!important}
+html body :is(.report-filter,.bank-filters)>button.active{background:#176c50!important;color:#fff!important;border-color:#176c50!important}
+html body :is(#app,#bankApp,#appContainer,.edit-original-form) :is(.field,.bank-field,.form-group,.form-row) :is(input,select):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]){height:34px!important;min-height:34px!important;padding:5px 9px!important;font-size:13px!important;border-radius:7px!important;box-sizing:border-box;max-width:100%;font-variant-numeric:tabular-nums}
+html body :is(#app,#bankApp,#appContainer,.edit-original-form) :is(.field,.bank-field,.form-group)>label{font-size:11px!important;line-height:1.4!important;margin-bottom:4px!important}
+html body #balanceCalculatorForm{gap:13px!important}
+html body #balanceCalculatorForm>.finance-section{padding-top:12px!important}
+html body #balanceCalculatorForm>.finance-section>legend{margin-bottom:9px!important}
+html body #balanceCalculatorForm .fields{gap:9px 12px!important}
+html body :is(.report-filter,.bank-filters,.compact-capital-date) :is(.smart-period-trigger,.submission-date-trigger){height:34px!important;min-height:34px!important;padding:5px 9px!important;border-radius:7px!important;font-size:12px!important}
+html body .report-filter>.smart-period-wrapper{flex:0 1 165px!important;width:165px!important}
+html body :is(.table-container,.scroll):not(.cheque-dialog .scroll):not(.modal-content .table-container){max-height:none!important;overflow-y:hidden!important}
+html body .finance-shared-scroll-target{scrollbar-width:none!important}
+html body .finance-shared-scroll-target::-webkit-scrollbar{display:none}
+#financeReportNavigator{position:fixed;z-index:1500;bottom:0;height:27px;padding:5px 10px 3px;box-sizing:border-box;background:#f7fbf9ed;border:1px solid #d6e5dc;border-radius:8px 8px 0 0;box-shadow:0 -2px 10px #214b3510}
+#financeReportNavigator[hidden]{display:none!important}
+#financeReportNavigator .finance-report-track{height:18px;overflow-x:scroll;overflow-y:hidden;scrollbar-color:#648f79 #e3eee7;scrollbar-width:auto;outline-offset:2px}
+#financeReportNavigator .finance-report-track>div{height:1px}
+@media(max-width:760px){html body :is(#app,#bankApp,#appContainer,.edit-original-form) :is(.field,.bank-field,.form-group,.form-row) :is(input,select):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]){height:38px!important;min-height:38px!important;font-size:16px!important}html body :is(.report-filter,.bank-filters)>button{min-height:36px!important}html body :is(.report-filter,.bank-filters,.compact-capital-date) :is(.smart-period-trigger,.submission-date-trigger){height:36px!important;min-height:36px!important}}
+}
+@media print{#financeReportNavigator{display:none!important}}
