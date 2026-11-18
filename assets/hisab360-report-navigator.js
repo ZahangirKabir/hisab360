@@ -21,12 +21,13 @@
  }
  function fitReport(el,chromeHeight){
    if(!el.getBoundingClientRect().width)return;
-   let frameTop=0;try{if(parent!==window&&parent.location.origin===location.origin)frameTop=window.frameElement.getBoundingClientRect().top;}catch(_){}
+   let frameTop=0,viewHeight=innerHeight;try{if(parent!==window&&parent.location.origin===location.origin){frameTop=window.frameElement.getBoundingClientRect().top;viewHeight=parent.innerHeight;}}catch(_){}
    const modal=!!el.closest('[role=dialog],.modal-content,.cheque-dialog');
    for(const table of el.querySelectorAll('table')){
     const header=table.tHead;if(!header)continue;
     const rect=table.getBoundingClientRect(),height=header.getBoundingClientRect().height;
-    const shift=modal?0:Math.max(0,Math.min(chromeHeight-rect.top-frameTop,rect.height-height));
+    const short=rect.height<=Math.max(120,viewHeight-chromeHeight-12);if(table.classList.contains('finance-short-report')!==short)table.classList.toggle('finance-short-report',short);
+    const shift=modal||short?0:Math.max(0,Math.min(chromeHeight-rect.top-frameTop,rect.height-height));
     const value=Math.round(shift*100)/100+'px';
     if(table.style.getPropertyValue('--finance-page-header-shift')!==value)table.style.setProperty('--finance-page-header-shift',value);
     let offset=0;for(const row of header.rows){for(const cell of row.cells)if(cell.style.getPropertyValue('--finance-header-row-top')!==offset+'px')cell.style.setProperty('--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}
