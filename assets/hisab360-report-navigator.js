@@ -22,7 +22,7 @@
  }
  function update(){queued=false;const entries=scan(document),chosen=entries.find(x=>x.el===preferred)||entries.sort((a,b)=>Math.max(0,a.rect.top)-Math.max(0,b.rect.top))[0];
   if(!chosen){bar.hidden=true;active=null;return;}
-  active=chosen.el;active.classList.add('finance-shared-scroll-target');
+  active=chosen.el;if(!active.classList.contains('finance-shared-scroll-target'))active.classList.add('finance-shared-scroll-target');
   const left=Math.max(4,chosen.rect.left),width=Math.max(0,Math.min(innerWidth-4,chosen.rect.left+chosen.rect.width)-left);
   if(width<50){bar.hidden=true;return;}
   bar.hidden=false;bar.style.left=left+'px';bar.style.width=width+'px';
