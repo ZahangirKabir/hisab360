@@ -67,3 +67,12 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
 
 /* Paint header grid lines inside each sticky cell so translated rows cannot hide them. */
 @media screen{html body #appContainer #dataTable thead tr th{border-right:1px solid #ffffff80!important;border-bottom:1px solid #ffffff99!important;box-shadow:inset 0 -1px 0 #ffffff99,inset -1px 0 0 #ffffff55!important;background-clip:border-box!important}html body #appContainer #dataTable thead tr:first-child th{border-bottom:1px solid #ffffffb3!important;box-shadow:inset 0 -1px 0 #ffffffb3,inset -1px 0 0 #ffffff66!important}html body #appContainer #dataTable thead tr th:last-child{border-right:0!important}}
+
+/* Page scrolling translates the original header rows together. Native vertical
+   sticky offsets would add a second offset and separate grouped header rows.
+   Keep horizontal sticky positioning for frozen columns; dialogs scroll locally. */
+@media screen{
+ html body .finance-native-table-scroll table thead :is(th,td){top:auto!important}
+ html body #appContainer #dataTable thead tr:nth-child(2) th{top:auto!important}
+ html body :is([role=dialog],.modal-content,.cheque-dialog) .finance-native-table-scroll table thead :is(th,td){top:var(--finance-header-row-top,0px)!important}
+}
