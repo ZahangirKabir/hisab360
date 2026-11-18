@@ -62,3 +62,5 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
 
 /* Short reports need no vertical header repositioning when filters expand. */
 @media screen{html body .finance-native-table-scroll table.finance-short-report thead :is(th,td){top:auto!important;transform:none!important;will-change:auto!important}html body #dataTable thead tr:first-child th{border-bottom:1px solid #d4dfd9!important}}
+
+@media screen{html body #appContainer #dataTable.finance-short-report thead :is(th,td){top:auto!important;transform:none!important;will-change:auto!important}}
