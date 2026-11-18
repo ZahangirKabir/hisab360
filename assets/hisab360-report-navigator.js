@@ -4,18 +4,24 @@
  document.getElementById('financeReportNavigator')?.remove();
  const bound=new WeakSet();
  function fitReport(el){
-   const rect=el.getBoundingClientRect();if(!rect.width||!rect.height)return;
-   let top=rect.top,view=innerHeight;try{if(parent!==window&&parent.location.origin===location.origin){top+=window.frameElement.getBoundingClientRect().top;view=parent.innerHeight;}}catch(_){}
-   const available=Math.max(120,Math.floor(view-Math.max(0,top)-14));
-   if(el.style.getPropertyValue('--finance-report-available-height')!==available+'px')el.style.setProperty('--finance-report-available-height',available+'px');
-   for(const table of el.querySelectorAll('table')){let offset=0;for(const row of table.tHead?.rows||[]){for(const cell of row.cells)if(cell.style.getPropertyValue('--finance-header-row-top')!==offset+'px')cell.style.setProperty('--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}}
+   if(!el.getBoundingClientRect().width)return;
+   let frameTop=0;try{if(parent!==window&&parent.location.origin===location.origin)frameTop=window.frameElement.getBoundingClientRect().top;}catch(_){}
+   const modal=!!el.closest('[role=dialog],.modal-content,.cheque-dialog');
+   for(const table of el.querySelectorAll('table')){
+    const header=table.tHead;if(!header)continue;
+    const rect=table.getBoundingClientRect(),height=header.getBoundingClientRect().height;
+    const shift=modal?0:Math.max(0,Math.min(-rect.top-frameTop,rect.height-height));
+    const value=Math.round(shift*100)/100+'px';
+    if(table.style.getPropertyValue('--finance-page-header-shift')!==value)table.style.setProperty('--finance-page-header-shift',value);
+    let offset=0;for(const row of header.rows){for(const cell of row.cells)if(cell.style.getPropertyValue('--finance-header-row-top')!==offset+'px')cell.style.setProperty('--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}
+   }
  }
  function bind(){
   for(const el of document.querySelectorAll('.table-container,.scroll')){
    if(!el.querySelector('table'))continue;fitReport(el);if(bound.has(el))continue;bound.add(el);
    el.classList.remove('finance-shared-scroll-target');el.classList.add('finance-native-table-scroll');
    if(!el.hasAttribute('tabindex'))el.tabIndex=0;
-   if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label','Report table — scroll up, down, left or right');
+   if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label','Report table — scroll left or right; use page scrolling for more rows');
    let drag=null;
    const finish=()=>{if(drag){drag=null;el.classList.remove('finance-table-dragging');}};
    el.addEventListener('pointerdown',event=>{
