@@ -3,9 +3,16 @@
  'use strict';
  document.getElementById('financeReportNavigator')?.remove();
  const bound=new WeakSet();
+ function fitReport(el){
+   const rect=el.getBoundingClientRect();if(!rect.width||!rect.height)return;
+   let top=rect.top,view=innerHeight;try{if(parent!==window&&parent.location.origin===location.origin){top+=window.frameElement.getBoundingClientRect().top;view=parent.innerHeight;}}catch(_){}
+   const available=Math.max(120,Math.floor(view-Math.max(0,top)-14));
+   if(el.style.getPropertyValue('--finance-report-available-height')!==available+'px')el.style.setProperty('--finance-report-available-height',available+'px');
+   for(const table of el.querySelectorAll('table')){let offset=0;for(const row of table.tHead?.rows||[]){for(const cell of row.cells)if(cell.style.getPropertyValue('--finance-header-row-top')!==offset+'px')cell.style.setProperty('--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}}
+ }
  function bind(){
   for(const el of document.querySelectorAll('.table-container,.scroll')){
-   if(bound.has(el)||!el.querySelector('table'))continue;bound.add(el);
+   if(!el.querySelector('table'))continue;fitReport(el);if(bound.has(el))continue;bound.add(el);
    el.classList.remove('finance-shared-scroll-target');el.classList.add('finance-native-table-scroll');
    if(!el.hasAttribute('tabindex'))el.tabIndex=0;
    if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label','Report table — scroll up, down, left or right');
@@ -28,5 +35,7 @@
  let queued=false;
  const schedule=()=>{if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;bind();});}};
  new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true});
+ window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,{passive:true});document.fonts?.ready.then(schedule);
+ try{if(parent!==window&&parent.location.origin===location.origin){parent.addEventListener('resize',schedule);parent.addEventListener('scroll',schedule,{passive:true});window.addEventListener('pagehide',()=>{parent.removeEventListener('resize',schedule);parent.removeEventListener('scroll',schedule);},{once:true});}}catch(_){}
  bind();
 })();
