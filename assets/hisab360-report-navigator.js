@@ -24,7 +24,11 @@
    if(!el.getBoundingClientRect().width)return;
    let frameTop=0,viewHeight=window.visualViewport?.height||innerHeight;
    try{if(parent!==window&&parent.location.origin===location.origin){frameTop=window.frameElement.getBoundingClientRect().top;viewHeight=parent.visualViewport?.height||parent.innerHeight;}}catch(_){}
-   const rect=el.getBoundingClientRect(),available=Math.max(160,Math.floor(viewHeight-Math.max(0,rect.top+frameTop)-36));
+   const rect=el.getBoundingClientRect();
+   let flowBottom=rect.bottom;
+   for(const child of document.body.children){const style=getComputedStyle(child);if(!child.getClientRects().length||['fixed','absolute'].includes(style.position))continue;flowBottom=Math.max(flowBottom,child.getBoundingClientRect().bottom+(parseFloat(style.marginBottom)||0));}
+   const reserve=Math.max(36,flowBottom-rect.bottom+(parseFloat(getComputedStyle(document.body).paddingBottom)||0)+16);
+   const available=Math.max(160,Math.floor(viewHeight-Math.max(0,rect.top+frameTop)-reserve));
    setVar(el,'--finance-region-height',available+'px');
  }
  function fitReport(el){
