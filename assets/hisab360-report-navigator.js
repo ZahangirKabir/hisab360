@@ -2,23 +2,40 @@
 (()=>{
  'use strict';
  document.getElementById('financeReportNavigator')?.remove();
- const bound=new WeakSet();
- function fitReport(el){
+ const bound=new WeakSet(),chromeObserved=new WeakSet();
+ const setVar=(el,name,value)=>{if(el.style.getPropertyValue(name)!==value)el.style.setProperty(name,value);};
+ const chromeResize=typeof ResizeObserver==='function'?new ResizeObserver(()=>schedule()):null;
+ const visibleHeight=el=>el&&el.getClientRects().length?el.getBoundingClientRect().height:0;
+ function syncChrome(){
+  const root=document.documentElement,top=document.querySelector('#appContainer>.portal-sticky-top'),panel=document.getElementById('adminFilterPanel');
+  const topHeight=Math.ceil(visibleHeight(top)),panelHeight=panel&&!panel.classList.contains('is-collapsed')?Math.ceil(visibleHeight(panel)):0;
+  setVar(root,'--finance-topbar-height',topHeight+'px');let stack=topHeight+panelHeight;
+  const heading=document.getElementById('investmentPageHeading');let parentStack=0,embedded=false;
+  try{embedded=parent!==window&&parent.location.origin===location.origin;if(embedded)parentStack=parseFloat(parent.getComputedStyle(parent.document.documentElement).getPropertyValue('--finance-global-stack-height'))||0;}catch(_){}
+  if(visibleHeight(heading)){
+   if(embedded){if(!heading.classList.contains('finance-embedded-header'))heading.classList.add('finance-embedded-header');const old=parseFloat(heading.style.getPropertyValue('--finance-embedded-header-shift'))||0,original=heading.getBoundingClientRect().top-old+window.frameElement.getBoundingClientRect().top;setVar(heading,'--finance-embedded-header-shift',Math.max(0,parentStack-original)+'px');}
+   stack+=Math.ceil(visibleHeight(heading))+8;
+  }
+  for(const el of [top,panel,heading])if(el&&!chromeObserved.has(el)){chromeObserved.add(el);chromeResize?.observe(el);}
+  stack+=parentStack;setVar(root,'--finance-global-stack-height',stack+'px');return stack;
+ }
+ function fitReport(el,chromeHeight){
    if(!el.getBoundingClientRect().width)return;
    let frameTop=0;try{if(parent!==window&&parent.location.origin===location.origin)frameTop=window.frameElement.getBoundingClientRect().top;}catch(_){}
    const modal=!!el.closest('[role=dialog],.modal-content,.cheque-dialog');
    for(const table of el.querySelectorAll('table')){
     const header=table.tHead;if(!header)continue;
     const rect=table.getBoundingClientRect(),height=header.getBoundingClientRect().height;
-    const shift=modal?0:Math.max(0,Math.min(-rect.top-frameTop,rect.height-height));
+    const shift=modal?0:Math.max(0,Math.min(chromeHeight-rect.top-frameTop,rect.height-height));
     const value=Math.round(shift*100)/100+'px';
     if(table.style.getPropertyValue('--finance-page-header-shift')!==value)table.style.setProperty('--finance-page-header-shift',value);
     let offset=0;for(const row of header.rows){for(const cell of row.cells)if(cell.style.getPropertyValue('--finance-header-row-top')!==offset+'px')cell.style.setProperty('--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}
    }
  }
  function bind(){
+  const chromeHeight=syncChrome();
   for(const el of document.querySelectorAll('.table-container,.scroll')){
-   if(!el.querySelector('table'))continue;fitReport(el);if(bound.has(el))continue;bound.add(el);
+   if(!el.querySelector('table'))continue;fitReport(el,chromeHeight);if(bound.has(el))continue;bound.add(el);
    el.classList.remove('finance-shared-scroll-target');el.classList.add('finance-native-table-scroll');
    if(!el.hasAttribute('tabindex'))el.tabIndex=0;
    if(!el.hasAttribute('aria-label'))el.setAttribute('aria-label','Report table — scroll left or right; use page scrolling for more rows');
@@ -40,7 +57,7 @@
  }
  let queued=false;
  const schedule=()=>{if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;bind();});}};
- new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true});
+ new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class']});
  window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,{passive:true});document.fonts?.ready.then(schedule);
  try{if(parent!==window&&parent.location.origin===location.origin){parent.addEventListener('resize',schedule);parent.addEventListener('scroll',schedule,{passive:true});window.addEventListener('pagehide',()=>{parent.removeEventListener('resize',schedule);parent.removeEventListener('scroll',schedule);},{once:true});}}catch(_){}
  bind();
