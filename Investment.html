@@ -1066,8 +1066,8 @@ window.investmentMATotal=function(record){const n=x=>Number(x)||0;return Math.ro
 window.investmentCashTotals=function(cash){
  const rows=cash.headOfficeMovements||[],received=window.cashHeadOfficeAdjustment(rows.filter(row=>row.direction==='received')),transfer=-window.cashHeadOfficeAdjustment(rows.filter(row=>row.direction==='transfer'));
  const n=value=>Number(value)||0,round=value=>Math.round(value*100)/100;
- const cashInHand=round(n(cash.openingCash)+n(cash.cashReceivedFromBank)+received-n(cash.cashIssueDso)-n(cash.cashDepositLifting));
- return {cashReceivedFromHeadOffice:received,cashInHand,netCash:round(cashInHand+n(cash.marketCash?.total)-transfer-['salary','routeConvence'].reduce((sum,key)=>sum+n(cash.transfers?.[key]),0)-window.pettySourceDebit(cash.transfers,'Cash'))};
+ const cashInHand=round(n(cash.openingCash)+n(cash.cashReceivedFromBank)+received-n(cash.cashIssueDso));
+ return {cashReceivedFromHeadOffice:received,cashInHand,netCash:round(cashInHand+n(cash.marketCash?.total)-n(cash.cashDepositLifting)-transfer-['salary','routeConvence'].reduce((sum,key)=>sum+n(cash.transfers?.[key]),0)-window.pettySourceDebit(cash.transfers,'Cash'))};
 };
 function cashHeadOfficeRows(form){return repeatRows(form,'Received & Transfer Head Office',row=>{
  const direction=select(row,'Received & Transfer','cash_ho_direction',[['','—'],['received','Received'],['transfer','Transfer']]);direction.required=false;
