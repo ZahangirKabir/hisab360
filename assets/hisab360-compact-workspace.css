@@ -25,3 +25,11 @@ html body .finance-shared-scroll-target::-webkit-scrollbar{display:none}
 @media(max-width:760px){html body #bankApp .bank-filters>.bank-field{flex:1 1 calc(50% - 7px)!important;width:calc(50% - 7px)!important;max-width:none!important;min-width:0!important}html body #bankApp .bank-filters>.smart-period-wrapper{flex:1 1 calc(50% - 7px)!important;width:calc(50% - 7px)!important;min-width:0!important;max-width:none!important}html body :is(#app,#bankApp,#appContainer,.edit-original-form) :is(.field,.bank-field,.form-group,.form-row) :is(input,select):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]){height:38px!important;min-height:38px!important;font-size:16px!important}html body :is(.report-filter,.bank-filters)>button{min-height:36px!important}html body :is(.report-filter,.bank-filters,.compact-capital-date) :is(.smart-period-trigger,.submission-date-trigger){height:36px!important;min-height:36px!important}}
 }
 @media print{#financeReportNavigator{display:none!important}}
+
+@media screen{
+html body #app .capital-report-heading{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:12px 22px!important}
+html body #app .capital-report-heading>h2{float:none!important;flex:0 0 auto!important;margin:0!important;line-height:1.4!important}
+html body #app .capital-report-heading>.report-filter{clear:none!important;flex:1 1 340px!important;width:auto!important;margin:0!important;padding:21px 0 0!important;border-top:0!important;min-width:0!important}
+html body #app .capital-report-heading>.report-filter::before{top:1px}
+@media(max-width:560px){html body #app .capital-report-heading{gap:8px!important}html body #app .capital-report-heading>.report-filter{flex-basis:100%!important}}
+}
