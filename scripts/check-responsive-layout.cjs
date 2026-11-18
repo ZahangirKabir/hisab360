@@ -59,6 +59,13 @@ await page.screenshot({path:'responsive-checks/daily-report-page-scroll.png'});
 await page.evaluate(()=>{const body=document.querySelector('#dataTable tbody');while(body.rows.length>2)body.deleteRow(-1);});await page.waitForTimeout(150);
 const shortGap=await page.evaluate(()=>document.querySelector('body>.portal-footer').getBoundingClientRect().top-document.querySelector('#dataTable').getBoundingClientRect().bottom);if(shortGap>14)throw Error('Short daily report has footer gap '+shortGap);
 console.log('Daily report expands with the page; short reports keep footer next to table.');
+for(const expanded of [true,false,true]){
+ await page.evaluate(expanded=>{const panel=document.getElementById('adminFilterPanel');panel.classList.toggle('is-collapsed',!expanded);panel.style.display=expanded?'grid':'none';},expanded);await page.waitForTimeout(150);
+ const stable=await page.evaluate(()=>{const table=document.getElementById('dataTable'),rows=table.tHead.rows,first=rows[0].cells[0],second=rows[1].cells[0];return {short:table.classList.contains('finance-short-report'),transform:getComputedStyle(second).transform,gap:second.getBoundingClientRect().top-first.getBoundingClientRect().bottom,border:getComputedStyle(first).borderBottomWidth};});
+ if(!stable.short||stable.transform!=='none'||Math.abs(stable.gap)>1||stable.border!=='1px')throw Error('Short report header moved after filter toggle '+JSON.stringify({expanded,...stable}));
+}
+console.log('Short report header rows and borders stay aligned before and after Filter toggles.');
+
 
 await page.evaluate(()=>{document.querySelector('#adminPageReport').style.display='none';document.querySelector('#adminPageBank').style.display='block';document.querySelector('#bankDetailsTableHead').innerHTML='<tr><th>Date</th><th>DSO</th><th>Bank</th><th>Amount</th></tr>';document.querySelector('#bankDetailsTableBody').innerHTML=Array.from({length:60},()=>'<tr><td>2026-11-11</td><td>DSO 801</td><td>Sample Bank</td><td>1,000</td></tr>').join('');});await page.waitForTimeout(200);
 const bankScroll=await page.evaluate(()=>{const box=document.querySelector('#adminPageBank .table-container');return{pageScroll:document.documentElement.scrollHeight>innerHeight+1,tableScroll:box.scrollHeight>box.clientHeight,fillsWidth:box.querySelector('table').getBoundingClientRect().width>=box.clientWidth-2};});if(!bankScroll.pageScroll||bankScroll.tableScroll||!bankScroll.fillsWidth)throw Error('Bank Details scroll layout failed '+JSON.stringify(bankScroll));console.log('Bank Details: the document scrolls vertically without a nested table scrollbar.');
