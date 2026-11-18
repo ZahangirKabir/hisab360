@@ -1,0 +1,52 @@
+'use strict';
+const {chromium}=require('playwright');
+const fs=require('node:fs');
+(async()=>{
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage();await page.route(/^https?:/,r=>r.abort());
+ const html=fs.readFileSync('index.html','utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+ const css=fs.readFileSync('assets/hisab360-compact-workspace.css','utf8');
+ const js=fs.readFileSync('assets/hisab360-report-navigator.js','utf8');
+ let checked=0;
+ for(const width of [320,390,768,1280])for(const id of ['adminPageReport','adminPageBank','adminPageSlipApproval','adminPageNotes','dsoPageReport','dsoPageSlip']){
+  await page.setViewportSize({width,height:900});await page.setContent(html);
+  await page.addStyleTag({content:css});
+  await page.evaluate(id=>{
+   document.querySelector('#loginSection').style.display='none';document.body.classList.remove('login-design-visible');document.querySelector('#appContainer').style.display='block';
+   document.querySelectorAll('#adminView,#dsoView,#adminView>div[id^=adminPage],#dsoView>div[id^=dsoPage]').forEach(e=>e.style.display='none');
+   document.getElementById(id.startsWith('dso')?'dsoView':'adminView').style.display='block';document.getElementById(id).style.display='block';document.body.dataset.portalMenuRole=id.startsWith('dso')?'dso':'admin';
+   document.querySelector('#adminFilterPanel').classList.add('is-collapsed');
+   for(const table of document.getElementById(id).querySelectorAll('table')){
+    if(!table.tHead?.rows.length){const h=table.tHead||table.createTHead();h.innerHTML='<tr><th>Date</th><th>DSO</th><th>Bank</th><th>Amount</th></tr>';}
+    const count=[...table.tHead.rows[table.tHead.rows.length-1].cells].reduce((n,c)=>n+c.colSpan,0),body=table.tBodies[0]||table.createTBody();
+    body.innerHTML=Array.from({length:60},(_,i)=>'<tr>'+Array.from({length:count},(_,j)=>'<td class="'+(j===0?'sticky-col-1':j===1?'sticky-col-2':'')+'">'+(j===0?'18/11/26':j===1?'DSO '+(801+i%46):'1,20,000')+'</td>').join('')+'</tr>').join('');
+   }
+  },id);
+  await page.addScriptTag({content:js});await page.waitForTimeout(100);
+  await page.evaluate(()=>window.scrollTo(0,450));await page.waitForTimeout(100);
+  const state=await page.evaluate(id=>{
+   const tables=[...document.getElementById(id).querySelectorAll('table')].filter(t=>t.getBoundingClientRect().width);
+   return {overflow:document.documentElement.scrollWidth>innerWidth+1,tables:tables.map(t=>{
+    const box=t.closest('.table-container'),rows=[...t.tHead.rows];return {bound:box.classList.contains('finance-native-table-scroll'),nested:box.scrollHeight>box.clientHeight+2,gaps:rows.slice(1).map((r,i)=>r.cells[0].getBoundingClientRect().top-rows[i].cells[0].getBoundingClientRect().bottom),headerTop:rows[0].cells[0].getBoundingClientRect().top,expectedTop:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--finance-global-stack-height'))||0};
+   })};
+  },id);
+  if(state.overflow||state.tables.some(t=>!t.bound||t.nested||t.gaps.some(g=>Math.abs(g)>1)||Math.abs(t.headerTop-t.expectedTop)>2))throw Error('Report scroll/header failure '+JSON.stringify({width,id,state}));
+  if(id==='adminPageReport'){
+   // Visibility and dimensions change without a scroll/resize event.
+   await page.evaluate(()=>{const p=document.getElementById('adminFilterPanel');p.classList.remove('is-collapsed');p.style.display='grid';});await page.waitForTimeout(100);
+   const gap=await page.evaluate(()=>{const t=document.getElementById('dataTable');return t.tHead.rows[1].cells[0].getBoundingClientRect().top-t.tHead.rows[0].cells[0].getBoundingClientRect().bottom;});
+   if(Math.abs(gap)>1)throw Error('Expanded filter separates header rows '+JSON.stringify({width,gap}));
+  }
+  checked++;
+ }
+ // Exercise report observer delivery after a style-only hidden-to-visible change.
+ await page.setContent('<style>.table-container{display:none;height:auto;overflow:auto}th,td{padding:15px}body{margin:0}</style><div style="height:1200px"></div><div class="table-container"><table><thead><tr><th>Header</th></tr></thead><tbody>'+Array.from({length:50},()=>'<tr><td>1,000</td></tr>').join('')+'</tbody></table></div>');
+ await page.addStyleTag({content:css});await page.addScriptTag({content:js});await page.evaluate(()=>window.scrollTo(0,1400));await page.waitForTimeout(80);
+ await page.evaluate(()=>document.querySelector('.table-container').style.display='block');await page.waitForTimeout(100);
+ const shift=await page.locator('table').evaluate(t=>parseFloat(t.style.getPropertyValue('--finance-page-header-shift'))||0);
+ // Browser clamps the initial scroll while hidden; scroll once, then hide/show at the same position.
+ await page.evaluate(()=>window.scrollTo(0,1400));await page.waitForTimeout(80);await page.evaluate(()=>{const box=document.querySelector('.table-container');box.style.visibility='hidden';box.style.width='80%';});await page.waitForTimeout(80);await page.evaluate(()=>document.querySelector('.table-container').style.visibility='visible');await page.waitForTimeout(80);
+ const resumed=await page.locator('table').evaluate(t=>parseFloat(t.style.getPropertyValue('--finance-page-header-shift'))||0);if(resumed<100)throw Error('Resized report did not refresh its header '+JSON.stringify({shift,resumed}));
+ console.log(checked+' populated report/viewport combinations: page scrolling, contiguous grouped headers, sticky positions and filter toggles passed; style-only resize refresh passed.');
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1);});
