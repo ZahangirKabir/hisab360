@@ -32,4 +32,6 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
 @media(max-width:560px){html body #app .capital-report-heading{gap:8px!important}html body #app .capital-report-heading>.report-filter{flex-basis:100%!important}}
 }
 
-@media screen{html body :is(#appContainer .table-container,#app .scroll,#bankApp .scroll){overflow:auto!important;max-height:70vh!important;touch-action:pan-x pan-y!important;scrollbar-width:auto!important;overscroll-behavior:contain}html body .finance-table-dragging,html body .finance-table-dragging *{cursor:grabbing!important;user-select:none!important}html body .finance-native-table-scroll:focus-visible{outline:2px solid #39876a;outline-offset:2px}#financeReportNavigator{display:none!important}}
+@media screen{html body :is(#appContainer .table-container,#app .scroll,#bankApp .scroll){overflow:auto!important;touch-action:pan-x pan-y!important;scrollbar-width:auto!important;overscroll-behavior:contain}html body .finance-table-dragging,html body .finance-table-dragging *{cursor:grabbing!important;user-select:none!important}html body .finance-native-table-scroll:focus-visible{outline:2px solid #39876a;outline-offset:2px}#financeReportNavigator{display:none!important}}
+
+@media screen{html body :is(#app .scroll,#bankApp .scroll){max-height:70vh!important}}
