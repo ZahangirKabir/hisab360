@@ -47,6 +47,19 @@ const fs=require('node:fs');
  // Browser clamps the initial scroll while hidden; scroll once, then hide/show at the same position.
  await page.evaluate(()=>window.scrollTo(0,1400));await page.waitForTimeout(80);await page.evaluate(()=>{const box=document.querySelector('.table-container');box.style.visibility='hidden';box.style.width='80%';});await page.waitForTimeout(80);await page.evaluate(()=>document.querySelector('.table-container').style.visibility='visible');await page.waitForTimeout(80);
  const resumed=await page.locator('table').evaluate(t=>parseFloat(t.style.getPropertyValue('--finance-page-header-shift'))||0);if(resumed<100)throw Error('Resized report did not refresh its header '+JSON.stringify({shift,resumed}));
+ // Use the actual Investment runtime to detect cascade conflicts in title controls.
+ await page.goto('file://'+process.cwd()+'/Investment.html');
+ for(const width of [390,1280]){
+  await page.setViewportSize({width,height:900});await page.evaluate(()=>window.openInvestmentPage('capitalReport'));await page.waitForTimeout(120);
+  const title=await page.evaluate(()=>({caption:getComputedStyle(document.querySelector('#investmentPageHeading .report-filter'),'::before').content,emptyCard:getComputedStyle(document.querySelector('#content>.capital-filter-in-heading')).display,overflow:document.documentElement.scrollWidth>innerWidth+1}));
+  if(!['none','normal','""'].includes(title.caption)||title.emptyCard!=='none'||title.overflow)throw Error('Working Capital title layout regressed '+JSON.stringify({width,title}));
+ }
+ await page.goto('file://'+process.cwd()+'/Investment.html');await page.waitForTimeout(120);
+ for(const width of [390,1280]){
+  await page.setViewportSize({width,height:900});await page.evaluate(()=>window.openInvestmentPage('capitalReport'));await page.waitForTimeout(100);
+  const layout=await page.evaluate(()=>({caption:getComputedStyle(document.querySelector('#investmentPageHeading .capital-header-period'),'::before').content,emptyHeading:getComputedStyle(document.querySelector('#content>.capital-filter-in-heading')).display,exportReady:typeof window.exportWorkingCapital}));
+  if(!['none','normal'].includes(layout.caption)||layout.emptyHeading!=='none'||layout.exportReady!=='function')throw Error('Capital report title/period/export failed '+JSON.stringify({width,layout}));
+ }
  console.log(checked+' populated report/viewport combinations: page scrolling, contiguous grouped headers, sticky positions and filter toggles passed; style-only resize refresh passed.');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
