@@ -64,3 +64,6 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
 @media screen{html body .finance-native-table-scroll table.finance-short-report thead :is(th,td){top:auto!important;transform:none!important;will-change:auto!important}html body #dataTable thead tr:first-child th{border-bottom:1px solid #d4dfd9!important}}
 
 @media screen{html body #appContainer #dataTable.finance-short-report thead :is(th,td){top:auto!important;transform:none!important;will-change:auto!important}}
+
+/* Paint header grid lines inside each sticky cell so translated rows cannot hide them. */
+@media screen{html body #appContainer #dataTable thead tr th{border-right:1px solid #ffffff80!important;border-bottom:1px solid #ffffff99!important;box-shadow:inset 0 -1px 0 #ffffff99,inset -1px 0 0 #ffffff55!important;background-clip:border-box!important}html body #appContainer #dataTable thead tr:first-child th{border-bottom:1px solid #ffffffb3!important;box-shadow:inset 0 -1px 0 #ffffffb3,inset -1px 0 0 #ffffff66!important}html body #appContainer #dataTable thead tr th:last-child{border-right:0!important}}
