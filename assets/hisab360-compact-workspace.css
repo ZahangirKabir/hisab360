@@ -59,3 +59,8 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
 
 /* One consistent grid for the daily report, including frozen columns. */
 @media screen{html body #adminPageReport>.table-container{border:1px solid #c9d8d1!important;border-radius:6px!important;padding:0!important;background:#fff!important}html body #dataTable{border-collapse:separate!important;border-spacing:0!important;border:0!important;border-radius:0!important}html body #dataTable :is(th,td){border:0!important;border-right:1px solid #d4dfd9!important;border-bottom:1px solid #d4dfd9!important;box-sizing:border-box!important}html body #dataTable thead :is(th,td){background-clip:border-box!important;box-shadow:none!important}html body #dataTable thead tr:last-child :is(th,td){border-bottom:1px solid #bdcfc5!important}html body #dataTable :is(th,td):last-child{border-right:0!important}html body #dataTable tbody tr:last-child td{border-bottom:0!important}html body #dataTable :is(.sticky-col-1,.sticky-col-2){box-shadow:none!important}html body #dataTable .sticky-col-2{border-right:1px solid #b9cec2!important}}
+
+/* Short reports need no vertical header repositioning when filters expand. */
+@media screen{html body .finance-native-table-scroll table.finance-short-report thead :is(th,td){top:auto!important;transform:none!important;will-change:auto!important}html body #dataTable thead tr:first-child th{border-bottom:1px solid #d4dfd9!important}}
+
+@media screen{html body #appContainer #dataTable.finance-short-report thead :is(th,td){top:auto!important;transform:none!important;will-change:auto!important}}
