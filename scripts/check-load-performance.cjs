@@ -1,0 +1,37 @@
+'use strict';
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
+const base=process.env.HISAB_TEST_ROOT||path.join(__dirname,'..');
+const index=fs.readFileSync(path.join(base,'index.html'),'utf8'),investment=fs.readFileSync(path.join(base,'Investment.html'),'utf8');
+const tick=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
+(async()=>{
+ const code=index.slice(index.indexOf('async function checkHostedRelease('),index.indexOf('    function applyRequiredUpdate()'));
+ assert(code.startsWith('async function'));
+ let release={index:'v1',investment:'v1',indexBytes:123},calls=[];
+ const c={URL,AbortController,setTimeout,clearTimeout,Date,console,location:{protocol:'https:',pathname:'/hisab360/',origin:'https://example.test',href:'https://example.test/hisab360/'},releaseCheckPromise:null,hostedReleaseCheckedAt:0,hostedReleaseEtags:null,hostedReleaseMismatch:false,loadedInvestmentVersion:null,APP_RELEASE_VERSION:'v1',updateReleaseGate(){},fetch:async(url,opts)=>{calls.push({url:String(url),method:opts.method||'GET'});return{ok:true,json:async()=>release,text:async()=>String(url).includes('Investment.html')?'<meta name="investment-release-version" content="v1">':"const APP_RELEASE_VERSION = 'v1'",headers:{get:()=>null}};}};
+ vm.createContext(c);vm.runInContext(code,c);
+ await c.checkHostedRelease(true);assert.equal(calls.length,1);assert(calls[0].url.includes('release.json'));assert.equal(c.hostedReleaseMismatch,false);
+ calls=[];release={...release,index:'v2'};await c.checkHostedRelease(true);assert.equal(c.hostedReleaseMismatch,true);assert.equal(calls.length,1);
+ calls=[];release={};await c.checkHostedRelease(true);assert.equal(calls.length,3);assert.equal(c.hostedReleaseMismatch,false);
+ console.log('PASS update checks: one small manifest request, changed versions detected, malformed manifest falls back to HTML.');
+
+ const watchCode=investment.slice(investment.indexOf('window.investmentWatchData='),investment.indexOf(' // Calculator money'));
+ let serial=0;const timers=new Map(),handlers={},pending=[],published=[];
+ const w={window:{addEventListener(){},removeEventListener(){}},document:{hidden:false,addEventListener(){},removeEventListener(){}},setTimeout(fn,delay){const id=++serial;timers.set(id,{fn,delay});return id;},clearTimeout(id){timers.delete(id);},console};
+ vm.createContext(w);vm.runInContext(watchCode,w);
+ const bridge={database:{ref(root){return{on(_,fn){handlers[root]=fn;},off(){},orderByChild(){return this;},equalTo(){return this;}};}},readInvestmentData(){return new Promise(resolve=>pending.push(resolve));}};
+ const stop=w.window.investmentWatchData(bridge,'investmentEntries',s=>published.push(s.val()),e=>{throw e;});
+ const runZero=()=>{const entry=[...timers].find(([,t])=>t.delay===0);assert(entry,'Expected immediate read');timers.delete(entry[0]);entry[1].fn();};
+ runZero();assert.equal(pending.length,1);
+ handlers['.info/connected']({val:()=>true});handlers.investmentEntries({val:()=>({cached:true})});runZero();
+ pending[0]({stale:true});await tick();assert.equal(published.length,0);runZero();assert.equal(pending.length,2);
+ pending[1]({fresh:true});await tick();assert.equal(published.length,1);assert.equal(published[0].fresh,true);
+ handlers.investmentEntries({val:()=>({live:true})});assert.equal(published[1].live,true);assert.equal(pending.length,2);
+ stop();assert.equal(timers.size,0);
+ console.log('PASS Investment first-read race retries immediately instead of waiting 10 seconds; only verified/live data published; cleanup retained.');
+ const restore=index.slice(index.indexOf('async function restorePortalSession('),index.indexOf('    async function openPortalForUser'));
+ assert(restore.includes('Promise.all([checkHostedRelease(true),authReady(credentialAuth)])'));
+ assert(restore.includes('Promise.all([getCredentialMeta(),prepareLoginDevice('));
+ assert(restore.includes('if(meta.userId!==id||meta.forceChange)'));
+ assert(restore.includes('openPortalForUser(id,{meta,app,approval,restoreEpoch:interactionEpoch})'));
+ console.log('PASS restored login overlaps independent checks and retains account, password-change and interaction guards.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
