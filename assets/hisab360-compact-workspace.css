@@ -188,3 +188,21 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
   html body #investmentPageHeading>.petty-header-filters{order:3;flex-basis:100%!important}
  }
 }
+
+/* Match every Petty Cash header control without stretching its label. */
+@media screen{
+ html body #investmentPageHeading:has(.petty-header-filters):not([hidden]){align-items:center!important;gap:7px 10px!important}
+ html body #investmentPageHeading>.petty-header-filters{align-items:center!important;gap:7px!important}
+ html body #investmentPageHeading>.petty-header-filters :is(.field,label,.smart-period-wrapper){margin:0!important;min-width:0!important}
+ html body #investmentPageHeading :is(.petty-header-filters,.petty-header-actions) :is(button,input:not(.smart-period-source),select:not([aria-hidden="true"]),.smart-period-trigger,.submission-date-trigger){
+  box-sizing:border-box!important;height:34px!important;min-height:34px!important;margin:0!important;
+  padding:6px 10px!important;border:1px solid #c7ddd3!important;border-radius:7px!important;
+  background:#f4f9f6!important;color:#215345!important;font:600 11px/1.3 'Segoe UI',sans-serif!important;box-shadow:none!important;vertical-align:middle!important
+ }
+ html body #investmentPageHeading>.petty-header-filters :is(.smart-period-trigger,.submission-date-trigger,input:not(.smart-period-source),button.h360-select){background:#fff!important;font-weight:500!important}
+ html body #investmentPageHeading>.petty-header-actions{align-items:center!important;gap:7px!important}
+ html body #investmentPageHeading>.petty-header-actions button{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important}
+ html body #investmentPageHeading :is(.petty-header-filters,.petty-header-actions) button:hover:not(:disabled){border-color:#77ac96!important;background:#eaf5ee!important}
+ html body #investmentPageHeading :is(.petty-header-filters,.petty-header-actions) :is(button,input,select):focus-visible{outline:2px solid #27866b!important;outline-offset:2px!important}
+ @media(max-width:600px){html body #investmentPageHeading :is(.petty-header-filters,.petty-header-actions) :is(button,input:not(.smart-period-source),select:not([aria-hidden="true"]),.smart-period-trigger,.submission-date-trigger){height:36px!important;min-height:36px!important}}
+}
