@@ -173,3 +173,18 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  html body :is(#content,#bankContent)>:last-child,
  html body :is(#adminView,#dsoView)>div:not([hidden]):last-child{margin-bottom:0!important}
 }
+
+/* Petty Cash filters and export actions share the visible page heading. */
+@media screen{
+ html body #investmentPageHeading:has(.petty-header-filters):not([hidden]){display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:6px 10px!important}
+ html body #investmentPageHeading:has(.petty-header-filters)>strong{flex:0 0 auto!important}
+ html body #investmentPageHeading>.petty-header-filters{flex:1 1 540px!important;min-width:0!important;margin:0!important;padding:0!important;border:0!important;align-items:flex-end!important}
+ html body #investmentPageHeading>.petty-header-filters::before{display:none!important;content:none!important}
+ html body #investmentPageHeading>.petty-header-actions{display:flex!important;flex:0 0 auto!important;margin:0 0 0 auto!important;gap:5px!important}
+ html body #app #content>.petty-filter-in-heading{display:none!important}
+ @media(max-width:600px){
+  html body #investmentPageHeading:has(.petty-header-filters)>strong{order:1}
+  html body #investmentPageHeading>.petty-header-actions{order:2}
+  html body #investmentPageHeading>.petty-header-filters{order:3;flex-basis:100%!important}
+ }
+}
