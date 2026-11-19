@@ -246,3 +246,31 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body :is(.status-rejected,.error-message){color:#ad2633!important}
  html body :is(input,select,textarea,button):focus-visible{outline-color:#08745e}
 }
+
+/* A calm, compact hierarchy for the Working Capital report. */
+@media screen{
+ html body #investmentPageHeading:has(.capital-header-period):not([hidden]){display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px 12px!important;padding:8px 10px!important;background:#fff!important;border-bottom:1px solid #dbe7e2!important}
+ html body #investmentPageHeading:has(.capital-header-period)>strong{font-size:15px!important;line-height:1.4!important}
+ html body #investmentPageHeading>.capital-header-period{display:flex!important;flex:1 1 320px!important;align-items:center!important;gap:6px!important;margin:0!important;padding:0!important}
+ html body #investmentPageHeading>.capital-header-actions{display:flex!important;align-items:center!important;gap:6px!important;margin:0 0 0 auto!important;float:none!important}
+ html body #investmentPageHeading :is(.capital-header-period,.capital-header-actions) :is(button,input:not(.smart-period-source),.smart-period-trigger){height:32px!important;min-height:32px!important;padding:5px 10px!important;font-size:11px!important;line-height:1.3!important;border-radius:7px!important;box-shadow:none!important}
+ html body #app .capital-report-table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;border:1px solid #cdded7!important;border-radius:8px!important;background:#fff!important}
+ html body #app .capital-report-table :is(th,td){padding:7px 8px!important;line-height:1.4!important;font-size:10.5px!important;border-right:1px solid #e3ece8!important;border-bottom:1px solid #e3ece8!important;vertical-align:middle!important}
+ html body #app .capital-report-table thead tr:first-child th{font-size:11px!important;font-weight:750!important;background:#eaf0ee!important;color:#29483f!important;padding:8px!important}
+ html body #app .capital-report-table thead tr:first-child th:nth-child(2){background:#deeee5!important;color:#194f37!important;border-bottom:2px solid #49946c!important}
+ html body #app .capital-report-table thead tr:first-child th:nth-child(3){background:#e4edf7!important;color:#244d71!important;border-bottom:2px solid #668eb3!important}
+ html body #app .capital-report-table thead tr:nth-child(2) th{white-space:normal!important;min-width:66px!important;max-width:138px!important;font-size:10px!important;font-weight:650!important;background:#f1f7f3!important;color:#355347!important;text-align:center!important}
+ html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n+8):nth-child(-n+13){background:#f0f5fb!important;color:#36546f!important}
+ html body #app .capital-report-table tbody td{background:#fff!important;color:#263d47!important;font-variant-numeric:tabular-nums}
+ html body #app .capital-report-table tbody tr:nth-child(even) td{background:#f8faf9!important}
+ html body #app .capital-report-table tbody td:nth-child(7){background:#eaf5ed!important;color:#1c593a!important;font-weight:750!important;border-right:2px solid #b6d2bf!important}
+ html body #app .capital-report-table tbody td:nth-child(13){background:#edf3fb!important;color:#285278!important;font-weight:750!important;border-right:2px solid #c3d3e5!important}
+ html body #app .capital-report-table tbody td:nth-child(8){border-left:1px solid #c3d3e5!important}
+ html body #app .capital-report-table tbody tr:hover td{background:#eaf4f1!important}
+ html body #app .capital-report-table tbody td:first-child{min-width:92px!important;white-space:nowrap!important;font-size:10.5px!important;color:#244a3e!important}
+ html body #app .capital-report-table tbody td:last-child{min-width:136px!important;text-align:center!important;white-space:nowrap!important}
+ html body #app .capital-report-table td:last-child>button{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:26px!important;height:26px!important;padding:4px 7px!important;margin:0 2px!important;font-size:10px!important;line-height:1.3!important;border-radius:5px!important;border:1px solid #c6ded2!important;background:#eef7f2!important;color:#205842!important}
+ html body #app .capital-report-table td:last-child>button:hover{background:#dcefe3!important}
+ html body #app .capital-report-table tbody tr:last-child td{border-bottom:0!important}
+ @media(max-width:600px){html body #investmentPageHeading>.capital-header-period{order:3;flex-basis:100%!important}html body #investmentPageHeading>.capital-header-actions{order:2}html body #investmentPageHeading:has(.capital-header-period)>strong{font-size:14px!important}}
+}
