@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.19.14">
+<meta name="investment-release-version" content="2026.11.19.15">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1298,9 +1298,10 @@ function expenseFilterControls(){const controls=node('div');controls.className='
 function previousPettyMonth(date=today()){const [y,m]=date.split('-').map(Number);return new Date(Date.UTC(y,m-2,1)).toISOString().slice(0,7);}
 function validPettyClosingMonth(value){return /^\d{4}-(0[1-9]|1[0-2])$/.test(value)&&value<=previousPettyMonth();}
 function expenseReportPage(key){const box=card(key==='pettyTypeReport'?'Monthly Income Vs Expense':'Petty Cash Report');if(key==='pettyTypeReport')box.querySelector('h2')?.remove();const {controls}=expenseFilterControls();
+ if(key==='pettyReport'){const type=document.getElementById('expenseReportType');if(type){type.setAttribute('aria-label','Expense Type');const label=type.closest('.field')?.querySelector('label');if(label)label.hidden=true;}}
  if(key==='pettyTypeReport'){box.append(controls);listBox();return;}
  const closingMonth=node('input');closingMonth.type='month';closingMonth.id='pettyClosingMonth';closingMonth.value=previousPettyMonth();closingMonth.max=today().slice(0,7);closingMonth.setAttribute('aria-label','Closing Month');closingMonth.onchange=render;
- const closingLabel=node('label','Closing Month');closingLabel.htmlFor=closingMonth.id;closingLabel.append(closingMonth);if(!preview&&!readOnly)controls.append(closingLabel);
+ const closingLabel=node('label');closingLabel.htmlFor=closingMonth.id;closingLabel.append(closingMonth);if(!preview&&!readOnly)controls.append(closingLabel);
  const close=node('button','Month Closing');close.id='pettyMonthClosingAction';close.type='button';close.className='add-row';close.disabled=preview||readOnly;
  close.onclick=async()=>{
   if(preview||readOnly||bridge.getUser()!=='admin'||!closingMonth.value||!dataReady)return;
@@ -1910,8 +1911,8 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
 
 <script src="assets/hisab360-select-menus.js?v=2026.11.12.6"></script>
 
-<link rel="stylesheet" href="assets/hisab360-compact-workspace.css?v=2026.11.19.14">
-<script src="assets/hisab360-report-navigator.js?v=2026.11.19.14"></script>
+<link rel="stylesheet" href="assets/hisab360-compact-workspace.css?v=2026.11.19.15">
+<script src="assets/hisab360-report-navigator.js?v=2026.11.19.15"></script>
 
 <style id="capital-period-visible-heading">@media screen{html body #investmentPageHeading:has(.capital-header-period):not([hidden]){display:flex!important;flex-wrap:wrap!important;justify-content:flex-start!important;align-items:center!important;gap:10px 18px!important}html body #investmentPageHeading:has(.capital-header-period)>strong{flex:0 0 auto!important}html body #investmentPageHeading>.capital-header-period{flex:1 1 330px!important;margin:0!important;padding:20px 0 0!important;border:0!important;min-width:0!important}html body #investmentPageHeading>.capital-header-period::before{top:0}html body #app .capital-filter-in-heading{display:none!important}html body #investmentPageHeading>.capital-header-actions{margin-left:auto!important}@media(max-width:560px){html body #investmentPageHeading>.capital-header-period{order:3;flex-basis:100%!important}html body #investmentPageHeading>.capital-header-actions{order:2}}}</style>
 
