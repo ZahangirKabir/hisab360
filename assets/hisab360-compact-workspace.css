@@ -223,3 +223,26 @@ html body #app .ho-report-controls>:is(input:not([hidden]):not(.smart-period-sou
 html body #app .ho-report-controls :is(input:not(.smart-period-source),select,button){height:36px!important;min-height:36px!important}
 }
 }
+
+/* Readable shared text palette on white and pastel surfaces. */
+@media screen{
+ html body{color:#243746;--text:#243746;--muted:#506273;--deep:#174e43}
+ html body :is(#appContainer,#app,#bankApp,#loginSection){color:#243746}
+ html body :is(#content,#bankContent) :is(h2,h3,h4),
+ html body #investmentPageHeading>strong{color:#174e43!important}
+ html body :is(#appContainer,#app,#bankApp,#loginSection) :is(input,select,textarea){color:#243746!important;caret-color:#00695c;-webkit-text-fill-color:#243746}
+ html body :is(#appContainer,#app,#bankApp,#loginSection) :is(input,textarea)::placeholder{color:#586979!important;opacity:1!important;-webkit-text-fill-color:#586979}
+ html body :is(#app,#bankApp) .investment-form-card label,
+ html body #balanceCalculatorForm .field>label,
+ html body #appContainer .filter-group label,
+ html body #appContainer #adminFilterPanel .filter-group label,
+ html body .edit-original-form .field>label{color:#354e59!important}
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card)>span,
+ html body :is(.expense-report-title p,.muted,.text-muted,.help-text,.field-hint){color:#506273!important}
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card)>strong{color:#145541!important}
+ html body :is(#appContainer,#app,#bankApp) tbody{color:#243746}
+ html body :is(.status-pending,.ho-transfer){color:#914300!important}
+ html body .status-approved{color:#1d6434!important}
+ html body :is(.status-rejected,.error-message){color:#ad2633!important}
+ html body :is(input,select,textarea,button):focus-visible{outline-color:#08745e}
+}
