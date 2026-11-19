@@ -206,3 +206,20 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  html body #investmentPageHeading :is(.petty-header-filters,.petty-header-actions) :is(button,input,select):focus-visible{outline:2px solid #27866b!important;outline-offset:2px!important}
  @media(max-width:600px){html body #investmentPageHeading :is(.petty-header-filters,.petty-header-actions) :is(button,input:not(.smart-period-source),select:not([aria-hidden="true"]),.smart-period-trigger,.submission-date-trigger){height:36px!important;min-height:36px!important}}
 }
+
+/* Keep Head Office report filters and export controls on one compact baseline. */
+@media screen{
+html body #app .ho-report>.ho-report-controls{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:7px!important;margin:0 0 10px!important;min-width:0!important;max-width:100%!important}
+html body #app .ho-report-controls>:is(input:not([hidden]):not(.smart-period-source),select,.smart-period-wrapper,.h360-select){flex:0 1 180px!important;width:180px!important;min-width:0!important;margin:0!important}
+html body #app .ho-report-controls>button.add-row{flex:0 0 auto!important;width:auto!important;min-width:72px!important}
+html body #app .ho-report-controls>.report-export-actions{float:none!important;flex:0 0 auto!important;margin:0 0 0 auto!important;gap:7px!important;align-items:center!important;overflow:visible!important}
+html body #app .ho-report-controls :is(input:not(.smart-period-source),select,button){box-sizing:border-box!important;height:34px!important;min-height:34px!important;padding:6px 10px!important;border:1px solid #c7ddd3!important;border-radius:7px!important;font:600 11px/1.3 'Segoe UI',sans-serif!important;box-shadow:none!important}
+html body #app .ho-report-controls :is(input:not(.smart-period-source),select,.h360-select,.smart-period-trigger){background:#fff!important;color:#215345!important;font-weight:500!important}
+html body #app .ho-report-controls :is(.add-row,.report-print){background:#e6f3ed!important;color:#215345!important}
+html body #app .ho-report-controls .report-download{background:#00695c!important;color:#fff!important}
+html body #app .ho-report-controls [hidden]{display:none!important}
+@media(max-width:600px){
+html body #app .ho-report-controls>:is(input:not([hidden]):not(.smart-period-source),select,.smart-period-wrapper,.h360-select){flex:1 1 130px!important;width:auto!important}
+html body #app .ho-report-controls :is(input:not(.smart-period-source),select,button){height:36px!important;min-height:36px!important}
+}
+}
