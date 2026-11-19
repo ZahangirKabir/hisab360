@@ -63,6 +63,8 @@ const fs=require('node:fs');
  if(!form.bounded||form.overflow!=='auto'||form.range<1||form.innerOverflow==='auto')throw Error('Calculator form scroll missing '+JSON.stringify(form));
 
  await page.evaluate(()=>window.openInvestmentPage('pettyReport'));await page.waitForTimeout(120);
+ const expenseCaption=await page.locator('#expenseReportType').evaluate(e=>({label:getComputedStyle(e.closest('.field').querySelector('label')).display,name:e.getAttribute('aria-label')}));
+ if(expenseCaption.label!=='none'||expenseCaption.name!=='Expense Type')throw Error('Petty caption remains visible '+JSON.stringify(expenseCaption));
  const petty=await page.evaluate(()=>({filters:document.querySelectorAll('#investmentPageHeading>.petty-header-filters').length,actions:document.querySelectorAll('#investmentPageHeading>.petty-header-actions button').length,inside:document.querySelectorAll('#investList>.report-export-actions').length,emptyCard:getComputedStyle(document.querySelector('#content>.petty-filter-in-heading')).display}));
  if(petty.filters!==1||petty.actions!==2||petty.inside!==0||petty.emptyCard!=='none')throw Error('Petty Cash heading controls failed '+JSON.stringify(petty));
  await page.evaluate(()=>{window.exportWorkingCapital=(mode,button,container)=>{window.pettyExportCheck={mode,id:container.id};};document.querySelector('.petty-header-actions .report-print').click();});
