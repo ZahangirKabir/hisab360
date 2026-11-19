@@ -167,6 +167,7 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  html body #appContainer{margin-bottom:0!important;padding-bottom:2px!important}
  html body :is(#adminView,#dsoView,#app,#bankApp,#content,#bankContent){margin-bottom:0!important;padding-bottom:0!important}
  html body:not(.login-design-visible)>.portal-footer,
+ html body.login-design-visible>.portal-footer,
  html body[data-portal-menu-role="admin"]>.portal-footer,
  html body .investment-footer{min-height:0!important;height:auto!important;margin:2px auto 0!important;padding:0!important;line-height:1.2!important;border:0!important}
  html body :is(#content,#bankContent)>:last-child,
