@@ -74,6 +74,19 @@ const fs=require('node:fs');
  await page.evaluate(()=>window.openInvestmentPage('capitalReport'));await page.waitForTimeout(80);
  if(await page.locator('.petty-header-filters,.petty-header-actions').count())throw Error('Petty controls remained on another report');
  console.log('Petty Cash filters, export actions, report target, rerender and navigation cleanup passed.');
+ for(const width of [390,1280]){
+  await page.setViewportSize({width,height:900});await page.evaluate(()=>window.openInvestmentPage('pettyTypeReport'));await page.waitForTimeout(120);
+  const income=await page.evaluate(()=>({filters:document.querySelectorAll('#investmentPageHeading>.petty-header-filters').length,actions:document.querySelectorAll('#investmentPageHeading>.petty-header-actions button').length,caption:getComputedStyle(document.querySelector('#expenseReportType').closest('.field').querySelector('label')).display,monthHidden:document.getElementById('expenseReportMonth').hidden,overflow:document.documentElement.scrollWidth>innerWidth+1,emptyCard:getComputedStyle(document.querySelector('#content>.petty-filter-in-heading')).display}));
+  if(income.filters!==1||income.actions!==2||income.caption!=='none'||income.monthHidden||income.overflow||income.emptyCard!=='none')throw Error('Income report header failed '+JSON.stringify({width,income}));
+  await page.evaluate(()=>document.querySelector('.petty-header-actions .report-download').click());
+  const target=await page.evaluate(()=>window.pettyExportCheck);if(target.mode!=='excel'||target.id!=='investList')throw Error('Income download lost its report target');
+  await page.evaluate(()=>document.getElementById('expenseReportType').dispatchEvent(new Event('change')));await page.waitForTimeout(80);
+  if(await page.locator('#investmentPageHeading>.petty-header-actions').count()!==1)throw Error('Income actions duplicated');
+ }
+ await page.evaluate(()=>window.openInvestmentPage('capitalReport'));await page.waitForTimeout(80);
+ if(await page.locator('.petty-header-filters,.petty-header-actions').count())throw Error('Income controls remained on another report');
+ console.log('Monthly Income Vs Expense mobile/desktop header, download target and navigation passed.');
+
  console.log(checked+' populated report/viewport combinations: conditional local scrolling, contiguous grouped headers, sticky positions and filter toggles passed.');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
