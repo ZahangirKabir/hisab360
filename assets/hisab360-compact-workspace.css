@@ -111,3 +111,9 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  .finance-form-scroll,.finance-native-table-scroll{height:auto!important;max-height:none!important;overflow:visible!important}
  .finance-native-table-scroll table thead :is(th,td){position:static!important;transform:none!important}
 }
+
+/* The content edge owns the form scrollbar, never the inset form card. */
+@media screen{
+ html body :is(#content,#bankContent).finance-form-scroll{width:100%!important;padding-right:0!important}
+ html body :is(#content,#bankContent).finance-form-scroll form{max-height:none!important;overflow:visible!important}
+}
