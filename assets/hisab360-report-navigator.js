@@ -35,7 +35,7 @@
    fitRegion(el);
    for(const table of el.querySelectorAll('table')){
     const header=table.tHead;if(!header)continue;
-    table.classList.remove('finance-short-report');
+    if(table.classList.contains('finance-short-report'))table.classList.remove('finance-short-report');
     setVar(table,'--finance-page-header-shift','0px');
     let offset=0;for(const row of header.rows){for(const cell of row.cells)setVar(cell,'--finance-header-row-top',offset+'px');offset+=row.getBoundingClientRect().height;}
    }
@@ -50,7 +50,7 @@
   }
   for(const form of document.querySelectorAll('#content form,#bankContent form,#appContainer form,#dsoPageForm,#dsoPageSlip,#dsoPageSettings')){
    if(form.closest('[role=dialog],.modal-content,.cheque-dialog'))continue;
-   if(form.parentElement.closest('.finance-form-scroll')){form.classList.remove('finance-form-scroll');continue;}
+   if(form.parentElement.closest('.finance-form-scroll')){if(form.classList.contains('finance-form-scroll'))form.classList.remove('finance-form-scroll');continue;}
    if(!form.classList.contains('finance-form-scroll'))form.classList.add('finance-form-scroll');fitRegion(form);
    if(!reportObserved.has(form)){reportObserved.add(form);reportResize?.observe(form);}
   }
