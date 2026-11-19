@@ -59,8 +59,8 @@ const fs=require('node:fs');
   if(!['none','normal'].includes(layout.caption)||layout.emptyHeading!=='none'||layout.exportReady!=='function')throw Error('Capital report title/period/export failed '+JSON.stringify({width,layout}));
  }
  await page.evaluate(()=>window.openInvestmentPage('calculator'));await page.waitForTimeout(100);
- const form=await page.locator('#balanceCalculatorForm').evaluate(e=>({bounded:parseFloat(getComputedStyle(e).maxHeight)<innerHeight,overflow:getComputedStyle(e).overflowY,range:e.scrollHeight-e.clientHeight}));
- if(!form.bounded||form.overflow!=='auto'||form.range<1)throw Error('Calculator form scroll missing '+JSON.stringify(form));
+ const form=await page.locator('#balanceCalculatorForm').evaluate(e=>{const region=e.closest('.finance-form-scroll');return {bounded:!!region&&parseFloat(getComputedStyle(region).maxHeight)<innerHeight,overflow:region&&getComputedStyle(region).overflowY,range:region?region.scrollHeight-region.clientHeight:0,innerOverflow:getComputedStyle(e).overflowY};});
+ if(!form.bounded||form.overflow!=='auto'||form.range<1||form.innerOverflow==='auto')throw Error('Calculator form scroll missing '+JSON.stringify(form));
  console.log(checked+' populated report/viewport combinations: conditional local scrolling, contiguous grouped headers, sticky positions and filter toggles passed.');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
