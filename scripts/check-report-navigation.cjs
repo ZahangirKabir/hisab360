@@ -61,6 +61,17 @@ const fs=require('node:fs');
  await page.evaluate(()=>window.openInvestmentPage('calculator'));await page.waitForTimeout(100);
  const form=await page.locator('#balanceCalculatorForm').evaluate(e=>{const region=e.closest('.finance-form-scroll');return {bounded:!!region&&parseFloat(getComputedStyle(region).maxHeight)<innerHeight,overflow:region&&getComputedStyle(region).overflowY,range:region?region.scrollHeight-region.clientHeight:0,innerOverflow:getComputedStyle(e).overflowY};});
  if(!form.bounded||form.overflow!=='auto'||form.range<1||form.innerOverflow==='auto')throw Error('Calculator form scroll missing '+JSON.stringify(form));
+
+ await page.evaluate(()=>window.openInvestmentPage('pettyReport'));await page.waitForTimeout(120);
+ const petty=await page.evaluate(()=>({filters:document.querySelectorAll('#investmentPageHeading>.petty-header-filters').length,actions:document.querySelectorAll('#investmentPageHeading>.petty-header-actions button').length,inside:document.querySelectorAll('#investList>.report-export-actions').length,emptyCard:getComputedStyle(document.querySelector('#content>.petty-filter-in-heading')).display}));
+ if(petty.filters!==1||petty.actions!==2||petty.inside!==0||petty.emptyCard!=='none')throw Error('Petty Cash heading controls failed '+JSON.stringify(petty));
+ await page.evaluate(()=>{window.exportWorkingCapital=(mode,button,container)=>{window.pettyExportCheck={mode,id:container.id};};document.querySelector('.petty-header-actions .report-print').click();});
+ const target=await page.evaluate(()=>window.pettyExportCheck);if(target.mode!=='print'||target.id!=='investList')throw Error('Petty export lost its report target');
+ await page.evaluate(()=>document.getElementById('expenseReportType').dispatchEvent(new Event('change')));await page.waitForTimeout(80);
+ if(await page.locator('#investmentPageHeading>.petty-header-actions').count()!==1)throw Error('Petty actions duplicated on render');
+ await page.evaluate(()=>window.openInvestmentPage('capitalReport'));await page.waitForTimeout(80);
+ if(await page.locator('.petty-header-filters,.petty-header-actions').count())throw Error('Petty controls remained on another report');
+ console.log('Petty Cash filters, export actions, report target, rerender and navigation cleanup passed.');
  console.log(checked+' populated report/viewport combinations: conditional local scrolling, contiguous grouped headers, sticky positions and filter toggles passed.');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});

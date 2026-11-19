@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.19.13">
+<meta name="investment-release-version" content="2026.11.19.14">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1291,7 +1291,9 @@ function pettyForm(){const box=card('Daily Expense'),form=node('form');form.id='
 function bankChargeExpenseRows(entries){return Object.values(entries||{}).filter(x=>x?.scope==='company'&&x.type==='calculator'&&x.date).flatMap(record=>Object.entries(record.bankCalculations||{}).filter(([,bank])=>Number(bank.bankCharge)>0).map(([bank,value])=>({sourceRecord:record,date:record.date,expenseDate:record.date,expenseType:'Bank Charge',amount:Math.round(Number(value.bankCharge)*100)/100,note:bank+' Bank Charge',bankName:bank})));}
 function expenseRows(entries,month,type=''){const manual=Object.values(entries).filter(x=>x?.scope==='company'&&x.type==='petty'&&String(x.date).startsWith(month)).flatMap(x=>(Array.isArray(x.expenses)?x.expenses:[{expenseDate:x.date,expenseType:'Other / Legacy',amount:x.amount,note:x.note}]).map(y=>({sourceRecord:x,date:x.date,expenseDate:y.expenseDate||x.date,expenseType:y.expenseType||'Other / Legacy',amount:Number(y.amount)||0,note:y.note||''})));return [...manual,...bankChargeExpenseRows(entries).filter(x=>String(x.date).startsWith(month))].filter(x=>!type||x.expenseType===type).sort((a,b)=>a.date.localeCompare(b.date)||a.expenseDate.localeCompare(b.expenseDate));}
 function monthLabel(month){if(!/^\d{4}-\d{2}$/.test(month))return '';return new Intl.DateTimeFormat('en-GB',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(month+'-01T00:00:00Z'));}
-function reportActions(container,title){const actions=node('div');actions.className='report-export-actions';for(const [kind,label]of [['print','Print'],['excel','Download']]){const b=node('button',label);b.type='button';b.className=kind==='print'?'report-print':'report-download';b.onclick=()=>window.exportWorkingCapital(kind,b,title==='Total Investment'?null:container,title);actions.append(b);}container.append(actions);}
+function reportActions(container,title){const actions=node('div');actions.className='report-export-actions';for(const [kind,label]of [['print','Print'],['excel','Download']]){const b=node('button',label);b.type='button';b.className=kind==='print'?'report-print':'report-download';b.onclick=()=>window.exportWorkingCapital(kind,b,title==='Total Investment'?null:container,title);actions.append(b);}
+ const reportHeader=document.getElementById('investmentPageHeading');
+ if(page==='pettyReport'&&reportHeader){reportHeader.querySelector('.petty-header-actions')?.remove();actions.classList.add('petty-header-actions');reportHeader.append(actions);}else container.append(actions);}
 function expenseFilterControls(){const controls=node('div');controls.className='report-filter';const month=node('input');month.type='month';month.value=today().slice(0,7);month.id='expenseReportMonth';month.hidden=page!=='pettyTypeReport';month.dataset.explicit='false';month.setAttribute('aria-label','Expense month');const date=node('input');date.type='date';date.id='expenseReportDate';date.setAttribute('aria-label','Report date');const clear=node('button','All Dates');clear.type='button';clear.onclick=()=>{date.value='';if(page==='pettyTypeReport'){month.value=today().slice(0,7);month.dataset.explicit='false';month.dispatchEvent(new Event('input',{bubbles:true}));}render();};month.onchange=()=>{date.value='';month.dataset.explicit='true';render();};date.onchange=()=>{if(date.value){month.value=date.value.slice(0,7);month.dataset.explicit='true';}render();};controls.append(month,date,clear);const type=select(controls,'Expense Type','report_expense_type',[['','All Expense Types'],...expenseTypes.map(x=>[x,x]),['Other / Legacy','Other / Legacy']]);type.required=false;type.id='expenseReportType';type.onchange=render;return {controls,month};}
 function previousPettyMonth(date=today()){const [y,m]=date.split('-').map(Number);return new Date(Date.UTC(y,m-2,1)).toISOString().slice(0,7);}
 function validPettyClosingMonth(value){return /^\d{4}-(0[1-9]|1[0-2])$/.test(value)&&value<=previousPettyMonth();}
@@ -1321,7 +1323,10 @@ function expenseReportPage(key){const box=card(key==='pettyTypeReport'?'Monthly 
    },undefined,false);
    if(!result.committed)throw Error(problem||'মাসের অবস্থা পরিবর্তন হয়নি।');items=result.snapshot.val()||{};render();alert(reopening?'মাস Reopen হয়েছে। এখন নির্বাচিত তারিখের হিসাব Submit করতে পারবেন।':'Month Closing সম্পন্ন হয়েছে।');
   }catch(error){alert(error.message);}finally{close.disabled=preview||readOnly;}
- };controls.append(close);box.append(controls);listBox();}
+ };controls.append(close);
+ const reportHeader=document.getElementById('investmentPageHeading');
+ if(reportHeader){reportHeader.querySelector('.petty-header-filters')?.remove();controls.classList.add('petty-header-filters');reportHeader.append(controls);box.classList.add('petty-filter-in-heading');}else box.append(controls);
+ listBox();}
 function expenseReportTable(container,rows,title){container.classList.add('expense-report-block');reportActions(container,title);const heading=node('div');heading.className='expense-report-title';heading.append(node('h2','M/S. Mostafa'),node('p',title));container.append(heading);const table=node('table'),head=node('thead'),tr=node('tr');['Date','Expense Purpose / Details','Bank','Amount','Expense Type','Edit'].forEach(label=>tr.append(node('th',label)));head.append(tr);table.append(head);const body=node('tbody');rows.forEach(x=>{const row=node('tr');[x.date,x.note,x.bankName||'—',''+money(x.amount),x.expenseType].forEach(value=>row.append(node('td',value)));const cell=node('td'),edit=node('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('investmentEntries',x.sourceRecord);cell.append(edit);row.append(cell);body.append(row);});if(!rows.length){const row=node('tr'),cell=node('td','এই মাসে কোনো খরচ নেই।');cell.colSpan=6;row.append(cell);body.append(row);}table.append(body);const foot=node('tfoot'),total=node('tr'),label=node('th','Total Amount');label.colSpan=3;total.append(label,node('th',''+money(rows.reduce((n,x)=>n+Math.round(x.amount*100),0)/100)),node('th',''),node('th',''));foot.append(total);table.append(foot);container.append(table);}
 function pettyReportBalances(entries,through){const rows=pettyBalanceRows(entries).filter(x=>x.date<=through),expense=expenseRows(entries,through.slice(0,7)).filter(x=>x.date<=through).reduce((n,x)=>n+Math.round(x.amount*100),0)/100,net=rows.at(-1)?.balance||0;return {pettyCashAmount:Math.round((net+expense)*100)/100,expense,net};}
 window.investmentPettyReportBalances=pettyReportBalances;
@@ -1588,7 +1593,7 @@ window.bankNavigate=show;show('range');
  const reportViewer=!!bridge?.isReportViewer?.();
  const canReturnToAdmin=()=>parent!==window&&bridge?.getUser?.()==='admin'&&typeof parent.switchAdminTab==='function';
  function open(which){
-  heading.querySelector('.capital-header-actions')?.remove();heading.querySelector('.capital-header-period')?.remove();
+  heading.querySelector('.capital-header-actions')?.remove();heading.querySelector('.capital-header-period')?.remove();heading.querySelector('.petty-header-filters')?.remove();heading.querySelector('.petty-header-actions')?.remove();
   if(which==='home'){
    window.stopCalculatorWithdrawalSync?.();closeDropdowns();
    document.body.classList.add('investment-menu-home');heading.hidden=!canReturnToAdmin();title.textContent='Investment';tabs.hidden=false;
@@ -1905,8 +1910,8 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
 
 <script src="assets/hisab360-select-menus.js?v=2026.11.12.6"></script>
 
-<link rel="stylesheet" href="assets/hisab360-compact-workspace.css?v=2026.11.19.13">
-<script src="assets/hisab360-report-navigator.js?v=2026.11.19.13"></script>
+<link rel="stylesheet" href="assets/hisab360-compact-workspace.css?v=2026.11.19.14">
+<script src="assets/hisab360-report-navigator.js?v=2026.11.19.14"></script>
 
 <style id="capital-period-visible-heading">@media screen{html body #investmentPageHeading:has(.capital-header-period):not([hidden]){display:flex!important;flex-wrap:wrap!important;justify-content:flex-start!important;align-items:center!important;gap:10px 18px!important}html body #investmentPageHeading:has(.capital-header-period)>strong{flex:0 0 auto!important}html body #investmentPageHeading>.capital-header-period{flex:1 1 330px!important;margin:0!important;padding:20px 0 0!important;border:0!important;min-width:0!important}html body #investmentPageHeading>.capital-header-period::before{top:0}html body #app .capital-filter-in-heading{display:none!important}html body #investmentPageHeading>.capital-header-actions{margin-left:auto!important}@media(max-width:560px){html body #investmentPageHeading>.capital-header-period{order:3;flex-basis:100%!important}html body #investmentPageHeading>.capital-header-actions{order:2}}}</style>
 
