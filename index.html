@@ -2008,7 +2008,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.19.12';
+    const APP_RELEASE_VERSION = '2026.11.19.13';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2062,23 +2062,20 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
         try{
           const urls=[new URL(location.pathname,location.origin),new URL('Investment.html',location.href)];
-          if(!hostedReleaseEtags){
-            try{
-              const manifestUrl=new URL('release.json',location.href);manifestUrl.searchParams.set('_check',Date.now());
-              const [manifestResponse,...heads]=await Promise.all([fetch(manifestUrl,{cache:'no-store',signal:controller.signal}),...urls.map(url=>fetch(url,{method:'HEAD',cache:'no-store',signal:controller.signal}))]);
-              if(manifestResponse.ok&&heads.every(r=>r.ok)){
-                const release=await manifestResponse.json(),tags=heads.map(r=>r.headers.get('etag'));
-                if(typeof release.index==='string'&&typeof release.investment==='string'&&tags.every(Boolean)){
-                  // Bind manifest to the deployed index size; an old manifest falls back to HTML parsing.
-                  if(Number(heads[0].headers.get('content-length'))===release.indexBytes){
-                    hostedReleaseMismatch=release.index!==APP_RELEASE_VERSION||(loadedInvestmentVersion!==null&&release.investment!==loadedInvestmentVersion);
-                    if(loadedInvestmentVersion===null)loadedInvestmentVersion=release.investment;
-                    hostedReleaseEtags=tags;hostedReleaseCheckedAt=Date.now();updateReleaseGate();return true;
-                  }
-                }
+          // The atomically deployed manifest is the small authoritative version check.
+          // Avoid downloading both HTML pages when HEAD reports compressed byte sizes.
+          try{
+            const manifestUrl=new URL('release.json',location.href);manifestUrl.searchParams.set('_check',Date.now());
+            const response=await fetch(manifestUrl,{cache:'no-store',signal:controller.signal});
+            if(response.ok){
+              const release=await response.json();
+              if(typeof release.index==='string'&&release.index&&typeof release.investment==='string'&&release.investment&&Number.isSafeInteger(release.indexBytes)&&release.indexBytes>0){
+                hostedReleaseMismatch=release.index!==APP_RELEASE_VERSION||(loadedInvestmentVersion!==null&&release.investment!==loadedInvestmentVersion);
+                if(loadedInvestmentVersion===null)loadedInvestmentVersion=release.investment;
+                hostedReleaseCheckedAt=Date.now();updateReleaseGate();return true;
               }
-            }catch(_){/* Older deployments continue through the HTML version check. */}
-          }
+            }
+          }catch(_){/* Legacy or invalid manifests fall back to version checks below. */}
           // Once both versions are known, HEAD avoids downloading the entire
           // portal and Investment page on every focus / scheduled check.
           if(hostedReleaseEtags && !hostedReleaseMismatch){
@@ -2467,12 +2464,12 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const id=normalizeLoginId(saved.id);
       if(id!=='admin'&&!isGroupAdmin(id)&&!(/^[a-z][a-z0-9_]{2,31}$/.test(id)||(/^\d{3,6}$/.test(id)&&Number(id)>=801))){document.documentElement.classList.remove('portal-session-restoring');return;}
       try{
-        await checkHostedRelease(true);
-        await authReady(credentialAuth);
-        const meta=await getCredentialMeta();
+        await Promise.all([checkHostedRelease(true),authReady(credentialAuth)]);
+        const preparation=await Promise.all([getCredentialMeta(),prepareLoginDevice(warmKnownDevice(id)||prepareDeviceApp(id))]);
+        const meta=preparation[0],{app,approval}=preparation[1];
         if(meta.userId!==id||meta.forceChange){sessionStorage.removeItem(PORTAL_SESSION_KEY);return;}
         if(currentUser||loginInProgress||interactionEpoch!==portalLoginInteractionEpoch)return;
-        await openPortalForUser(id,{meta,restoreEpoch:interactionEpoch});
+        await openPortalForUser(id,{meta,app,approval,restoreEpoch:interactionEpoch});
       }catch(error){if(error.code!=='portal/device-permission-required')window.portalBootNotice?.(error.message||'আগের Login যাচাই হয়নি। আবার Login করুন।');}
       finally{document.documentElement.classList.remove('portal-session-restoring');}
     }
@@ -7346,5 +7343,5 @@ html body #appContainer #adminFilterPanel #filterDsoCheckboxContainer .dso-dropd
 
 <style>html body #appContainer #adminFilterPanel #filterDsoCheckboxContainer label.dso-checkbox-item[hidden]{display:none!important}</style>
 
-<link rel="stylesheet" href="assets/hisab360-compact-workspace.css?v=2026.11.19.12">
-<script src="assets/hisab360-report-navigator.js?v=2026.11.19.12"></script>
+<link rel="stylesheet" href="assets/hisab360-compact-workspace.css?v=2026.11.19.13">
+<script src="assets/hisab360-report-navigator.js?v=2026.11.19.13"></script>
