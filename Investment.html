@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.20.39">
+<meta name="investment-release-version" content="2026.11.20.40">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1973,14 +1973,8 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
     padding: clamp(10px, 1.4vw, 18px) !important;
   }
 
-  html body #app #content .investment-form-card #capitalForm > .opening-level,
-  html body #app #content .investment-form-card #capitalForm > .opening-total {
-    background: #e5f1eb !important;
-  }
-
-  html body #app #content .investment-form-card #capitalForm > .closing-level,
-  html body #app #content .investment-form-card #capitalForm > .closing-total {
-    background: #f7edde !important;
+  html body #app #content .investment-form-card #capitalForm > :is(.working-level, .opening-total, .closing-total) {
+    background: #edf2ef !important;
   }
 
   html body #app #content #capitalForm .working-level .finance-section:not(.date-selection-section) {
@@ -1993,6 +1987,16 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
 
   html body #app #content #capitalForm .field > label {
     color: #25453c !important;
+  }
+
+  html body #app #content #capitalForm > .opening-level > legend,
+  html body #app #content #capitalForm > .opening-total .field > label {
+    color: #176044 !important;
+  }
+
+  html body #app #content #capitalForm > .closing-level > legend,
+  html body #app #content #capitalForm > .closing-total .field > label {
+    color: #a33131 !important;
   }
 
   html body #app #content #capitalForm .field > :is(input, select):not([type=hidden]) {
