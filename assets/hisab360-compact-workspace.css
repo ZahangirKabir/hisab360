@@ -590,8 +590,6 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   }
 
   html body #hisabSideMenu,
-  html body #appContainer > .portal-sticky-top,
-  html body #appContainer #adminFilterPanel:not(.is-collapsed),
   html body #investmentPageHeading:not([hidden]),
   html body #investmentPageHeading:has(.capital-header-period):not([hidden]),
   html body :is(.modal-content, .device-admin-card, .module-dropdown-panel, #financeReportNavigator) {
@@ -626,6 +624,13 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 
   html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n) {
     background: #fafafa !important;
+  }
+
+  html body #appContainer > .portal-sticky-top,
+  html body #appContainer #adminFilterPanel:not(.is-collapsed),
+  html body #appContainer .report-page-controls {
+    background: #f4f4f4 !important;
+    box-shadow: none !important;
   }
 
   @supports not (backdrop-filter: blur(1px)) {
