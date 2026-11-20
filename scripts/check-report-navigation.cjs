@@ -59,8 +59,8 @@ const fs=require('node:fs');
   if(!['none','normal'].includes(layout.caption)||layout.emptyHeading!=='none'||layout.exportReady!=='function')throw Error('Capital report title/period/export failed '+JSON.stringify({width,layout}));
  }
  await page.evaluate(()=>window.openInvestmentPage('calculator'));await page.waitForTimeout(100);
- const form=await page.locator('#balanceCalculatorForm').evaluate(e=>{const region=e.closest('.finance-form-scroll');return {bounded:!!region&&parseFloat(getComputedStyle(region).maxHeight)<innerHeight,overflow:region&&getComputedStyle(region).overflowY,range:region?region.scrollHeight-region.clientHeight:0,innerOverflow:getComputedStyle(e).overflowY};});
- if(!form.bounded||form.overflow!=='auto'||form.range<1||form.innerOverflow==='auto')throw Error('Calculator form scroll missing '+JSON.stringify(form));
+ const form=await page.locator('#balanceCalculatorForm').evaluate(e=>{const region=e.closest('.finance-form-scroll');return {bounded:!!region&&parseFloat(getComputedStyle(region).maxHeight)<innerHeight,overflow:region&&getComputedStyle(region).overflowY,range:region?region.scrollHeight-region.clientHeight:0,internal:region===e,bar:getComputedStyle(e).scrollbarWidth,outerBar:getComputedStyle(e.closest('#content')).scrollbarWidth};});
+ if(!form.bounded||form.overflow!=='auto'||form.range<1||!form.internal||form.bar==='none'||form.outerBar!=='none')throw Error('Calculator form scroll missing '+JSON.stringify(form));
 
  await page.evaluate(()=>window.openInvestmentPage('pettyReport'));await page.waitForTimeout(120);
  const expenseCaption=await page.locator('#expenseReportType').evaluate(e=>({label:getComputedStyle(e.closest('.field').querySelector('label')).display,name:e.getAttribute('aria-label')}));

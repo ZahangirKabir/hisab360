@@ -112,12 +112,6 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  .finance-native-table-scroll table thead :is(th,td){position:static!important;transform:none!important}
 }
 
-/* The content edge owns the form scrollbar, never the inset form card. */
-@media screen{
- html body :is(#content,#bankContent).finance-form-scroll{width:100%!important;padding-right:0!important}
- html body :is(#content,#bankContent).finance-form-scroll form{max-height:none!important;overflow:visible!important}
-}
-
 /* Dense report grids and slim, conditional scrollbars. */
 @media screen{
  html body :is(#app,#bankApp) .scroll{padding:0!important;margin:0!important;border-radius:7px!important;box-shadow:none!important}
@@ -843,11 +837,11 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 
 /* Hide the outer form content scrollbar without changing its overflow. */
 @media screen {
-  html body :is(#app, #bankApp) :is(#content, #bankContent).finance-form-scroll {
+  html body :is(#app, #bankApp) :is(#content, #bankContent):has(form.finance-form-scroll) {
     scrollbar-width: none !important;
   }
 
-  html body :is(#app, #bankApp) :is(#content, #bankContent).finance-form-scroll::-webkit-scrollbar {
+  html body :is(#app, #bankApp) :is(#content, #bankContent):has(form.finance-form-scroll)::-webkit-scrollbar {
     width: 0 !important;
   }
 }

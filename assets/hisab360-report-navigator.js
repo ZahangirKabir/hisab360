@@ -43,11 +43,6 @@
  function bind(){
   const chromeHeight=syncChrome();
   for(const target of reportObserved)if(!target.isConnected){reportResize?.unobserve(target);reportObserved.delete(target);}
-  for(const host of document.querySelectorAll('#content,#bankContent')){
-   const hasForm=!!host.querySelector('form');
-   if(host.classList.contains('finance-form-scroll')!==hasForm)host.classList.toggle('finance-form-scroll',hasForm);
-   if(hasForm){fitRegion(host);if(!reportObserved.has(host)){reportObserved.add(host);reportResize?.observe(host);}}
-  }
   for(const form of document.querySelectorAll('#content form,#bankContent form,#appContainer form,#dsoPageForm,#dsoPageSlip,#dsoPageSettings')){
    if(form.closest('[role=dialog],.modal-content,.cheque-dialog'))continue;
    if(form.parentElement.closest('.finance-form-scroll')){if(form.classList.contains('finance-form-scroll'))form.classList.remove('finance-form-scroll');continue;}
