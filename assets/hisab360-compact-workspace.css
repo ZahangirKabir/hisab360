@@ -274,3 +274,23 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body #app .capital-report-table tbody tr:last-child td{border-bottom:0!important}
  @media(max-width:600px){html body #investmentPageHeading>.capital-header-period{order:3;flex-basis:100%!important}html body #investmentPageHeading>.capital-header-actions{order:2}html body #investmentPageHeading:has(.capital-header-period)>strong{font-size:14px!important}}
 }
+
+/* Lightweight frosted login surface with a readable Bengali brand message. */
+@media screen{
+ html body.login-design-visible{background-color:#eef7f4!important;background-image:radial-gradient(ellipse at 12% 12%,#c8eade 0,transparent 48%),radial-gradient(ellipse at 90% 82%,#d6e6f7 0,transparent 50%),linear-gradient(135deg,#f4faf6,#eff5fb)!important;background-attachment:scroll!important;min-height:100svh!important;padding:28px 18px!important}
+ html body.login-design-visible #loginSection.login-box{max-width:430px!important;margin:clamp(20px,7vh,72px) auto 20px!important;padding:32px!important;border:1px solid rgba(255,255,255,.95)!important;border-radius:24px!important;background:rgba(255,255,255,.74)!important;background-image:none!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 64px rgba(30,80,66,.1),inset 0 1px 0 rgba(255,255,255,.9)!important}
+ html body #loginSection .hisab-login-stage{margin-bottom:22px!important}
+ html body #loginSection .login-brand-tagline{margin:0 auto 8px!important;color:#154f42!important;font-family:'Nirmala UI','Noto Sans Bengali',sans-serif;font-size:clamp(21px,5.7vw,26px)!important;font-weight:750!important;line-height:1.6!important;letter-spacing:0!important;text-wrap:balance}
+ html body #loginSection .login-brand-tagline span{color:#08745e}
+ html body #loginSection .login-welcome{margin:0 0 26px!important;color:#506273!important;font-size:13px!important;line-height:1.6!important}
+ html body #loginSection .login-field{margin-bottom:14px!important}
+ html body #loginSection .login-field>input{height:50px!important;min-height:50px!important;background:rgba(255,255,255,.85)!important;border:1px solid #bfd6cd!important;border-radius:11px!important;color:#243746!important}
+ html body #loginSection .login-field>input:focus{border-color:#238c70!important;box-shadow:0 0 0 3px rgba(35,140,112,.12)!important}
+ html body #loginSection .login-field-icon{color:#417563!important}
+ html body #loginSection #loginBtn{min-height:49px!important;border-radius:11px!important;background:linear-gradient(115deg,#08725c,#078766)!important;color:#fff!important;box-shadow:0 6px 16px rgba(8,114,92,.17)!important;margin-top:20px!important;font-weight:650!important}
+ html body #loginSection #loginBtn:hover:not(:disabled){background:#075e4d!important}
+ html body #loginSection #loginBtn:focus-visible{outline:2px solid #08745e!important;outline-offset:3px!important}
+ @supports not (backdrop-filter:blur(1px)){html body.login-design-visible #loginSection.login-box{background:#f8fcfa!important}}
+ @media(max-width:480px){html body.login-design-visible{padding:20px 15px!important}html body.login-design-visible #loginSection.login-box{padding:28px 22px!important;border-radius:21px!important;margin-top:clamp(12px,5vh,40px)!important}}
+ @media(max-height:600px){html body.login-design-visible #loginSection.login-box{margin-top:0!important;padding-top:20px!important;padding-bottom:22px!important}html body #loginSection .hisab-login-stage{margin-bottom:12px!important}html body #loginSection .login-welcome{margin-bottom:16px!important}}
+}
