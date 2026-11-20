@@ -226,7 +226,7 @@
 
     #dataTable { --report-date-width: 112px; }
     #dataTable thead tr:nth-child(2) th.sticky-col-1,
-    #dataTable tbody td.sticky-col-1 { box-sizing:border-box; width:var(--report-date-width); min-width:var(--report-date-width); max-width:var(--report-date-width); }
+    #dataTable tbody td.sticky-col-1:not([colspan]) { box-sizing:border-box; width:var(--report-date-width); min-width:var(--report-date-width); max-width:var(--report-date-width); }
     #dataTable th.sticky-col-1, #dataTable td.sticky-col-1 { position: sticky; left: 0; z-index: 5; background-color: #37474f; color: white; }
     #dataTable th.sticky-col-2, #dataTable td.sticky-col-2 { position: sticky; left: var(--report-date-width); z-index: 5; background-color: #37474f; color: white; border-right: 2px solid #00695c; min-width:90px; box-shadow:3px 0 7px rgba(0,0,0,.12); }
 
@@ -2019,7 +2019,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.53';
+    const APP_RELEASE_VERSION = '2026.11.20.54';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7469,6 +7469,23 @@ html body #appContainer #adminFilterPanel #filterDsoCheckboxContainer .dso-dropd
     html body #appContainer #adminFilterPanel:not(.is-collapsed) {
       --admin-filter-height: 38px;
     }
+  }
+}
+</style>
+
+<style id="daily-report-frozen-columns">
+@media screen {
+  /* Sticky cells cover scrolling amounts, including on striped rows. */
+  html body #appContainer #dataTable tbody td:is(.sticky-col-1,.sticky-col-2) {
+    background-color: #fff !important;
+    background-clip: border-box;
+  }
+  html body #appContainer #dataTable tbody tr:nth-child(even) td:is(.sticky-col-1,.sticky-col-2) {
+    background-color: #f4f7f6 !important;
+  }
+  html body #appContainer #dataTable tbody td.sticky-col-1[colspan="2"] {
+    background-color: #eceff1 !important;
+    white-space: nowrap;
   }
 }
 </style>
