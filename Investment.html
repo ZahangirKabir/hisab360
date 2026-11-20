@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.20.41">
+<meta name="investment-release-version" content="2026.11.20.42">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -2008,6 +2008,48 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
   html body #app #content #capitalForm > :is(.opening-total, .closing-total) input {
     font-weight: 750;
     font-variant-numeric: tabular-nums;
+  }
+
+  html body #app #content #capitalForm {
+    display: grid;
+    gap: 8px;
+  }
+
+  html body #app #content #capitalForm .working-level > legend {
+    padding: 0 !important;
+    font-size: 15px !important;
+  }
+
+  html body #app #content #capitalForm .finance-section > legend {
+    padding: 0 !important;
+    font-size: 12px !important;
+    font-weight: 700;
+  }
+
+  html body #app #content #capitalForm .working-level :is(.fields, .repeat-row) {
+    column-gap: 10px !important;
+    row-gap: 8px !important;
+  }
+
+  html body #app #content #capitalForm .working-level .fields:not(.repeat-row) {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr)) !important;
+  }
+
+  html body #app #content #capitalForm .working-level .repeat-row {
+    align-items: end;
+    max-width: 720px;
+  }
+
+  html body #app #content #capitalForm .working-level .add-row {
+    width: fit-content !important;
+    min-height: 34px;
+  }
+
+  html body #app #content #capitalForm .working-level .repeat-row > .add-row {
+    background: transparent !important;
+    color: #943535 !important;
+    border: 1px solid #dfc5c5 !important;
+    box-shadow: none !important;
   }
 }
 </style>
