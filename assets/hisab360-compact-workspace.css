@@ -435,3 +435,18 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body :is(.modal-content,.device-admin-card){background:rgba(245,251,249,.72)!important}
  @supports not (backdrop-filter:blur(1px)){html body.login-design-visible #loginSection.login-box{background:rgba(247,252,250,.55)!important}}
 }
+
+/* A shared luminous backdrop makes clear glass panels visible across pages. */
+@media screen{
+ html{background:#e1edf1!important}
+ html body:not(.login-design-visible),
+ html body.login-design-visible{background-color:#e1edf1!important;background-image:radial-gradient(ellipse at 6% 8%,rgba(131,208,178,.65) 0,rgba(177,226,205,.3) 28%,transparent 58%),radial-gradient(ellipse at 94% 20%,rgba(162,188,235,.58) 0,transparent 54%),radial-gradient(ellipse at 74% 92%,rgba(202,178,229,.42) 0,transparent 52%),radial-gradient(ellipse at 18% 82%,rgba(244,222,186,.34) 0,transparent 47%),linear-gradient(135deg,#e6f3ec 0%,#e5edf8 52%,#edf0f8 100%)!important;background-size:100% 100%!important;background-repeat:no-repeat!important;background-attachment:fixed!important}
+ html body :is(#appContainer,#adminView,#dsoView,#app,#bankApp,#content,#bankContent){background:transparent!important;background-image:none!important}
+ html body #appContainer>.portal-sticky-top,
+ html body #appContainer #adminFilterPanel:not(.is-collapsed),
+ html body #investmentPageHeading:not([hidden]),
+ html body #investmentPageHeading:has(.capital-header-period):not([hidden]){background:linear-gradient(110deg,rgba(231,246,238,.94),rgba(234,240,252,.94))!important;border-color:rgba(255,255,255,.85)!important}
+ html body :is(#adminTabNav,#dsoTabNav,#moduleMenu){background:linear-gradient(110deg,rgba(220,242,231,.38),rgba(225,234,251,.36))!important}
+ html body :is(.portal-footer,.investment-footer){background:transparent!important}
+ @media(max-width:700px){html body:not(.login-design-visible),html body.login-design-visible{background-attachment:scroll!important}}
+}
