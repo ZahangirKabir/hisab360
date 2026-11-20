@@ -2009,7 +2009,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.48';
+    const APP_RELEASE_VERSION = '2026.11.20.49';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -3077,7 +3077,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           if(!slip.img)return;
           const view=document.createElement('button');view.type='button';
           view.setAttribute('aria-label',`Bank Slip ${i+1} বড় করে দেখুন`);
-          view.onclick=()=>zoomImage(slip.img,item.userId,slip.bankName,slip.amt,slip.depositDate);
+          view.onclick=()=>zoomImage(slip.img,item.userId,slip.bankName,normalizeMoneyText(slip.amt??slip.amount),slip.depositDate);
           if(user==='admin'){
             view.className='approval-slip-thumb';view.title='বড় করে দেখুন';
             const thumb=document.createElement('img');setLedgerImage(thumb,slip.img);thumb.alt=`Bank Slip ${i+1}`;
@@ -3932,7 +3932,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const script=document.createElement('script');let done=false;
         const finish=error=>{if(done)return;done=true;clearTimeout(timer);script.onload=null;script.onerror=null;
           if(error){script.remove();reject(error);}else resolve(window[globalName]);};
-        const timer=setTimeout(()=>finish(new Error('OCR library লোড হতে সময় বেশি লাগছে। ছবি দেখে Manual Correction ব্যবহার করুন।')),25000);
+        const timer=setTimeout(()=>finish(new Error(globalName==='XLSX'?'Excel library লোড হতে সময় বেশি লাগছে। আবার চেষ্টা করুন।':'OCR library লোড হতে সময় বেশি লাগছে। ছবি দেখে Manual Correction ব্যবহার করুন।')),25000);
         script.src=src;script.async=true;
         script.onload=()=>finish(window[globalName]?null:new Error(globalName+' unavailable'));
         script.onerror=()=>finish(new Error('Library load failed: '+src));
@@ -3974,7 +3974,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
     function ensureXlsxLoaded(){
       if(window.XLSX) return Promise.resolve(window.XLSX);
-      if(!xlsxLoadPromise) xlsxLoadPromise=loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js','XLSX');
+      if(!xlsxLoadPromise) xlsxLoadPromise=loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js','XLSX').catch(error=>{xlsxLoadPromise=null;throw error;});
       return xlsxLoadPromise;
     }
     function scheduleHeavyLibrariesPreload(){/* Load OCR only after a photo is selected, avoiding idle RAM and network use. */}
@@ -5371,13 +5371,14 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
     const ADMIN_REPORT_BATCH=50;
     let adminReportPages=null;
+    let groupReportMonth='';
     function paintAdminReportPaging(){
       let bar=document.getElementById('adminReportPaging');const host=document.getElementById('adminFilterPanel')||document.getElementById('adminPageReport');if(!host)return;
       if(!bar){bar=document.createElement('div');bar.id='adminReportPaging';bar.className='report-paging';if(host.id==='adminFilterPanel')host.after(bar);else host.prepend(bar);}
       const state=adminReportPages;if(currentUser!=='admin'||!['report','bank','notes'].includes(activeAdminTab)||!state||state.cancelled){bar.hidden=true;return;}bar.hidden=!state.hasMore&&!state.error;bar.replaceChildren();
       if(state.hasMore){const label=document.createElement('span');label.textContent='আরও হিসাব আছে — মোট শুধু লোড হওয়া হিসাবের';bar.append(label);}
-      if(state.hasMore){const more=document.createElement('button');more.type='button';more.textContent=state.loading?'লোড হচ্ছে…':'আরও '+ADMIN_REPORT_BATCH+'টি দেখুন';more.disabled=state.loading;more.onclick=loadMoreAdminReports;bar.append(more);}
-      if(state.error){const note=document.createElement('span');note.setAttribute('role','status');note.textContent=state.error;bar.append(note);}
+      if(state.hasMore&&!state.error){const more=document.createElement('button');more.type='button';more.textContent=state.loading?'লোড হচ্ছে…':'আরও '+ADMIN_REPORT_BATCH+'টি দেখুন';more.disabled=state.loading;more.onclick=loadMoreAdminReports;bar.append(more);}
+      if(state.error){const note=document.createElement('span');note.setAttribute('role','status');note.textContent=state.error;bar.append(note);const retry=document.createElement('button');retry.type='button';retry.textContent='আবার চেষ্টা করুন';retry.onclick=state.retry;bar.append(retry);}
     }
     function loadMoreAdminReports(){const state=adminReportPages;if(!state||state.cancelled||state.loading||!state.hasMore||!state.cursor)return;state.addPage(state.cursor);}
     function loadMasterAdminData(mode='date',selectedDate='',force=false){
@@ -5390,7 +5391,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const emit=()=>{if(!valid())return;const incoming=Object.assign({},...state.pages.slice().reverse().map(x=>x||{}));pendingOptimisticDeletes.forEach(key=>delete incoming[key]);globalAllData=incoming;realtimeInitialDataReady=true;masterAdminDataLoading=false;scheduleDataUiUpdate();paintAdminReportPaging();};
       const cancel=()=>{state.cancelled=true;for(const [q,h]of state.listeners)q.off('value',h);state.listeners=[];state.pages=[];if(adminReportPages===state){adminReportPages=null;document.getElementById('adminReportPaging')?.remove();}};
       masterAdminRealtimeRef={scope,ref:{off:cancel},handler:null};
-      state.addPage=cursor=>{if(!valid()||state.loading)return;state.loading=true;state.error='';paintAdminReportPaging();const index=state.pages.length;state.pages.push(null);let query=database.ref('collections').orderByChild('date');
+      state.addPage=cursor=>{if(!valid()||state.loading)return;state.loading=true;state.error='';state.retry=()=>state.addPage(cursor);paintAdminReportPaging();const index=state.pages.length;state.pages.push(null);let query=database.ref('collections').orderByChild('date');
         if(mode==='date')query=cursor?query.startAt(date).endAt(cursor.date,cursor.key):query.equalTo(date);else{if(bounds)query=query.startAt(bounds.start);if(cursor)query=query.endAt(cursor.date,cursor.key);else if(bounds)query=query.endAt(bounds.end);}
         query=query.limitToLast(ADMIN_REPORT_BATCH+(cursor?1:0));
         const handler=snap=>{if(!valid())return;const values=snap.val()||{},meta=snap.ledgerPage;
@@ -5399,11 +5400,12 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         const failed=error=>{if(!valid())return;state.loading=false;masterAdminDataLoading=false;state.error='এই অংশের ডাটা লোড হয়নি। আবার চেষ্টা করুন।';if(state.pages[index]===null){state.pages.splice(index,1);query.off('value',handler);}emit();};
         state.listeners.push([query,handler]);query.on('value',handler,failed);
       };
-      if(activeAdminTab==='report'){const body=document.getElementById('adminTableBody');if(body)body.innerHTML='<tr><td colspan="15" style="text-align:center;padding:18px">ডাটা লোড হচ্ছে…</td></tr>';}
+      if(activeAdminTab==='report'){const body=document.getElementById('adminTableBody');if(body)body.innerHTML='<tr><td colspan="14" style="text-align:center;padding:18px">ডাটা লোড হচ্ছে…</td></tr>';updateSummaryCards(0,0,0,0,0,0,0,0,0);renderMissingDsoList(new Set());}
       state.addPage(null);
     }
 
     function onAdminDateFilterChange() {
+      groupReportMonth="";
       if(activeAdminTab==='slipApproval'){
         slipApprovalViewMode='date';renderSlipApprovalFilters();return;
       }
@@ -5743,7 +5745,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       Object.keys(globalAllData).forEach(key => {
         const item = globalAllData[key] || {};
         const userId = String(item.userId || "").trim();
-        const matchDate = !filterDate || item.date === filterDate;
+        const matchDate = filterDate ? item.date === filterDate : currentUser==='admin'||!groupReportMonth||String(item.date||'').startsWith(groupReportMonth);
         const matchDso = activeDsos.has(userId);
         if (matchDate && matchDso) {
           submittedDsoSet.add(userId);
@@ -5799,7 +5801,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       }
       if (!globalAllData) return;
       document.getElementById("filterDate").value = "";
-      const currentMonth = getLocalMonthString();
+      groupReportMonth = getLocalMonthString();
+      const currentMonth = groupReportMonth;
       const activeDsos = getActiveDsoFilterSet();
       const filteredData = {};
       const submittedDsoSet = new Set();
@@ -5829,6 +5832,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       }
       if (!globalAllData) return;
       document.getElementById("filterDate").value = "";
+      groupReportMonth = "";
       applyAdminFilters(true);
     }
 
@@ -5855,6 +5859,15 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const missingContainer = document.getElementById("missingDsoList");
       missingContainer.innerHTML = "";
 
+      if(currentUser==='admin'&&(masterAdminDataLoading||adminReportPages?.hasMore||adminReportPages?.error)){
+        document.getElementById("missingCount").innerText='—';
+        missingContainer.textContent='সব রিপোর্ট লোড হলে তালিকাটি দেখা যাবে।';
+        return;
+      }
+      if (!activeDsos.size) {
+        missingContainer.textContent='এই ফিল্টারে কোনো DSO নেই।';
+        return;
+      }
       if (missingList.length === 0) {
         missingContainer.innerHTML = '<span style="color: #2e7d32; font-weight: bold; font-size: 12px;">🎉 সকল নির্বাচিত DSO সফলভাবে রিপোর্ট জমা দিয়েছে!</span>';
         return;
@@ -5869,6 +5882,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     }
 
     function resetAdminFilters() {
+      groupReportMonth="";
       let today = getLocalDateString();
       document.getElementById("filterDate").value = today;
       document.getElementById("filterDsoStart").value = "801";
@@ -5919,7 +5933,11 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let sumEmRec = 0, sumCashRec = 0, sumEmRet = 0, sumCashDep = 0;
 
       if (!data || Object.keys(data).length === 0) {
-        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; font-weight:bold; padding:20px; color:#c62828;">আজকের দিনে এখনো কোনো ডাটা জমা হয়নি। নতুন ডাটা না আসা পর্যন্ত টেবিল ব্লাঙ্ক থাকবে।</td></tr>`;
+        const cell=tbody.insertRow().insertCell();
+        cell.colSpan=14;
+        cell.style.cssText='text-align:center;font-weight:bold;padding:20px;color:#c62828';
+        cell.textContent=currentUser==='admin'&&adminReportPages?.error
+          ? adminReportPages.error : 'নির্বাচিত সময়ে কোনো রিপোর্ট পাওয়া যায়নি।';
         updateSummaryCards(0, 0, 0, 0, 0, 0, 0, 0, 0);
         return;
       }
@@ -6633,24 +6651,24 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if (tabName === "report") {
           Object.keys(filteredData).forEach(key => {
             const item = filteredData[key] || {};
-            const emRec = Number(item.emReceived || 0);
-            const cashRec = Number(item.cashReceived || 0);
+            const emRec = storedMoney(item.emReceived);
+            const cashRec = storedMoney(item.cashReceived);
             const dsoRecSum = Array.isArray(item.dsoReceivedList)
-              ? item.dsoReceivedList.reduce((a,b) => a + Number(b?.amount || 0), 0)
-              : Number(item.dsoReceived || 0);
+              ? item.dsoReceivedList.reduce((a,b) => a + storedMoney(b?.amount), 0)
+              : storedMoney(item.dsoReceived);
             const totalRec = emRec + cashRec + dsoRecSum;
 
-            const emRet = Number(item.emReturn || 0);
-            const bankDep = Number(item.bankDeposit || 0);
-            const cashDep = Number(item.cashDeposit || 0);
+            const emRet = storedMoney(item.emReturn);
+            const bankDep = storedMoney(item.bankDeposit);
+            const cashDep = storedMoney(item.cashDeposit);
             const dsoTransSum = Array.isArray(item.dsoTransferList)
-              ? item.dsoTransferList.reduce((a,b) => a + Number(b?.amount || 0), 0)
-              : Number(item.dsoTransfer || 0);
+              ? item.dsoTransferList.reduce((a,b) => a + storedMoney(b?.amount), 0)
+              : storedMoney(item.dsoTransfer);
             const totalRet = emRet + bankDep + cashDep + dsoTransSum;
 
             const n = item.notes || {};
             const slipsSum = Array.isArray(item.slips)
-              ? item.slips.reduce((a,s) => a + Number(s?.amt || 0), 0)
+              ? item.slips.reduce((a,s) => a + storedMoney(s?.amt??s?.amount), 0)
               : 0;
 
             rows.push({
@@ -6658,18 +6676,18 @@ global.PortalLedger={create,sync,balance,same,snapshot};
               "DSO ID": item.userId || "",
               "Cash Rec": cashRec,
               "DSO Rec Breakdown": Array.isArray(item.dsoReceivedList)
-                ? item.dsoReceivedList.map(d => `DSO ${d.dsoId}: ${Number(d.amount || 0)}`).join(" | ")
+                ? item.dsoReceivedList.map(d => `DSO ${d.dsoId}: ${storedMoney(d.amount)}`).join(" | ")
                 : "",
               "B2B Receive": emRec,
               "B2B Ret": emRet,
               "Cash Dep": cashDep,
               "Bank Dep": bankDep,
               "DSO Trans Breakdown": Array.isArray(item.dsoTransferList)
-                ? item.dsoTransferList.map(d => `DSO ${d.dsoId}: ${Number(d.amount || 0)}`).join(" | ")
+                ? item.dsoTransferList.map(d => `DSO ${d.dsoId}: ${storedMoney(d.amount)}`).join(" | ")
                 : "",
-              "DSO Rec Amt": dsoRecSum,
-              "DSO Trans Amt": dsoTransSum,
-              "DSO Diff": dsoRecSum - dsoTransSum,
+
+
+
               "Total Received": totalRec,
               "Total Return": totalRet,
               "Difference": totalRec - totalRet,
@@ -6680,8 +6698,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
               "Note 200": Number(n.n200 || 0),
               "Note 100": Number(n.n100 || 0),
               "Note 50": Number(n.n50 || 0),
-              "Total Calculated Cash": Number(item.totalCash || 0),
-              "Approval Status": item.approvalStatus || "pending"
+              "Total Calculated Cash": storedMoney(item.totalCash),
+
             });
           });
         } else if (tabName === "bank") {
@@ -6695,7 +6713,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
             if (slips.length) {
               slips.forEach(s => {
                 const bankName = String(s?.bankName || item.bankName || "Unknown Bank").trim();
-                const amount = Number(s?.amt || 0);
+                const amount = storedMoney(s?.amt??s?.amount);
                 bankTotals[bankName] = (bankTotals[bankName] || 0) + amount;
                 entries.push({
                   date: item.date || "-",
@@ -6705,9 +6723,9 @@ global.PortalLedger={create,sync,balance,same,snapshot};
                   amount
                 });
               });
-            } else if (Number(item.bankDeposit || 0) > 0) {
+            } else if (storedMoney(item.bankDeposit) > 0) {
               const bankName = String(item.bankName || "Unknown Bank").trim();
-              const amount = Number(item.bankDeposit || 0);
+              const amount = storedMoney(item.bankDeposit);
               bankTotals[bankName] = (bankTotals[bankName] || 0) + amount;
               entries.push({
                 date: item.date || "-",
@@ -6802,7 +6820,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
         const filterDate = document.getElementById("filterDate")?.value || "";
-        const suffix = filterDate || masterAdminDataMode || "Filtered";
+        const suffix = filterDate || (currentUser==='admin' ? masterAdminDataMode : groupReportMonth) || "Filtered";
         XLSX.writeFile(wb, `Collection_${sheetName.replace(/\s+/g,"_")}_${suffix}.xlsx`);
       } catch (err) {
         console.error("Excel export failed:", err);
