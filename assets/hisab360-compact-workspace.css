@@ -294,3 +294,11 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  @media(max-width:480px){html body.login-design-visible{padding:20px 15px!important}html body.login-design-visible #loginSection.login-box{padding:28px 22px!important;border-radius:21px!important;margin-top:clamp(12px,5vh,40px)!important}}
  @media(max-height:600px){html body.login-design-visible #loginSection.login-box{margin-top:0!important;padding-top:20px!important;padding-bottom:22px!important}html body #loginSection .hisab-login-stage{margin-bottom:12px!important}html body #loginSection .login-welcome{margin-bottom:16px!important}}
 }
+
+/* A quiet, crisp tagline under the login logo. */
+@media screen{
+ html body #loginSection .hisab-login-stage{margin-bottom:14px!important}
+ html body #loginSection .login-brand-tagline{font-size:clamp(15px,4.2vw,17px)!important;font-weight:500!important;line-height:1.75!important;color:#365e54!important;margin:0 auto 26px!important;padding:0 0 15px!important;max-width:100%!important;text-wrap:balance;border-bottom:1px solid rgba(66,116,96,.14)}
+ html body #loginSection .login-brand-tagline span{color:#246e59;font-weight:600}
+ @media(max-height:600px){html body #loginSection .login-brand-tagline{margin-bottom:18px!important;padding-bottom:11px!important}}
+}
