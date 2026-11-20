@@ -715,7 +715,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   html body :is(#app, #bankApp) .finance-section:nth-of-type(n) + .finance-section,
   html body #appContainer .section-box + .section-box,
   html body .edit-original-section:nth-of-type(n) + .edit-original-section {
-    border-top: 1px solid var(--glass-edge) !important;
+    border-top: 1px solid rgba(48, 75, 67, .07) !important;
   }
 
   html body #appContainer .summary-cards > .card:nth-child(n),
@@ -800,7 +800,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   html body #investmentPageHeading:has(.capital-header-period):not([hidden]),
   html body :is(#app, #bankApp) :is(.finance-section, .investment-form-card, .bank-form, .date-selection-section),
   html body .edit-original-section {
-    border-bottom: 1px solid rgba(48, 75, 67, .15) !important;
+    border-bottom: 1px solid rgba(48, 75, 67, .07) !important;
   }
 }
 
