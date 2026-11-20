@@ -450,3 +450,40 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body :is(.portal-footer,.investment-footer){background:transparent!important}
  @media(max-width:700px){html body:not(.login-design-visible),html body.login-design-visible{background-attachment:scroll!important}}
 }
+
+/* Neutral white/gray glass inspired by a quiet chat workspace. */
+@media screen{
+ html{background:#f5f5f5!important}
+ html body:not(.login-design-visible),
+ html body.login-design-visible{background-color:#f7f7f7!important;background-image:linear-gradient(135deg,#fff 0%,#f5f5f5 55%,#ededed 100%)!important;background-attachment:scroll!important;color:#292929}
+ html body :is(#appContainer,#adminView,#dsoView,#app,#bankApp,#content,#bankContent){background:transparent!important;background-image:none!important}
+ html body :is(#appContainer,#app,#bankApp) :is(.card,.investment-form-card,.bank-form,.portal-user-management,.withdraw-reason-card,.report-detail-grid section),
+ html body.login-design-visible #loginSection.login-box{background:linear-gradient(140deg,rgba(255,255,255,.16),rgba(255,255,255,.02))!important;border-color:rgba(170,170,170,.26)!important;box-shadow:0 2px 10px rgba(0,0,0,.025),inset 0 1px 0 rgba(255,255,255,.9)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(n),
+ html body #app :is(.calculator-ma,.opening-level,.calculator-cash,.calculator-bank,.closing-level,.calculator-closing),
+ html body .edit-original-section:nth-of-type(n),
+ html body #appContainer :is(.section-received,.section-return),
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card),
+ html body #appContainer .summary-cards>.card:is(.green,.red,.diff,.cyan,.purple){background:rgba(255,255,255,.12)!important;border-color:rgba(170,170,170,.25)!important}
+ html body #appContainer>.portal-sticky-top,
+ html body #appContainer #adminFilterPanel:not(.is-collapsed),
+ html body #investmentPageHeading:not([hidden]),
+ html body #investmentPageHeading:has(.capital-header-period):not([hidden]){background:rgba(248,248,248,.94)!important;border-color:#e4e4e4!important;box-shadow:0 1px 5px rgba(0,0,0,.025)!important}
+ html body :is(#adminTabNav,#dsoTabNav,#moduleMenu){background:rgba(239,239,239,.3)!important;border-color:#e4e4e4!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),
+ html body #loginSection .login-field>input{background-color:rgba(255,255,255,.12)!important;border-color:#cecece!important;color:#292929!important;-webkit-text-fill-color:#292929}
+ html body :is(#appContainer,#app,#bankApp) :is(input,textarea)[readonly]{background-color:rgba(230,230,230,.22)!important}
+ html body :is(.modal-content,.device-admin-card){background:rgba(250,250,250,.86)!important;border-color:#dedede!important}
+ html body #app .capital-report-table{background:rgba(255,255,255,.04)!important;border-color:#dcdcdc!important}
+ html body #app .capital-report-table thead tr:first-child th:nth-child(n){background:#eaeaea!important;color:#333!important;border-bottom-color:#c8c8c8!important}
+ html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n){background:#f0f0f0!important;color:#414141!important}
+ html body #app .capital-report-table tbody td:nth-child(7),
+ html body #app .capital-report-table tbody td:nth-child(13){background:rgba(225,225,225,.38)!important;color:#292929!important;border-right-color:#ccc!important}
+ html body #app .capital-report-table tbody tr:hover td{background:#ececec!important}
+ html body #loginSection .login-brand-tagline,
+ html body #loginSection .login-brand-tagline span{color:#3d3d3d!important}
+ html body #loginSection .login-brand-tagline{border-bottom-color:rgba(0,0,0,.1)!important}
+ html body #loginSection .login-field-icon{color:#686868!important}
+ html body #loginSection #loginBtn{background:#292929!important;color:#fff!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important}
+ html body #loginSection #loginBtn:hover:not(:disabled){background:#111!important}
+}
