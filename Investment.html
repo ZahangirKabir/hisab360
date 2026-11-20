@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.20.46">
+<meta name="investment-release-version" content="2026.11.20.47">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1967,9 +1967,9 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
 
 <style id="working-capital-form-style">
 @media screen {
-  html body #app #content .investment-form-card:has(> :is(#capitalForm, #balanceCalculatorForm, #declarationForm)),
-  html body #app #content .investment-form-card > :is(#capitalForm, #balanceCalculatorForm, #declarationForm),
-  html body #app #content .investment-form-card :is(#capitalForm, #balanceCalculatorForm, #declarationForm) > :is(.working-level, .finance-section, .opening-total, .closing-total, .difference-total),
+  html body #app #content .investment-form-card:has(> :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm)),
+  html body #app #content .investment-form-card > :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm),
+  html body #app #content .investment-form-card :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm) > :is(.working-level, .finance-section, .opening-total, .closing-total, .difference-total),
   html body #app #content .investment-form-card #capitalForm .working-level .finance-section:not(.date-selection-section) {
     background: transparent !important;
     border: 0 !important;
@@ -1979,7 +1979,7 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
     padding: 0 !important;
   }
 
-  html body #app #content .investment-form-card :is(#capitalForm, #balanceCalculatorForm, #declarationForm) > :is(.working-level, .finance-section, .opening-total, .closing-total, .difference-total) {
+  html body #app #content .investment-form-card :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm) > :is(.working-level, .finance-section, .opening-total, .closing-total, .difference-total) {
     border-bottom: 1px solid rgba(48, 75, 67, .07) !important;
   }
 
@@ -1987,7 +1987,7 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
     font-weight: 750;
   }
 
-  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm) .field > label {
+  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm) .field > label {
     color: #25453c !important;
   }
 
@@ -2002,7 +2002,7 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
     color: #a33131 !important;
   }
 
-  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm) .field > :is(input, select):not([type=hidden]) {
+  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm) .field > :is(input, select):not([type=hidden]) {
     background-color: #fbfdfc !important;
   }
 
@@ -2011,7 +2011,7 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
     font-variant-numeric: tabular-nums;
   }
 
-  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm) {
+  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm) {
     display: grid;
     gap: 12px;
   }
@@ -2028,7 +2028,7 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
     letter-spacing: -.01em;
   }
 
-  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm) .finance-section > legend {
+  html body #app #content :is(#capitalForm, #balanceCalculatorForm, #declarationForm, #pettyForm) .finance-section > legend {
     padding: 0 !important;
     font-size: 12px !important;
     font-weight: 700;
