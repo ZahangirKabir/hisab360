@@ -783,3 +783,21 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     border-radius: var(--radius-panel) !important;
   }
 }
+
+/* Let the page background show between main sections. */
+@media screen {
+  html {
+    --section-gap: 12px;
+  }
+
+  html body #appContainer > .portal-sticky-top,
+  html body #appContainer :is(.report-page-controls, .summary-cards, .section-box),
+  html body #appContainer #dsoReportSummary,
+  html body #appContainer #adminFilterPanel:not(.is-collapsed),
+  html body #investmentPageHeading:not([hidden]),
+  html body #investmentPageHeading:has(.capital-header-period):not([hidden]),
+  html body :is(#app, #bankApp) :is(.finance-section, .investment-form-card, .bank-form, .date-selection-section),
+  html body .edit-original-section {
+    margin-bottom: var(--section-gap) !important;
+  }
+}
