@@ -123,7 +123,6 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  html body :is(#app,#bankApp) .scroll table :is(button,.report-detail-button,.add-row){min-height:20px!important;height:auto!important;margin:0 1px!important;padding:2px 5px!important;font-size:10px!important;line-height:1.3!important;border-radius:4px!important;box-shadow:none!important}
  html body :is(#app,#bankApp,#content,#bankContent){margin-bottom:0!important;padding-bottom:0!important}
  html body #investmentPageHeading:not([hidden]){margin-bottom:6px!important;padding-top:4px!important;padding-bottom:4px!important;gap:6px 10px!important}
- html:has(#app){scrollbar-width:thin!important}
  html body:has(#app){padding-bottom:0!important}
  html body .finance-form-scroll,html body .finance-native-table-scroll,
  html body :is(#appContainer .table-container,#app .scroll,#bankApp .scroll).finance-native-table-scroll{scrollbar-width:thin!important;scrollbar-color:#9aa5a1 #f2f5f4!important}
