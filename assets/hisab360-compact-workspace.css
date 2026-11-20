@@ -392,3 +392,46 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body #investmentPageHeading:not([hidden]),
  html body #investmentPageHeading:has(.capital-header-period):not([hidden]){background:rgba(242,249,246,.9)!important}
 }
+
+/* Maximum clear glass: near-clear panels with visible edges and readable data. */
+@media screen{
+ html body :is(#appContainer,#app,#bankApp) :is(.card,.investment-form-card,.bank-form,.portal-user-management,.withdraw-reason-card,.report-detail-grid section),
+ html body.login-design-visible #loginSection.login-box{background:linear-gradient(140deg,rgba(255,255,255,.12),rgba(255,255,255,.025))!important;border-color:rgba(255,255,255,.84)!important;box-shadow:0 3px 12px rgba(30,75,62,.035),inset 0 1px 0 rgba(255,255,255,.85)!important}
+ html body.login-design-visible #loginSection.login-box{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+1),
+ html body #app :is(.calculator-ma,.opening-level),
+ html body .edit-original-section:nth-of-type(odd){background:rgba(210,229,255,.12)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+2),
+ html body #app .calculator-cash{background:rgba(230,212,250,.12)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+3),
+ html body #app :is(.calculator-bank,.closing-level),
+ html body #appContainer .section-received{background:rgba(200,237,217,.14)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n),
+ html body #app .calculator-closing{background:rgba(255,228,191,.14)!important}
+ html body #appContainer .section-return{background:rgba(255,213,221,.14)!important}
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card){background:rgba(235,249,241,.14)!important}
+ html body #appContainer .summary-cards>.card.green{background:rgba(210,241,220,.18)!important}
+ html body #appContainer .summary-cards>.card.red{background:rgba(255,220,222,.2)!important}
+ html body #appContainer .summary-cards>.card.diff{background:rgba(255,231,195,.2)!important}
+ html body #appContainer .summary-cards>.card.cyan{background:rgba(207,237,248,.2)!important}
+ html body #appContainer .summary-cards>.card.purple{background:rgba(224,209,249,.2)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),
+ html body #loginSection .login-field>input{background-color:rgba(255,255,255,.16)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,textarea)[readonly]{background-color:rgba(220,239,229,.22)!important}
+ html body :is(#app,#bankApp) .date-selection-section,
+ html body :is(.table-container,.finance-native-table-scroll),
+ html body #app .capital-report-table{background:rgba(255,255,255,.04)!important}
+ html body #app .capital-report-table tbody td{background:rgba(255,255,255,.2)!important}
+ html body #app .capital-report-table tbody tr:nth-child(even) td{background:rgba(240,248,244,.3)!important}
+ html body #app .capital-report-table tbody td:nth-child(7){background:rgba(216,240,224,.48)!important}
+ html body #app .capital-report-table tbody td:nth-child(13){background:rgba(220,233,250,.48)!important}
+ html body #app .capital-report-table tbody tr:hover td{background:#e7f3ed!important}
+ html body #appContainer tbody tr:nth-child(odd)>td,
+ html body :is(#app,#bankApp) tbody tr:nth-child(odd)>td{background-color:rgba(255,255,255,.24)}
+ html body #appContainer tbody tr:nth-child(even)>td,
+ html body :is(#app,#bankApp) tbody tr:nth-child(even)>td{background-color:rgba(241,248,245,.34)}
+ html body :is(#adminTabNav,#dsoTabNav,#moduleMenu){background:rgba(243,250,247,.32)!important}
+ /* Overlapping surfaces stay legible as content passes underneath. */
+ html body :is(.modal-content,.device-admin-card){background:rgba(245,251,249,.72)!important}
+ @supports not (backdrop-filter:blur(1px)){html body.login-design-visible #loginSection.login-box{background:rgba(247,252,250,.55)!important}}
+}
