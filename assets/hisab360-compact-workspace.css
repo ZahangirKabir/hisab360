@@ -689,3 +689,30 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     border-radius: 4px !important;
   }
 }
+
+/* Keep related sections on the same page surface. */
+@media screen {
+  html body :is(#app, #bankApp) .finance-section:nth-of-type(n),
+  html body #app :is(.calculator-ma, .opening-level, .calculator-cash, .calculator-bank, .closing-level, .calculator-closing),
+  html body #appContainer :is(.section-box, .section-received, .section-return),
+  html body :is(#appContainer, #app, #bankApp) :is(.investment-form-card, .bank-form, .portal-user-management, .withdraw-reason-card, .report-detail-grid section),
+  html body .edit-original-section:nth-of-type(n) {
+    background: transparent !important;
+    border-color: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body :is(#app, #bankApp) .finance-section:nth-of-type(n) + .finance-section,
+  html body #appContainer .section-box + .section-box,
+  html body .edit-original-section:nth-of-type(n) + .edit-original-section {
+    border-top: 1px solid var(--glass-edge) !important;
+  }
+
+  html body #appContainer .summary-cards > .card:nth-child(n),
+  html body :is(.investment-kpi, .petty-summary-card, .bank-net-card) {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
