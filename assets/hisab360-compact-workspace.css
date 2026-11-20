@@ -784,12 +784,8 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   }
 }
 
-/* Let the page background show between main sections. */
+/* A subtle translucent divider below each main section. */
 @media screen {
-  html {
-    --section-gap: 12px;
-  }
-
   html body #appContainer > .portal-sticky-top,
   html body #appContainer :is(.report-page-controls, .summary-cards, .section-box),
   html body #appContainer #dsoReportSummary,
@@ -798,6 +794,6 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   html body #investmentPageHeading:has(.capital-header-period):not([hidden]),
   html body :is(#app, #bankApp) :is(.finance-section, .investment-form-card, .bank-form, .date-selection-section),
   html body .edit-original-section {
-    margin-bottom: var(--section-gap) !important;
+    border-bottom: 1px solid rgba(48, 75, 67, .15) !important;
   }
 }
