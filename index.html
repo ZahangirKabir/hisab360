@@ -2019,7 +2019,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.55';
+    const APP_RELEASE_VERSION = '2026.11.20.56';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7507,6 +7507,23 @@ html body #appContainer #adminFilterPanel #filterDsoCheckboxContainer .dso-dropd
     background-color: #fff !important;
   }
   html body #appContainer #bankDetailsTable tbody tr:nth-child(even) td.bank-dso-sticky {
+    background-color: #f4f7f6 !important;
+  }
+}
+</style>
+
+<style id="slip-approval-frozen-dso">
+@media screen {
+  html body #appContainer #adminSlipApprovalTable thead th:nth-child(3) {
+    z-index: 45 !important;
+    background-color: #00695c !important;
+    background-clip: border-box;
+  }
+  html body #appContainer #adminSlipApprovalTable tbody td:nth-child(3) {
+    background-color: #fff !important;
+    background-clip: border-box;
+  }
+  html body #appContainer #adminSlipApprovalTable tbody tr:nth-child(even) td:nth-child(3) {
     background-color: #f4f7f6 !important;
   }
 }
