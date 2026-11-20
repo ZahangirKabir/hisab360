@@ -749,3 +749,12 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     background: #075e4d !important;
   }
 }
+
+/* Square table borders, including scrolling report frames. */
+@media screen {
+  html body #adminPageReport > .table-container,
+  html body :is(#appContainer, #app, #bankApp) :is(.table-container, .finance-native-table-scroll, .scroll:has(table), table, table th, table td),
+  html body #app .capital-report-table {
+    border-radius: 0 !important;
+  }
+}
