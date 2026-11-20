@@ -2019,7 +2019,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.54';
+    const APP_RELEASE_VERSION = '2026.11.20.55';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6380,7 +6380,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let headerTr = document.createElement("tr");
       headerTr.innerHTML = `
         <th class="th-info">তারিখ</th>
-        <th class="th-info">DSO ID</th>
+        <th class="th-info bank-dso-sticky">DSO ID</th>
         <th class="th-info">Credit / Account Name</th>
       `;
       uniqueBanks.forEach(bName => {
@@ -6399,7 +6399,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         let tr = document.createElement("tr");
         let rowHtml = `
           <td>${escapeHtml(entry.date)}</td>
-          <td><strong>DSO ${escapeHtml(entry.dsoId)}</strong></td>
+          <td class="bank-dso-sticky"><strong>DSO ${escapeHtml(entry.dsoId)}</strong></td>
           <td style="text-align:left; max-width:180px; white-space:normal;">${escapeHtml(entry.accountName || '-')}</td>
         `;
 
@@ -7486,6 +7486,28 @@ html body #appContainer #adminFilterPanel #filterDsoCheckboxContainer .dso-dropd
   html body #appContainer #dataTable tbody td.sticky-col-1[colspan="2"] {
     background-color: #eceff1 !important;
     white-space: nowrap;
+  }
+}
+</style>
+
+<style id="bank-details-frozen-dso">
+@media screen {
+  html body #appContainer #bankDetailsTable .bank-dso-sticky {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    border-right: 1px solid #b9cec2;
+    background-clip: border-box;
+  }
+  html body #appContainer #bankDetailsTable thead th.bank-dso-sticky {
+    z-index: 45 !important;
+    background-color: #37474f !important;
+  }
+  html body #appContainer #bankDetailsTable tbody td.bank-dso-sticky {
+    background-color: #fff !important;
+  }
+  html body #appContainer #bankDetailsTable tbody tr:nth-child(even) td.bank-dso-sticky {
+    background-color: #f4f7f6 !important;
   }
 }
 </style>
