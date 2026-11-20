@@ -1,7 +1,6 @@
 /* Shared finance forms, report periods and one horizontal report navigator. */
 @media screen{
 html{scrollbar-color:#80a795 #edf3ef;scrollbar-width:thin;scroll-padding-bottom:36px}
-body{padding-bottom:32px!important}
 html body :is(.report-filter,.bank-filters){position:relative;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:7px!important;padding:25px 0 10px!important;margin:8px 0 12px!important;border:0!important;border-top:1px solid #e2eae5!important;border-radius:0!important;background:transparent!important;overflow:visible!important;box-shadow:none!important}
 html body :is(.report-filter,.bank-filters)::before{content:'Report Period';position:absolute;top:5px;left:0;padding-left:10px;border-left:3px solid #72a78e;color:#365c4c;font-size:11px;font-weight:650;line-height:14px}
 html body .bank-filters::before{content:'Report Filters'}
@@ -154,15 +153,15 @@ html body #app .capital-report-heading>.report-filter::before{top:1px}
  html body .edit-original-section:nth-of-type(even){background:#f4f0fb!important}
 }
 
-/* Keep only a small gap below content and the copyright line. */
+/* Keep the copyright line flush with the content. */
 @media screen{
  html body{padding-bottom:0!important}
- html body #appContainer{margin-bottom:0!important;padding-bottom:2px!important}
+ html body > #appContainer.container{margin-bottom:0!important;padding-bottom:0!important}
  html body :is(#adminView,#dsoView,#app,#bankApp,#content,#bankContent){margin-bottom:0!important;padding-bottom:0!important}
  html body:not(.login-design-visible)>.portal-footer,
  html body.login-design-visible>.portal-footer,
  html body[data-portal-menu-role="admin"]>.portal-footer,
- html body .investment-footer{min-height:0!important;height:auto!important;margin:2px auto 0!important;padding:0!important;line-height:1.2!important;border:0!important}
+ html body .investment-footer{min-height:0!important;height:auto!important;margin:0 auto!important;padding:0!important;line-height:1.2!important;border:0!important}
  html body :is(#content,#bankContent)>:last-child,
  html body :is(#adminView,#dsoView)>div:not([hidden]):last-child{margin-bottom:0!important}
 }
@@ -774,18 +773,18 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 
 /* A subtle translucent divider below each main section. */
 @media screen {
-  /* The report table or open filter supplies the next visible rule. */
   html body #appContainer .report-page-controls,
-  html body #appContainer > .portal-sticky-top .header-bar {
+  html body #appContainer > .portal-sticky-top,
+  html body #appContainer > .portal-sticky-top .header-bar,
+  html body.has-icon-sidebar #hisabMobileMenuBar,
+  html body #investmentPageHeading:not([hidden]),
+  html body #investmentPageHeading:has(.capital-header-period):not([hidden]) {
     border-bottom: 0 !important;
   }
 
-  html body #appContainer > .portal-sticky-top,
   html body #appContainer :is(.summary-cards, .section-box),
   html body #appContainer #dsoReportSummary,
   html body #appContainer #adminFilterPanel:not(.is-collapsed),
-  html body #investmentPageHeading:not([hidden]),
-  html body #investmentPageHeading:has(.capital-header-period):not([hidden]),
   html body :is(#app, #bankApp) :is(.finance-section, .investment-form-card, .bank-form, .date-selection-section),
   html body .edit-original-section {
     border-bottom: 1px solid rgba(48, 75, 67, .07) !important;
