@@ -559,7 +559,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 /* Clear glass uses a gray backdrop and reflected edges, with denser floating controls. */
 @media screen {
   html {
-    background: #fbfbfb !important;
+    background: #f4f4f4 !important;
   }
 
   html body:not(.login-design-visible),
@@ -569,14 +569,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     --glass-shadow: 0 5px 18px rgba(24, 24, 24, .045);
     --glass-panel: linear-gradient(155deg, rgba(255, 255, 255, .57), rgba(255, 255, 255, .12) 66%);
     --glass-floating: linear-gradient(150deg, rgba(255, 255, 255, .91), rgba(249, 249, 249, .77));
-    background-color: #fbfbfb !important;
-    background-image:
-      radial-gradient(ellipse at 82% 12%, #fff 0, transparent 48%),
-      radial-gradient(ellipse at 20% 67%, #fff9 0, transparent 55%),
-      linear-gradient(145deg, #fff 5%, #f7f7f7 50%, #fdfdfd 100%) !important;
-    background-size: 100% max(100svh, 100%) !important;
-    background-repeat: no-repeat !important;
-    background-attachment: scroll !important;
+    background: #f4f4f4 !important;
   }
 
   html body :is(#appContainer, #app, #bankApp) :is(.card, .investment-form-card, .bank-form, .portal-user-management, .withdraw-reason-card, .report-detail-grid section),
