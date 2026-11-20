@@ -553,3 +553,24 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body :is(.finance-form-scroll,.finance-native-table-scroll)::-webkit-scrollbar-track{background:#fcfcfc!important}
  @media(forced-colors:active){html,html body,html body *{scrollbar-color:auto!important}}
 }
+
+/* Optical glass cues: stationary reflection, polished edges and a floating shadow. */
+@media screen{
+ html body :is(#appContainer,#app,#bankApp) :is(.card,.investment-form-card,.bank-form,.portal-user-management,.withdraw-reason-card,.report-detail-grid section),
+ html body.login-design-visible #loginSection.login-box{
+ background:linear-gradient(118deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 22%,rgba(255,255,255,.015) 48%,rgba(255,255,255,.24) 49%,rgba(255,255,255,.03) 67%,rgba(255,255,255,.12) 100%)!important;
+ border-color:rgba(210,215,215,.52)!important;
+ box-shadow:inset 0 1px 0 #fff,inset 1px 0 0 rgba(255,255,255,.9),inset -1px -1px 0 rgba(195,202,202,.18),0 5px 16px rgba(30,40,40,.045)!important
+ }
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(n),
+ html body #app :is(.calculator-ma,.opening-level,.calculator-cash,.calculator-bank,.closing-level,.calculator-closing),
+ html body .edit-original-section:nth-of-type(n){
+ background:linear-gradient(125deg,rgba(255,255,255,.3),rgba(255,255,255,.015) 55%,rgba(255,255,255,.12))!important;
+ border-color:rgba(214,219,219,.4)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 8px rgba(30,40,40,.018)!important
+ }
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card){background:linear-gradient(120deg,rgba(255,255,255,.4),rgba(255,255,255,.035))!important;border-color:rgba(210,215,215,.44)!important;box-shadow:inset 0 1px 0 #fff,0 3px 10px rgba(30,40,40,.03)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),
+ html body #loginSection .login-field>input{background-color:rgba(255,255,255,.08)!important;box-shadow:inset 0 1px 3px rgba(25,35,35,.025),0 1px 0 rgba(255,255,255,.9)!important}
+ html body #hisabSideMenu{background:linear-gradient(115deg,rgba(255,255,255,.88),rgba(252,252,252,.66))!important;box-shadow:inset -1px 0 0 rgba(255,255,255,.95)!important}
+ html body #hisabSideMenu.expanded{box-shadow:inset -1px 0 0 #fff,7px 0 24px rgba(30,40,40,.05)!important}
+}
