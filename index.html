@@ -2009,7 +2009,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.50';
+    const APP_RELEASE_VERSION = '2026.11.20.51';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -5966,45 +5966,51 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       });
       const fragment = document.createDocumentFragment();
 
+      let invalidCount=0;
       sortedKeys.forEach(key => {
-        let item = data[key];
+        const item=data[key]||{};
+        let emRec,cashRec,emRet,bankDep,cashDep,dsoRecSum,dsoTransSum,totalSlipAmt;
+        let dsoRecText='',dsoTransText='',slipsList;
+        try {
+          emRec=storedMoney(item.emReceived);
+          cashRec=storedMoney(item.cashReceived);
+          emRet=storedMoney(item.emReturn);
+          bankDep=storedMoney(item.bankDeposit);
+          cashDep=storedMoney(item.cashDeposit);
+          const breakdown=(rows,legacy)=>{
+            if(!Array.isArray(rows)){
+              const sum=storedMoney(legacy);
+              return {sum,text:sum>0?formatBD(sum):''};
+            }
+            let cents=0;
+            const text=rows.map(row=>{
+              const amount=storedMoney(row.amount);
+              cents+=Math.round(amount*100);
+              return `<span class="dso-badge">DSO ${escapeHtml(row.dsoId)}: ${formatBD(amount)}</span>`;
+            }).join(' ');
+            return {sum:cents/100,text};
+          };
+          ({sum:dsoRecSum,text:dsoRecText}=breakdown(item.dsoReceivedList,item.dsoReceived));
+          ({sum:dsoTransSum,text:dsoTransText}=breakdown(item.dsoTransferList,item.dsoTransfer));
+          slipsList=item.slips||[];
+          totalSlipAmt=slipsList.reduce((cents,slip)=>cents+Math.round(storedMoney(slip.amt??slip.amount)*100),0)/100;
+        } catch {
+          invalidCount++;
+          const row=document.createElement('tr');
+          const cell=row.insertCell();
+          cell.colSpan=14;
+          cell.className='status-pending';
+          cell.textContent=`DSO ${item.userId||'—'} · ${item.date||'—'} — অঙ্ক যাচাই প্রয়োজন। মোট হিসাবে ধরা হয়নি।`;
+          fragment.appendChild(row);
+          return;
+        }
+
         count++;
-
-        let emRec = storedMoney(item.emReceived);
-        let cashRec = storedMoney(item.cashReceived);
-        sumEmRec += emRec; sumCashRec += cashRec;
-
-        let dsoRecText = ""; let dsoRecSum = 0;
-        if (Array.isArray(item.dsoReceivedList)) {
-          item.dsoReceivedList.forEach(d => {
-            dsoRecSum += d.amount || 0;
-            dsoRecText += `<span class="dso-badge">DSO ${escapeHtml(d.dsoId)}: ${formatBD(d.amount)}</span> `;
-          });
-        } else { dsoRecSum = item.dsoReceived || 0; if (dsoRecSum > 0) dsoRecText = ` ${formatBD(dsoRecSum)}`; }
-
-        let totalRec = emRec + cashRec + dsoRecSum;
-        let emRet = storedMoney(item.emReturn);
-        let bankDep = storedMoney(item.bankDeposit);
-        sumEmRet += emRet;
-
-        let dsoTransText = ""; let dsoTransSum = 0;
-        if (Array.isArray(item.dsoTransferList)) {
-          item.dsoTransferList.forEach(d => {
-            dsoTransSum += d.amount || 0;
-            dsoTransText += `<span class="dso-badge">DSO ${escapeHtml(d.dsoId)}: ${formatBD(d.amount)}</span> `;
-          });
-        } else { dsoTransSum = item.dsoTransfer || 0; if (dsoTransSum > 0) dsoTransText = ` ${formatBD(dsoTransSum)}`; }
-
-        let cashDep = storedMoney(item.cashDeposit);
-        sumCashDep += cashDep;
-
-        let totalRet = emRet + bankDep + dsoTransSum + cashDep;
-        let diff = roundMoney(totalRec - totalRet);
-        let dsoDiff = dsoRecSum - dsoTransSum;
-
-        let slipsList = item.slips || [];
-        let totalSlipAmt = 0;
-        if (slipsList.length > 0) { slipsList.forEach(s => totalSlipAmt += storedMoney(s.amt??s.amount)); }
+        sumEmRec+=emRec;sumCashRec+=cashRec;sumEmRet+=emRet;sumCashDep+=cashDep;
+        const totalRec=roundMoney(emRec+cashRec+dsoRecSum);
+        const totalRet=roundMoney(emRet+bankDep+cashDep+dsoTransSum);
+        const diff=roundMoney(totalRec-totalRet);
+        const dsoDiff=roundMoney(dsoRecSum-dsoTransSum);
 
         totalRecSum += totalRec; totalRetSum += totalRet; totalDiffSum += diff;
         totalDsoRecSum += dsoRecSum; totalDsoTransSum += dsoTransSum; totalDsoDiffSum += dsoDiff;
@@ -6015,7 +6021,8 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           ? `<span class="status-approved">✅ Approved</span>`
           : `<span class="status-pending">⏳ Approval Pending</span>`;
 
-        if(isApproved&&!moneyMatches(diff,0))statusBadge += '<br><span class="status-pending" role="status">⚠ হিসাবের অমিল — যাচাই প্রয়োজন</span>';
+        const discrepancy=isApproved&&!moneyMatches(diff,0)
+          ? '<br><span class="status-pending">⚠ হিসাবের অমিল — যাচাই প্রয়োজন</span>' : '';
         let actionButtons = "";
         const editPerm = item.editPermission?.status || "";
         if (isGroupAdmin(currentUser)) {
@@ -6053,7 +6060,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
           <td class="bg-received"> ${formatBD(totalRec)}</td>
           <td class="bg-return"> ${formatBD(totalRet)}</td>
-          <td class="bg-diff"> ${formatBD(diff)}</td>
+          <td class="bg-diff"> ${formatBD(diff)}${discrepancy}</td>
 
           <td style="font-weight:bold; color:#00695c;">${slipsList.length} Slips ( ${formatBD(totalSlipAmt)})</td>
           <td class="daily-report-status-hidden">${statusBadge}</td>
@@ -6067,7 +6074,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       let tfootRow = document.createElement("tr");
       tfootRow.style.fontWeight = "bold"; tfootRow.style.background = "#eceff1";
       tfootRow.innerHTML = `
-        <td colspan="2" class="sticky-col-1" style="text-align:center;">TOTAL SUMMARY</td>
+        <td colspan="2" class="sticky-col-1" style="text-align:center;">${invalidCount ? "PARTIAL TOTAL" : "TOTAL SUMMARY"}</td>
         <td> ${formatBD(sumCashRec)}</td>
         <td style="color:#00838f;"> ${formatBD(totalDsoRecSum)}</td>
         <td class="bg-received"> ${formatBD(sumEmRec)}</td>
