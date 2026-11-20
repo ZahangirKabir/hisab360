@@ -828,3 +828,15 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     box-shadow: none !important;
   }
 }
+
+/* Empty summaries have no content or section boundary to display. */
+@media screen {
+  html body #appContainer .summary-cards:not(:has(> *)) {
+    display: none !important;
+  }
+
+  html body #appContainer #adminPageBank > #bankSummaryCardsContainer {
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+}
