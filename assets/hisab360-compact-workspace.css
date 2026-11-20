@@ -750,11 +750,27 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   }
 }
 
-/* Square table borders, including scrolling report frames. */
+/* Round the report frame while keeping the grid aligned. */
 @media screen {
   html body #adminPageReport > .table-container,
-  html body :is(#appContainer, #app, #bankApp) :is(.table-container, .finance-native-table-scroll, .scroll:has(table), table, table th, table td),
+  html body :is(#appContainer, #app, #bankApp) :is(.table-container, .finance-native-table-scroll, .scroll:has(table)) {
+    border-radius: var(--radius-field) !important;
+    background-clip: padding-box;
+  }
+
+  html body :is(#appContainer, #app, #bankApp) :is(table, table th, table td),
   html body #app .capital-report-table {
     border-radius: 0 !important;
+  }
+
+  html body #appContainer #dataTable tbody > tr:only-child > td[colspan]:only-child {
+    padding: 12px 8px !important;
+    line-height: 1.5;
+    white-space: normal;
+  }
+
+  html body #appContainer #adminFilterPanel #filterDsoCheckboxContainer,
+  html body :is(.submission-calendar, .module-dropdown-panel) {
+    border-radius: var(--radius-panel) !important;
   }
 }
