@@ -799,15 +799,13 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   }
 }
 
-/* Hide page and form scrollbars while keeping native scrolling. */
+/* Hide only the page scrollbar; internal regions keep native controls. */
 @media screen {
-  html:root,
-  html body :is(#appContainer, #app, #bankApp) .finance-form-scroll {
+  html:root {
     scrollbar-width: none !important;
   }
 
-  html:root::-webkit-scrollbar,
-  html body .finance-form-scroll::-webkit-scrollbar {
+  html:root::-webkit-scrollbar {
     display: none;
   }
 }
