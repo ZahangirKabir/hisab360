@@ -1649,10 +1649,20 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       return writeLoginREST(app,path,data);
     }
     let credentialLoginTask=null;
+    let credentialPersistenceTask=null;
+    function prepareCredentialPersistence(){
+      if(!credentialPersistenceTask){
+        credentialPersistenceTask=credentialAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(error=>{
+          credentialPersistenceTask=null;
+          throw error;
+        });
+      }
+      return credentialPersistenceTask;
+    }
     function signInForPortal(id,password){
       if(credentialLoginTask){const error=Error('আগের Login-এর উত্তর এখনও আসেনি। কিছুক্ষণ পরে আবার চেষ্টা করুন। দীর্ঘ সময় হলে পেজ Refresh করুন।');error.code='portal/auth-pending';return Promise.reject(error);}
       const epoch=credentialActionEpoch;let expired=false,timer;
-      const task=(async()=>{await credentialAuth.setPersistence(firebase.auth.Auth.Persistence.SESSION);return credentialAuth.signInWithEmailAndPassword(accountEmail(id),password);})();
+      const task=(async()=>{await prepareCredentialPersistence();return credentialAuth.signInWithEmailAndPassword(accountEmail(id),password);})();
       credentialLoginTask=task;
       // A late Auth response must never open the portal or overlap another sign-in.
       const cleanup=async()=>{if(expired&&epoch===credentialActionEpoch)try{await credentialAuth.signOut();}catch(_){}if(credentialLoginTask===task)credentialLoginTask=null;};
@@ -2009,7 +2019,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.52';
+    const APP_RELEASE_VERSION = '2026.11.20.53';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2621,15 +2631,18 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       try {
         const knownDevice=warmKnownDevice(id);
         if(knownDevice){devicePreparation=trace.run('ডিভাইসের পরিচয়',()=>prepareLoginDevice(knownDevice));devicePreparation.catch(()=>{});}
-        const checks=await Promise.allSettled([
-          trace.run('অ্যাপের আপডেট',()=>checkHostedRelease(false)),
-          trace.run('পাসওয়ার্ড যাচাই',()=>signInForPortal(id,pass))
-        ]);
+        const releaseCheck=trace.run('অ্যাপের আপডেট',()=>checkHostedRelease(false));
+        const accountCheck=trace.run('পাসওয়ার্ড যাচাই',()=>signInForPortal(id,pass)).then(()=>{
+          const meta=trace.run('অ্যাকাউন্টের অনুমতি',()=>getCredentialMeta());
+          meta.catch(()=>{});
+          return {meta};
+        });
+        const checks=await Promise.allSettled([releaseCheck,accountCheck]);
         for(const check of checks)if(check.status==='rejected')throw check.reason;
         if(!checks[0].value)return;
         saveLoginAttempts(id,{count:0,until:0});
         if(!devicePreparation)devicePreparation=trace.run('ডিভাইসের পরিচয়',()=>prepareLoginDevice(prepareDeviceApp(id)));
-        const preparation=await Promise.allSettled([trace.run('অ্যাকাউন্টের অনুমতি',()=>getCredentialMeta()),devicePreparation]);
+        const preparation=await Promise.allSettled([checks[1].value.meta,devicePreparation]);
         for(const task of preparation)if(task.status==='rejected')throw task.reason;
         const meta=preparation[0].value,{app,approval}=preparation[1].value;
         if(meta.userId!==id)throw Error('Login ID মেলেনি।');
@@ -6889,6 +6902,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
     updateReleaseGate();
     startReleaseWatcher();
     checkHostedRelease(true);
+    prepareCredentialPersistence().catch(()=>{});
     let lastLiveRecoveryAt=0;
     function recoverActiveDataSync(force=false){
       if(!currentUser||document.hidden||!databaseConnected)return;
@@ -7017,7 +7031,7 @@ body.has-icon-sidebar #hisabMobileMenuBar{display:flex;align-items:center;gap:12
  document.addEventListener('pointerdown',event=>{if(!rail.contains(event.target)&&compactMenu()){pinned=hovered=focused=false;expand();}});
  rail.addEventListener('keydown',event=>{if(event.key==='Escape'){pinned=hovered=focused=false;toggle.blur();expand();}});
  function makeButton(original,label,accent,action,open){const button=document.createElement('button');button.type='button';button.title=label;button.setAttribute('aria-label',label);button.disabled=original.disabled||false;button.classList.toggle('active',original.classList.contains('active'));if(open!==undefined)button.setAttribute('aria-expanded',String(open));else if(button.classList.contains('active'))button.setAttribute('aria-current','page');const icon=document.createElement('span');icon.className='rail-icon';icon.style.color=accent;icon.setAttribute('aria-hidden','true');const svg=original.querySelector('svg');if(svg)icon.append(svg.cloneNode(true));else icon.innerHTML=fallback;const text=document.createElement('span');text.className='rail-label';text.textContent=label;button.append(icon,text);if(open!==undefined){const arrow=document.createElement('span');arrow.className='rail-arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent=open?'⌄':'›';button.append(arrow);}button.onclick=()=>{if(compactMenu()){pinned=true;expand();}action();schedule();};return button;}
- function bindFrame(){const frame=document.getElementById('investmentFrame');if(!frame)return null;if(!frame.dataset.railLoadBound){frame.dataset.railLoadBound='true';frame.addEventListener('load',()=>{frameDoc=null;signature='';schedule();});}try{const doc=frame.contentDocument;if(!doc?.getElementById('moduleMenu'))return null;if(frameDoc!==doc){frameObserver?.disconnect();frameDoc=doc;doc.body.classList.add('parent-sidebar-navigation');frameObserver=new MutationObserver(schedule);frameObserver.observe(doc.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','hidden','disabled']});}return doc;}catch(_){return null;}}
+ function bindFrame(){const frame=document.getElementById('investmentFrame');if(!frame)return null;if(!frame.dataset.railLoadBound){frame.dataset.railLoadBound='true';frame.addEventListener('load',()=>{frameDoc=null;signature='';schedule();});}try{const doc=frame.contentDocument;if(!doc?.getElementById('moduleMenu'))return null;if(frameDoc!==doc){frameObserver?.disconnect();frameDoc=doc;doc.body.classList.add('parent-sidebar-navigation');frameObserver=new MutationObserver(schedule);const options={subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class','hidden','disabled','style']};frameObserver.observe(doc.getElementById('moduleMenu'),options);const heading=doc.getElementById('investmentPageHeading');if(heading)frameObserver.observe(heading,options);}return doc;}catch(_){return null;}}
  function treeModel(doc){if(!doc)return [];return [...doc.getElementById('moduleMenu').children].filter(node=>!node.hidden&&(node.tagName==='DETAILS'||node.tagName==='BUTTON'&&shown(node))).map(node=>node.tagName==='DETAILS'?{node,summary:node.querySelector('summary'),children:[...node.querySelectorAll('.module-dropdown-panel button')].filter(shown)}:{node});}
  function sync(){queued=false;const visible=getComputedStyle(app).display!=='none';const isDso=document.body.dataset.portalMenuRole==='dso'||(document.getElementById('dsoView')?.style.display==='block'&&document.getElementById('adminView')?.style.display==='none');const sidebarVisible=visible&&!isDso;rail.hidden=!sidebarVisible;mobileBar.hidden=!sidebarVisible;document.body.classList.toggle('has-icon-sidebar',sidebarVisible);if(!sidebarVisible){pinned=hovered=focused=investmentOpen=false;groups.clear();list.replaceChildren();document.body.classList.remove('sidebar-pinned');backdrop.hidden=true;signature='';return;}
  const nav=document.getElementById('adminTabNav');if(!nav)return;
@@ -7029,7 +7043,13 @@ body.has-icon-sidebar #hisabMobileMenuBar{display:flex;align-items:center;gap:12
  const header=app.querySelector('.header-bar');if(header&&typeof ResizeObserver!=='undefined')new ResizeObserver(alignMenuLogo).observe(header);document.getElementById('hisabHeaderLogo')?.addEventListener('load',alignMenuLogo);window.addEventListener('resize',alignMenuLogo);window.addEventListener('scroll',alignMenuLogo,{passive:true});
  function schedule(){if(!queued){queued=true;requestAnimationFrame(()=>{sync();alignMenuLogo();});}}
  matchMedia('(max-width:760px)').addEventListener('change',()=>{pinned=hovered=focused=false;expand();});
- new MutationObserver(schedule).observe(app,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden','disabled']});sync();
+ const observer=new MutationObserver(schedule);
+ const viewOptions={attributes:true,attributeFilter:['style','class','hidden']};
+ for(const view of [app,document.getElementById('adminView'),document.getElementById('dsoView')])if(view)observer.observe(view,viewOptions);
+ observer.observe(document.body,{attributes:true,attributeFilter:['data-portal-menu-role']});
+ const navOptions={...viewOptions,subtree:true,childList:true,characterData:true,attributeFilter:['style','class','hidden','disabled']};
+ for(const id of ['adminTabNav','adminPageTitle']){const element=document.getElementById(id);if(element)observer.observe(element,navOptions);}
+ sync();
 })();
 </script>
 <script>(()=>{const heading=document.getElementById('adminPageHeading'),toolbar=document.getElementById('adminReportToolbar');if(heading&&toolbar){const row=document.createElement('div');row.className='report-page-controls';heading.before(row);row.append(heading,toolbar);}})();</script><script src="assets/hisab360-integrity-monitor.js?v=2026111111"></script><script src="assets/hisab360-backup-status.js?v=20261112catchup"></script></body>
@@ -7226,7 +7246,12 @@ body[data-portal-menu-role="dso"] #adminView,body[data-portal-menu-role="dso"] #
  function schedule(){if(!queued){queued=true;requestAnimationFrame(fit);}}
  window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,{passive:true});
  if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(schedule);observer.observe(document.getElementById('appContainer'));observer.observe(footer);}
- new MutationObserver(schedule).observe(document.getElementById('appContainer'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden']});document.fonts?.ready.then(schedule);schedule();
+ const visibilityObserver=new MutationObserver(schedule);
+ for(const id of ['appContainer','adminView','adminPageReport','adminPageBank']){
+   const element=document.getElementById(id);
+   if(element)visibilityObserver.observe(element,{attributes:true,attributeFilter:['style','class','hidden']});
+ }
+ document.fonts?.ready.then(schedule);schedule();
 })();
 </script>
 
