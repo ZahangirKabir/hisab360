@@ -639,10 +639,10 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 /* Rounded surfaces and controls, with compact corners in report grids. */
 @media screen {
   html {
-    --radius-surface: 24px;
-    --radius-panel: 16px;
-    --radius-field: 12px;
-    --radius-pill: 999px;
+    --radius-surface: 12px;
+    --radius-panel: 8px;
+    --radius-field: 6px;
+    --radius-button: 6px;
   }
 
   html body.login-design-visible #loginSection.login-box,
@@ -676,7 +676,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   html body :is(#appContainer, #app, #bankApp, #moduleMenu) button:not(.smart-calendar-day),
   html body :is(#adminTabNav, #dsoTabNav) button,
   html body #loginSection #loginBtn {
-    border-radius: var(--radius-pill) !important;
+    border-radius: var(--radius-button) !important;
   }
 
   html body #hisabSideMenu :is(button, .rail-subtree) {
@@ -686,6 +686,6 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   html body :is(#app, #bankApp) .scroll table :is(button, .report-detail-button, .add-row),
   html body #app .capital-report-table td:last-child > button,
   html body #appContainer table button {
-    border-radius: 8px !important;
+    border-radius: 4px !important;
   }
 }
