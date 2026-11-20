@@ -803,3 +803,14 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     border-bottom: 1px solid rgba(48, 75, 67, .15) !important;
   }
 }
+
+/* Hide the outer page scrollbar while keeping native table scrolling. */
+@media screen {
+  html:root {
+    scrollbar-width: none !important;
+  }
+
+  html:root::-webkit-scrollbar {
+    display: none;
+  }
+}
