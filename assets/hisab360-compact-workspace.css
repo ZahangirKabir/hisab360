@@ -487,3 +487,32 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body #loginSection #loginBtn{background:#292929!important;color:#fff!important;box-shadow:0 3px 10px rgba(0,0,0,.08)!important}
  html body #loginSection #loginBtn:hover:not(:disabled){background:#111!important}
 }
+
+/* Almost-white neutral glass; text and status colors retain their contrast. */
+@media screen{
+ html{background:#fcfcfc!important}
+ html body:not(.login-design-visible),
+ html body.login-design-visible{background-color:#fdfdfd!important;background-image:linear-gradient(135deg,#fff 0%,#fdfdfd 55%,#fafafa 100%)!important}
+ html body #appContainer>.portal-sticky-top,
+ html body #appContainer #adminFilterPanel:not(.is-collapsed),
+ html body #investmentPageHeading:not([hidden]),
+ html body #investmentPageHeading:has(.capital-header-period):not([hidden]){background:rgba(254,254,254,.96)!important;border-color:#eeeeee!important;box-shadow:0 1px 4px rgba(0,0,0,.015)!important}
+ html body :is(#adminTabNav,#dsoTabNav,#moduleMenu){background:rgba(248,248,248,.22)!important;border-color:#eee!important}
+ html body :is(#appContainer,#app,#bankApp) :is(.card,.investment-form-card,.bank-form,.portal-user-management,.withdraw-reason-card,.report-detail-grid section),
+ html body.login-design-visible #loginSection.login-box{border-color:rgba(190,190,190,.2)!important;box-shadow:0 2px 8px rgba(0,0,0,.018),inset 0 1px 0 rgba(255,255,255,.9)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(n),
+ html body #app :is(.calculator-ma,.opening-level,.calculator-cash,.calculator-bank,.closing-level,.calculator-closing),
+ html body .edit-original-section:nth-of-type(n),
+ html body #appContainer :is(.section-received,.section-return),
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card){border-color:rgba(190,190,190,.2)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),
+ html body #loginSection .login-field>input{border-color:#dedede!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,textarea)[readonly]{background-color:rgba(248,248,248,.28)!important}
+ html body :is(.modal-content,.device-admin-card){background:rgba(254,254,254,.9)!important;border-color:#eee!important}
+ html body #app .capital-report-table{border-color:#e9e9e9!important}
+ html body #app .capital-report-table thead tr:first-child th:nth-child(n){background:#f6f6f6!important;border-bottom-color:#dedede!important}
+ html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n){background:#fbfbfb!important}
+ html body #app .capital-report-table tbody td:nth-child(7),
+ html body #app .capital-report-table tbody td:nth-child(13){background:rgba(246,246,246,.32)!important;border-right-color:#e5e5e5!important}
+ html body #app .capital-report-table tbody tr:hover td{background:#f6f6f6!important}
+}
