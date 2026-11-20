@@ -712,11 +712,6 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     box-shadow: none !important;
   }
 
-  html body :is(#app, #bankApp) .finance-section:nth-of-type(n) + .finance-section,
-  html body #appContainer .section-box + .section-box,
-  html body .edit-original-section:nth-of-type(n) + .edit-original-section {
-    border-top: 1px solid rgba(48, 75, 67, .07) !important;
-  }
 
   html body #appContainer .summary-cards > .card:nth-child(n),
   html body :is(.investment-kpi, .petty-summary-card, .bank-net-card) {
@@ -812,5 +807,24 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 
   html:root::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* Draw each section boundary once. Table cell borders belong to the grid. */
+@media screen {
+  html body #appContainer :is(.report-page-controls, #adminPageHeading, #adminReportToolbar),
+  html body #appContainer > .portal-sticky-top .header-bar {
+    border-block: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body #appContainer :is(#adminPageBank, #adminPageReport, #adminPageSlipApproval) > .table-container,
+  html body :is(#app, #bankApp) .scroll:has(table),
+  html body #app .capital-report-table,
+  html body #investmentPageHeading:not([hidden]),
+  html body #investmentPageHeading:has(.capital-header-period):not([hidden]),
+  html body :is(.report-filter, .bank-filters) {
+    border-top: 0 !important;
+    box-shadow: none !important;
   }
 }
