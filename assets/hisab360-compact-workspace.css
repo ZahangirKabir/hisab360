@@ -635,3 +635,57 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     }
   }
 }
+
+/* Rounded surfaces and controls, with compact corners in report grids. */
+@media screen {
+  html {
+    --radius-surface: 24px;
+    --radius-panel: 16px;
+    --radius-field: 12px;
+    --radius-pill: 999px;
+  }
+
+  html body.login-design-visible #loginSection.login-box,
+  html body :is(.modal-content, .device-admin-card) {
+    border-radius: var(--radius-surface) !important;
+  }
+
+  html body :is(#appContainer, #app, #bankApp) :is(.card, .investment-form-card, .bank-form, .portal-user-management, .withdraw-reason-card, .report-detail-grid section, .finance-section, .section-received, .section-return),
+  html body :is(.investment-kpi, .petty-summary-card, .bank-net-card, .module-dropdown-panel, .edit-original-section, .submission-calendar),
+  html body #appContainer #adminFilterPanel:not(.is-collapsed),
+  html body #investmentPageHeading:not([hidden]),
+  html body :is(#app, #bankApp) .scroll,
+  html body #adminPageReport > .table-container,
+  html body :is(#app, #bankApp, #appContainer) .table-container,
+  html body #app .capital-report-table {
+    border-radius: var(--radius-panel) !important;
+  }
+
+  html body :is(#app, #bankApp, #appContainer, .edit-original-form) :is(.field, .bank-field, .form-group, .form-row) :is(input, select, textarea):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=hidden]),
+  html body #loginSection .login-field > input,
+  html body :is(#appContainer, #app, #bankApp, .edit-original-form) :is(input, select, textarea):not([type=checkbox], [type=radio], [type=file], [type=range], [type=hidden]),
+  html body #app .ho-report-controls :is(input:not(.smart-period-source), select),
+  html body #investmentPageHeading :is(.capital-header-period, .capital-header-actions) input:not(.smart-period-source) {
+    border-radius: var(--radius-field) !important;
+  }
+
+  html body :is(.report-filter, .bank-filters, .compact-capital-date) :is(.smart-period-trigger, .submission-date-trigger),
+  html body :is(.report-filter, .bank-filters) > button,
+  html body #investmentPageHeading :is(.capital-header-period, .capital-header-actions) :is(button, .smart-period-trigger),
+  html body #app .ho-report-controls button,
+  html body :is(#appContainer, #app, #bankApp, #moduleMenu) button:not(.smart-calendar-day),
+  html body :is(#adminTabNav, #dsoTabNav) button,
+  html body #loginSection #loginBtn {
+    border-radius: var(--radius-pill) !important;
+  }
+
+  html body #hisabSideMenu :is(button, .rail-subtree) {
+    border-radius: var(--radius-field) !important;
+  }
+
+  html body :is(#app, #bankApp) .scroll table :is(button, .report-detail-button, .add-row),
+  html body #app .capital-report-table td:last-child > button,
+  html body #appContainer table button {
+    border-radius: 8px !important;
+  }
+}
