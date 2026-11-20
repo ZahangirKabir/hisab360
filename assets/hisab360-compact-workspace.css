@@ -354,3 +354,41 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body :is(#adminTabNav,#dsoTabNav,#moduleMenu){background:rgba(243,250,247,.88)!important;border-color:rgba(255,255,255,.9)!important}
  html body :is(#app,#bankApp) .date-selection-section{background:rgba(255,255,255,.4)!important}
 }
+
+/* Clearer app glass with restrained layers and readable foregrounds. */
+@media screen{
+ html body:not(.login-design-visible){background-image:radial-gradient(ellipse at 8% 12%,#c6e7d9 0,transparent 58%),radial-gradient(ellipse at 94% 80%,#cfdef4 0,transparent 55%),linear-gradient(135deg,#edf8f2,#eaf2fb)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(.card,.investment-form-card,.bank-form,.portal-user-management,.withdraw-reason-card,.report-detail-grid section){background:linear-gradient(140deg,rgba(255,255,255,.34),rgba(255,255,255,.12))!important;border-color:rgba(255,255,255,.85)!important;box-shadow:0 4px 14px rgba(30,75,62,.045),inset 0 1px 0 rgba(255,255,255,.85)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+1),
+ html body #app :is(.calculator-ma,.opening-level),
+ html body .edit-original-section:nth-of-type(odd){background:rgba(210,229,255,.26)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+2),
+ html body #app .calculator-cash{background:rgba(230,212,250,.25)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+3),
+ html body #app :is(.calculator-bank,.closing-level),
+ html body #appContainer .section-received{background:rgba(200,237,217,.3)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n),
+ html body #app .calculator-closing{background:rgba(255,228,191,.3)!important}
+ html body #appContainer .section-return{background:rgba(255,213,221,.3)!important}
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card){background:rgba(235,249,241,.38)!important}
+ html body #appContainer .summary-cards>.card.green{background:rgba(210,241,220,.4)!important}
+ html body #appContainer .summary-cards>.card.red{background:rgba(255,220,222,.42)!important}
+ html body #appContainer .summary-cards>.card.diff{background:rgba(255,231,195,.44)!important}
+ html body #appContainer .summary-cards>.card.cyan{background:rgba(207,237,248,.42)!important}
+ html body #appContainer .summary-cards>.card.purple{background:rgba(224,209,249,.42)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]){background-color:rgba(255,255,255,.38)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,textarea)[readonly]{background-color:rgba(220,239,229,.48)!important}
+ html body :is(#app,#bankApp) .date-selection-section{background:rgba(255,255,255,.2)!important}
+ html body :is(.table-container,.finance-native-table-scroll){background:rgba(255,255,255,.18)!important}
+ html body #app .capital-report-table{background:rgba(255,255,255,.18)!important}
+ html body #app .capital-report-table tbody td{background:rgba(255,255,255,.52)!important}
+ html body #app .capital-report-table tbody tr:nth-child(even) td{background:rgba(240,248,244,.6)!important}
+ html body #app .capital-report-table tbody td:nth-child(7){background:rgba(216,240,224,.7)!important}
+ html body #app .capital-report-table tbody td:nth-child(13){background:rgba(220,233,250,.7)!important}
+ html body #app .capital-report-table tbody tr:hover td{background:#e7f3ed!important}
+ html body :is(.modal-content,.device-admin-card){background:rgba(245,251,249,.82)!important}
+ html body #appContainer>.portal-sticky-top,
+ html body #appContainer #adminFilterPanel:not(.is-collapsed),
+ html body #investmentPageHeading:not([hidden]),
+ html body #investmentPageHeading:has(.capital-header-period):not([hidden]){background:rgba(242,249,246,.9)!important}
+}
