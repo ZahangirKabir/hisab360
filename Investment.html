@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.20.40">
+<meta name="investment-release-version" content="2026.11.20.41">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1967,18 +1967,20 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
 
 <style id="daily-capital-form-style">
 @media screen {
-  html body #app #content .investment-form-card:has(> #capitalForm) {
-    background: #f1f5f3 !important;
-    border-radius: 10px !important;
-    padding: clamp(10px, 1.4vw, 18px) !important;
+  html body #app #content .investment-form-card:has(> #capitalForm),
+  html body #app #content .investment-form-card > #capitalForm,
+  html body #app #content .investment-form-card #capitalForm > :is(.working-level, .finance-section, .opening-total, .closing-total, .difference-total),
+  html body #app #content .investment-form-card #capitalForm .working-level .finance-section:not(.date-selection-section) {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  html body #app #content .investment-form-card #capitalForm > :is(.working-level, .opening-total, .closing-total) {
-    background: #edf2ef !important;
-  }
-
-  html body #app #content #capitalForm .working-level .finance-section:not(.date-selection-section) {
-    background: rgba(255, 255, 255, .48) !important;
+  html body #app #content .investment-form-card #capitalForm > :is(.working-level, .finance-section, .opening-total, .closing-total, .difference-total) {
+    border-bottom: 1px solid rgba(48, 75, 67, .07) !important;
   }
 
   html body #app #content #capitalForm .working-level > legend {
