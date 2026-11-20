@@ -519,7 +519,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 
 /* Near-white glass menu, quiet scrollbars and a deeper readable foreground. */
 @media screen{
- html{background:#fefefe!important}
+ html{--scroll-thumb:rgba(75,75,75,.13);--scroll-thumb-hover:rgba(75,75,75,.25);background:#fefefe!important}
  html body:not(.login-design-visible),
  html body.login-design-visible{background-color:#fefefe!important;background-image:linear-gradient(135deg,#fff,#fefefe 65%,#fcfcfc)!important;color:#202020;--text:#202020;--muted:#454545;--deep:#263d35}
  html body #hisabSideMenu{background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(250,250,250,.76))!important;border-right:1px solid #ededed!important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
@@ -544,20 +544,22 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body :is(#appContainer,#app,#bankApp) tbody{color:#202020}
  html body #app .capital-report-table tbody td{color:#202020!important}
  html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n){color:#292929!important}
- html,html body,html body *,html body :is(#appContainer,#app,#bankApp) *,html body #hisabSideMenu{scrollbar-width:thin!important;scrollbar-color:#dedede #fcfcfc!important}
+ html,html body,html body *,html body :is(#appContainer,#app,#bankApp) *,html body #hisabSideMenu{scrollbar-width:thin!important;scrollbar-color:var(--scroll-thumb) transparent!important}
  html body ::-webkit-scrollbar{width:6px!important;height:6px!important}
- html body ::-webkit-scrollbar-track{background:#fcfcfc!important}
- html body ::-webkit-scrollbar-thumb{background:#dedede!important;border:1px solid #fcfcfc!important;border-radius:8px!important}
- html body ::-webkit-scrollbar-thumb:hover{background:#bdbdbd!important}
- html body :is(.finance-form-scroll,.finance-native-table-scroll)::-webkit-scrollbar-thumb{background:#dedede!important;border-color:#fcfcfc!important}
- html body :is(.finance-form-scroll,.finance-native-table-scroll)::-webkit-scrollbar-track{background:#fcfcfc!important}
- @media(forced-colors:active){html,html body,html body *{scrollbar-color:auto!important}}
+ html body ::-webkit-scrollbar-track{background:transparent!important}
+ html body ::-webkit-scrollbar-thumb{background:var(--scroll-thumb)!important;border:1px solid transparent!important;background-clip:padding-box!important;border-radius:8px!important}
+ html body ::-webkit-scrollbar-thumb:hover{background:var(--scroll-thumb-hover)!important}
+ html body :is(.finance-form-scroll,.finance-native-table-scroll)::-webkit-scrollbar-thumb{background:var(--scroll-thumb)!important;border-color:transparent!important}
+ html body :is(.finance-form-scroll,.finance-native-table-scroll)::-webkit-scrollbar-thumb:hover{background-color:var(--scroll-thumb-hover)!important}
+ html body :is(#appContainer .table-container,#app .scroll,#bankApp .scroll).finance-native-table-scroll{scrollbar-color:var(--scroll-thumb) transparent!important}
+ html body :is(.finance-form-scroll,.finance-native-table-scroll)::-webkit-scrollbar-track{background:transparent!important}
+ @media(forced-colors:active){html,html body,html body *,html body :is(#appContainer,#app,#bankApp) *,html body #hisabSideMenu,html body :is(#appContainer .table-container,#app .scroll,#bankApp .scroll).finance-native-table-scroll{scrollbar-color:auto!important}}
 }
 
 /* Clear glass uses a gray backdrop and reflected edges, with denser floating controls. */
 @media screen {
   html {
-    background: #f5f5f5 !important;
+    background: #fbfbfb !important;
   }
 
   html body:not(.login-design-visible),
@@ -567,11 +569,11 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     --glass-shadow: 0 5px 18px rgba(24, 24, 24, .045);
     --glass-panel: linear-gradient(155deg, rgba(255, 255, 255, .57), rgba(255, 255, 255, .12) 66%);
     --glass-floating: linear-gradient(150deg, rgba(255, 255, 255, .91), rgba(249, 249, 249, .77));
-    background-color: #f5f5f5 !important;
+    background-color: #fbfbfb !important;
     background-image:
       radial-gradient(ellipse at 82% 12%, #fff 0, transparent 48%),
       radial-gradient(ellipse at 20% 67%, #fff9 0, transparent 55%),
-      linear-gradient(145deg, #fff 5%, #ededed 50%, #f9f9f9 100%) !important;
+      linear-gradient(145deg, #fff 5%, #f7f7f7 50%, #fdfdfd 100%) !important;
     background-size: 100% max(100svh, 100%) !important;
     background-repeat: no-repeat !important;
     background-attachment: scroll !important;
@@ -626,17 +628,17 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
   }
 
   html body #app .capital-report-table thead tr:first-child th:nth-child(n) {
-    background: #ececec !important;
+    background: #f5f5f5 !important;
   }
 
   html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n) {
-    background: #f6f6f6 !important;
+    background: #fafafa !important;
   }
 
   @supports not (backdrop-filter: blur(1px)) {
     html body:not(.login-design-visible),
     html body.login-design-visible {
-      --glass-floating: linear-gradient(150deg, #fff, #f5f5f5);
+      --glass-floating: linear-gradient(150deg, #fff, #fbfbfb);
     }
   }
 }
