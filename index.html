@@ -2009,7 +2009,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.49';
+    const APP_RELEASE_VERSION = '2026.11.20.50';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -3054,6 +3054,18 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const matchDso=!chosenDsos.length||chosenDsos.includes(String(item.userId));
       return matchDate&&matchAdmin&&matchDso&&(!status||actual===status)&&(!bank||(item.slips||[]).some(s=>String(s.bankName||'').trim()===bank));
     }
+    function slipApprovalDisplay(item,bank){
+      const slips=item.slips||[];
+      if(!bank)return {slips,amount:item.amount,partial:false};
+      const selected=slips.filter(s=>String(s.bankName||'').trim()===bank);
+      let amount;
+      try {
+        amount=selected.reduce((sum,slip)=>sum+Math.round(storedMoney(slip.amt??slip.amount)*100),0)/100;
+      } catch {
+        amount=null;
+      }
+      return {slips:selected,amount,partial:selected.length<slips.length};
+    }
     function renderSlipApprovalFilters(){if(currentUser==='admin')listenBankSlipStatuses();renderBankSlipStatus('admin');}
     function renderBankSlipStatus(user){const body=document.getElementById(user==='admin'?'adminBankSlipStatusBody':'dsoBankSlipStatusBody');if(!body)return;
       const displayed=user==='admin'?{...slipPagedItems,...slipStatusItems}:slipStatusItems;
@@ -3066,14 +3078,15 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       body.replaceChildren();
       if(user==='admin'){const more=document.getElementById('loadMoreBankSlipsBtn');if(more){more.style.display=slipStatusHasMore?'inline-block':'none';more.disabled=slipStatusLoadingMore;more.textContent=slipStatusLoadingMore?'লোড হচ্ছে...':'আরও Bank Slip দেখুন';}}
       if(!entries.length){const tr=body.insertRow();const td=tr.insertCell();td.colSpan=user==='admin'?10:8;td.textContent=slipStatusLoadError||(slipStatusLoading?'⏳ Bank Slip ডাটা লোড হচ্ছে...':user!=='admin'?'আজ কোনো Bank Slip নেই।':slipStatusHasMore?'এই অংশে মিল পাওয়া যায়নি; আরও Bank Slip দেখতে নিচের বোতাম চাপুন।':all.length?'এই ফিল্টারে কোনো Bank Slip পাওয়া যায়নি।':'নির্বাচিত তারিখে কোনো Bank Slip নেই।');return;}
-      entries.forEach(([key,item])=>{const tr=body.insertRow();const banks=[...new Set((item.slips||[]).map(s=>`${s.bankName||''} ${s.accountNumber||''}`).filter(Boolean))].join(', ');
-        const transactionIds=[...new Set((item.slips||[]).map(s=>s.transactionId).filter(Boolean))].join(', ')||'—';
+      const selectedBank=user==='admin'?(document.getElementById('slipApprovalBank')?.value||''):'';
+      entries.forEach(([key,item])=>{const tr=body.insertRow(),display=slipApprovalDisplay(item,selectedBank);const banks=[...new Set(display.slips.map(s=>`${s.bankName||''} ${s.accountNumber||''}`).filter(Boolean))].join(', ');
+        const transactionIds=[...new Set(display.slips.map(s=>s.transactionId).filter(Boolean))].join(', ')||'—';
         const uploaded=Number(item.submittedAt)>0?new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Dhaka',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(Number(item.submittedAt))):'—';
-        const fields=user==='admin'?[item.date,uploaded,item.userId,banks,transactionIds,`${formatBD(item.amount)}`,slipStatusLabel(item.status),item.rejectReason||'—']:[item.date,uploaded,banks,transactionIds,`${formatBD(item.amount)}`,slipStatusLabel(item.status),item.rejectReason||'—'];
+        const fields=user==='admin'?[item.date,uploaded,item.userId,banks,transactionIds,display.amount===null?'—':formatBD(display.amount),slipStatusLabel(item.status),item.rejectReason||'—']:[item.date,uploaded,banks,transactionIds,`${formatBD(item.amount)}`,slipStatusLabel(item.status),item.rejectReason||'—'];
         fields.forEach(value=>{tr.insertCell().textContent=String(value??'');});const slipCell=tr.insertCell();
         let thumbList=null;
         if(user==='admin'){slipCell.className='approval-slip-thumbs';thumbList=document.createElement('div');thumbList.className='thumb-list';slipCell.append(thumbList);}
-        (item.slips||[]).forEach((slip,i)=>{
+        display.slips.forEach((slip,i)=>{
           if(!slip.img)return;
           const view=document.createElement('button');view.type='button';
           view.setAttribute('aria-label',`Bank Slip ${i+1} বড় করে দেখুন`);
@@ -3091,6 +3104,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
         if(user==='admin'){
           const actions=tr.insertCell(),status=item.status||'pending';
           const hasDuplicate=Object.entries(displayed).some(([otherKey,other])=>otherKey!==key&&other?.date===item.date&&other.status!=='rejected'&&(item.slips||[]).some(s=>(other.slips||[]).some(old=>sameSlipIdentity(s,old))));
+          if(display.partial&&['pending','approving','rejecting'].includes(status)){const note=document.createElement('div');note.textContent='Approve / Reject পুরো অনুরোধের জন্য। সব স্লিপ দেখতে All Banks নির্বাচন করুন।';actions.append(note);}
           if(hasDuplicate){const warning=document.createElement('div');warning.textContent='⚠ একই ছবি বা Transaction ID অন্য স্লিপেও আছে; যাচাই করুন';warning.style.color='#b71c1c';actions.append(warning);}
           const addAction=(label,handler,enabled=true)=>{const button=document.createElement('button');button.type='button';button.className='btn-add';button.textContent=label;button.disabled=!enabled;button.style.margin='2px';button.onclick=async()=>{button.disabled=true;try{await handler(key,item);}finally{button.disabled=false;}};actions.append(button);};
           if(status==='pending'||status==='approving')addAction(status==='approving'?'↻ Finish Approval':'✔ Approve',approveBankSlipRequest);
@@ -5894,6 +5908,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       updateDsoDropdownText();
       if(activeAdminTab==='slipApproval'){
         document.getElementById('slipApprovalStatus').value='';
+        document.getElementById('slipApprovalBank').value='';
         slipApprovalViewMode='date';renderSlipApprovalFilters();return;
       }
       if (currentUser === 'admin') {
@@ -6615,17 +6630,18 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           const slips=Object.values({...slipPagedItems,...slipStatusItems}).filter(item=>item&&slipMatchesApprovalFilters(item))
             .sort((a,b)=>(Number(b.submittedAt)||0)-(Number(a.submittedAt)||0));
           if(!slips.length){alert('এই পেজের ফিল্টারে কোনো Bank Slip নেই।');return;}
-          const rows=slips.map(item=>({
+          const bank=document.getElementById('slipApprovalBank')?.value||'';
+          const rows=slips.map(item=>{const display=slipApprovalDisplay(item,bank);return {
             'Date':item.date||'',
             'Upload Time (Bangladesh)':Number(item.submittedAt)>0?new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Dhaka',dateStyle:'short',timeStyle:'short'}).format(new Date(Number(item.submittedAt))):'',
             'DSO ID':String(item.userId||''),
-            'Bank Name / Account':[...new Set((item.slips||[]).map(s=>`${s.bankName||''} ${s.accountNumber||''}`.trim()).filter(Boolean))].join(', '),
-            'Transaction ID':[...new Set((item.slips||[]).map(s=>s.transactionId).filter(Boolean))].join(', '),
-            'Amount':Number(item.amount)||0,
+            'Bank Name / Account':[...new Set(display.slips.map(s=>`${s.bankName||''} ${s.accountNumber||''}`.trim()).filter(Boolean))].join(', '),
+            'Transaction ID':[...new Set(display.slips.map(s=>s.transactionId).filter(Boolean))].join(', '),
+            'Amount':display.amount===null?'':Number(display.amount)||0,
             'Status':item.status||'pending',
             'Reject Reason':item.rejectReason||'',
-            'Slip Count':(item.slips||[]).length
-          }));
+            'Slip Count':display.slips.length
+          };});
           const book=XLSX.utils.book_new(),sheet=XLSX.utils.json_to_sheet(rows);
           sheet['!cols']=[{wch:15},{wch:27},{wch:12},{wch:32},{wch:30},{wch:17},{wch:16},{wch:35},{wch:13}];
           XLSX.utils.book_append_sheet(book,sheet,'Bank Slip Approval');
