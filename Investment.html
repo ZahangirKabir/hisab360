@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.20.44">
+<meta name="investment-release-version" content="2026.11.20.45">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -2072,6 +2072,45 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
     border: 1px solid #d7e3de !important;
     color: #263d36 !important;
     font-variant-numeric: tabular-nums;
+  }
+
+  html body #app #content #balanceCalculatorForm .finance-section:has(select[name="cash_ho_direction"]) {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  html body #app #content #balanceCalculatorForm .repeat-row:has(select[name="cash_ho_direction"]) {
+    border-bottom: 0 !important;
+    gap: 10px !important;
+  }
+
+  html body #app #content #balanceCalculatorForm .repeat-row:has(select[name="cash_ho_direction"]) > .add-row {
+    width: fit-content !important;
+    color: #943535 !important;
+    background: transparent !important;
+    border: 1px solid #dfc5c5 !important;
+  }
+
+  html body #app #content #balanceCalculatorForm input[name="calc_net_cash"],
+  html body #app #content #balanceCalculatorForm > .calculator-closing input:disabled {
+    background-color: #eef6f1 !important;
+    border: 1px solid #b9d4c5 !important;
+    color: #17513c !important;
+    font-weight: 750 !important;
+  }
+
+  @media (min-width: 801px) {
+    html body #app #content #balanceCalculatorForm .repeat-row:has(select[name="cash_ho_direction"]) {
+      display: flex !important;
+      align-items: end;
+    }
+
+    html body #app #content #balanceCalculatorForm .repeat-row:has(select[name="cash_ho_direction"]) > .field:not([hidden]) {
+      flex: 1 1 0;
+      min-width: 0;
+    }
   }
 }
 </style>
