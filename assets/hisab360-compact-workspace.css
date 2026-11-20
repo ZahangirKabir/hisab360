@@ -716,3 +716,36 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     box-shadow: none !important;
   }
 }
+
+/* Restore the report's balance-group colors and the sign-in accent. */
+@media screen {
+  html body #app .capital-report-table thead tr:first-child th:nth-child(2) {
+    background: #deeee5 !important;
+    color: #194f37 !important;
+    border-bottom-color: #49946c !important;
+  }
+
+  html body #app .capital-report-table thead tr:first-child th:nth-child(3) {
+    background: #e4edf7 !important;
+    color: #244d71 !important;
+    border-bottom-color: #668eb3 !important;
+  }
+
+  html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(-n+7) {
+    background: #f1f7f3 !important;
+    color: #355347 !important;
+  }
+
+  html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n+8):nth-child(-n+13) {
+    background: #f0f5fb !important;
+    color: #36546f !important;
+  }
+
+  html body #loginSection #loginBtn:not(:disabled) {
+    background: linear-gradient(115deg, #08725c, #078766) !important;
+  }
+
+  html body #loginSection #loginBtn:hover:not(:disabled) {
+    background: #075e4d !important;
+  }
+}
