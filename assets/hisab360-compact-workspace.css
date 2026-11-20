@@ -786,8 +786,14 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 
 /* A subtle translucent divider below each main section. */
 @media screen {
+  /* The report table or open filter supplies the next visible rule. */
+  html body #appContainer .report-page-controls,
+  html body #appContainer > .portal-sticky-top .header-bar {
+    border-bottom: 0 !important;
+  }
+
   html body #appContainer > .portal-sticky-top,
-  html body #appContainer :is(.report-page-controls, .summary-cards, .section-box),
+  html body #appContainer :is(.summary-cards, .section-box),
   html body #appContainer #dsoReportSummary,
   html body #appContainer #adminFilterPanel:not(.is-collapsed),
   html body #investmentPageHeading:not([hidden]),
