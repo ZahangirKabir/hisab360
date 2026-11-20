@@ -840,3 +840,14 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
     box-shadow: none !important;
   }
 }
+
+/* Hide the outer form content scrollbar without changing its overflow. */
+@media screen {
+  html body :is(#app, #bankApp) :is(#content, #bankContent).finance-form-scroll {
+    scrollbar-width: none !important;
+  }
+
+  html body :is(#app, #bankApp) :is(#content, #bankContent).finance-form-scroll::-webkit-scrollbar {
+    width: 0 !important;
+  }
+}
