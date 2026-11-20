@@ -2009,7 +2009,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.51';
+    const APP_RELEASE_VERSION = '2026.11.20.52';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -6670,60 +6670,67 @@ global.PortalLedger={create,sync,balance,same,snapshot};
 
         const { filteredData } = result;
         const rows = [];
+        const skippedRows = [];
 
         if (tabName === "report") {
           Object.keys(filteredData).forEach(key => {
             const item = filteredData[key] || {};
-            const emRec = storedMoney(item.emReceived);
-            const cashRec = storedMoney(item.cashReceived);
-            const dsoRecSum = Array.isArray(item.dsoReceivedList)
-              ? item.dsoReceivedList.reduce((a,b) => a + storedMoney(b?.amount), 0)
-              : storedMoney(item.dsoReceived);
-            const totalRec = emRec + cashRec + dsoRecSum;
+            try {
+              const emRec = storedMoney(item.emReceived);
+              const cashRec = storedMoney(item.cashReceived);
+              const dsoRecSum = Array.isArray(item.dsoReceivedList)
+                ? item.dsoReceivedList.reduce((a,b) => a + storedMoney(b.amount), 0)
+                : storedMoney(item.dsoReceived);
+              const totalRec = roundMoney(emRec + cashRec + dsoRecSum);
 
-            const emRet = storedMoney(item.emReturn);
-            const bankDep = storedMoney(item.bankDeposit);
-            const cashDep = storedMoney(item.cashDeposit);
-            const dsoTransSum = Array.isArray(item.dsoTransferList)
-              ? item.dsoTransferList.reduce((a,b) => a + storedMoney(b?.amount), 0)
-              : storedMoney(item.dsoTransfer);
-            const totalRet = emRet + bankDep + cashDep + dsoTransSum;
+              const emRet = storedMoney(item.emReturn);
+              const bankDep = storedMoney(item.bankDeposit);
+              const cashDep = storedMoney(item.cashDeposit);
+              const dsoTransSum = Array.isArray(item.dsoTransferList)
+                ? item.dsoTransferList.reduce((a,b) => a + storedMoney(b.amount), 0)
+                : storedMoney(item.dsoTransfer);
+              const totalRet = roundMoney(emRet + bankDep + cashDep + dsoTransSum);
 
-            const n = item.notes || {};
-            const slipsSum = Array.isArray(item.slips)
-              ? item.slips.reduce((a,s) => a + storedMoney(s?.amt??s?.amount), 0)
-              : 0;
+              const n = item.notes || {};
+              const slipsSum = (item.slips || []).reduce((sum, slip) => sum + storedMoney(slip.amt??slip.amount), 0);
 
-            rows.push({
-              "Date": item.date || "",
-              "DSO ID": item.userId || "",
-              "Cash Rec": cashRec,
-              "DSO Rec Breakdown": Array.isArray(item.dsoReceivedList)
-                ? item.dsoReceivedList.map(d => `DSO ${d.dsoId}: ${storedMoney(d.amount)}`).join(" | ")
-                : "",
-              "B2B Receive": emRec,
-              "B2B Ret": emRet,
-              "Cash Dep": cashDep,
-              "Bank Dep": bankDep,
-              "DSO Trans Breakdown": Array.isArray(item.dsoTransferList)
-                ? item.dsoTransferList.map(d => `DSO ${d.dsoId}: ${storedMoney(d.amount)}`).join(" | ")
-                : "",
-
+              rows.push({
+                "Date": item.date || "",
+                "DSO ID": item.userId || "",
+                "Cash Rec": cashRec,
+                "DSO Rec Breakdown": Array.isArray(item.dsoReceivedList)
+                  ? item.dsoReceivedList.map(d => `DSO ${d.dsoId}: ${storedMoney(d.amount)}`).join(" | ")
+                  : "",
+                "B2B Receive": emRec,
+                "B2B Ret": emRet,
+                "Cash Dep": cashDep,
+                "Bank Dep": bankDep,
+                "DSO Trans Breakdown": Array.isArray(item.dsoTransferList)
+                  ? item.dsoTransferList.map(d => `DSO ${d.dsoId}: ${storedMoney(d.amount)}`).join(" | ")
+                  : "",
 
 
-              "Total Received": totalRec,
-              "Total Return": totalRet,
-              "Difference": totalRec - totalRet,
-              "Slips Sum": slipsSum,
-              "Bank Name": item.bankName || "",
-              "Note 1000": Number(n.n1000 || 0),
-              "Note 500": Number(n.n500 || 0),
-              "Note 200": Number(n.n200 || 0),
-              "Note 100": Number(n.n100 || 0),
-              "Note 50": Number(n.n50 || 0),
-              "Total Calculated Cash": storedMoney(item.totalCash),
 
-            });
+                "Total Received": totalRec,
+                "Total Return": totalRet,
+                "Difference": roundMoney(totalRec - totalRet),
+                "Slips Sum": slipsSum,
+                "Bank Name": item.bankName || "",
+                "Note 1000": Number(n.n1000 || 0),
+                "Note 500": Number(n.n500 || 0),
+                "Note 200": Number(n.n200 || 0),
+                "Note 100": Number(n.n100 || 0),
+                "Note 50": Number(n.n50 || 0),
+                "Total Calculated Cash": storedMoney(item.totalCash),
+
+              });
+            } catch {
+              skippedRows.push({
+                "Date": item.date || "",
+                "DSO ID": item.userId || "",
+                "Issue": "অঙ্ক যাচাই প্রয়োজন — এই সারির হিসাব রপ্তানি করা হয়নি।"
+              });
+            }
           });
         } else if (tabName === "bank") {
           const bankTotals = {};
@@ -6825,22 +6832,28 @@ global.PortalLedger={create,sync,balance,same,snapshot};
           });
         }
 
-        if (!rows.length) {
+        if (!rows.length && !skippedRows.length) {
           alert("এই পেজের বর্তমান ফিল্টার অনুযায়ী কোনো ডাটা পাওয়া যায়নি!");
           return;
         }
-
-        const ws = XLSX.utils.json_to_sheet(rows);
-        ws["!cols"] = Object.keys(rows[0]).map(k => ({
-          wch: Math.min(Math.max(String(k).length + 4, 12), 34)
-        }));
 
         const wb = XLSX.utils.book_new();
         const sheetName =
           tabName === "bank" ? "Bank Details" :
           tabName === "notes" ? "Note Summary" : "DSO Daily Report";
 
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        if (rows.length) {
+          const ws = XLSX.utils.json_to_sheet(rows);
+          ws["!cols"] = Object.keys(rows[0]).map(k => ({
+            wch: Math.min(Math.max(String(k).length + 4, 12), 34)
+          }));
+          XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        }
+        if (skippedRows.length) {
+          const issues = XLSX.utils.json_to_sheet(skippedRows);
+          issues["!cols"] = [{wch: 14}, {wch: 12}, {wch: 67}];
+          XLSX.utils.book_append_sheet(wb, issues, "Rows to Review");
+        }
 
         const filterDate = document.getElementById("filterDate")?.value || "";
         const suffix = filterDate || (currentUser==='admin' ? masterAdminDataMode : groupReportMonth) || "Filtered";
