@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.20.38">
+<meta name="investment-release-version" content="2026.11.20.39">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1961,6 +1961,47 @@ html body #appContainer table td:not(.sticky-col-1):not(.sticky-col-2),html body
   html body #app .capital-report-table tbody td:last-child > button {
     font-size: 11px !important;
     min-height: 28px !important;
+  }
+}
+</style>
+
+<style id="daily-capital-form-style">
+@media screen {
+  html body #app #content .investment-form-card:has(> #capitalForm) {
+    background: #f1f5f3 !important;
+    border-radius: 10px !important;
+    padding: clamp(10px, 1.4vw, 18px) !important;
+  }
+
+  html body #app #content .investment-form-card #capitalForm > .opening-level,
+  html body #app #content .investment-form-card #capitalForm > .opening-total {
+    background: #e5f1eb !important;
+  }
+
+  html body #app #content .investment-form-card #capitalForm > .closing-level,
+  html body #app #content .investment-form-card #capitalForm > .closing-total {
+    background: #f7edde !important;
+  }
+
+  html body #app #content #capitalForm .working-level .finance-section:not(.date-selection-section) {
+    background: rgba(255, 255, 255, .48) !important;
+  }
+
+  html body #app #content #capitalForm .working-level > legend {
+    font-weight: 750;
+  }
+
+  html body #app #content #capitalForm .field > label {
+    color: #25453c !important;
+  }
+
+  html body #app #content #capitalForm .field > :is(input, select):not([type=hidden]) {
+    background-color: #fbfdfc !important;
+  }
+
+  html body #app #content #capitalForm > :is(.opening-total, .closing-total) input {
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
   }
 }
 </style>
