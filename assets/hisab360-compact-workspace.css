@@ -544,7 +544,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body :is(#appContainer,#app,#bankApp) tbody{color:#202020}
  html body #app .capital-report-table tbody td{color:#202020!important}
  html body #app .capital-report-table thead tr:nth-child(2) th:nth-child(n){color:#292929!important}
- html,html body,html body *{scrollbar-width:thin!important;scrollbar-color:#dedede #fcfcfc!important}
+ html,html body,html body *,html body :is(#appContainer,#app,#bankApp) *,html body #hisabSideMenu{scrollbar-width:thin!important;scrollbar-color:#dedede #fcfcfc!important}
  html body ::-webkit-scrollbar{width:6px!important;height:6px!important}
  html body ::-webkit-scrollbar-track{background:#fcfcfc!important}
  html body ::-webkit-scrollbar-thumb{background:#dedede!important;border:1px solid #fcfcfc!important;border-radius:8px!important}
