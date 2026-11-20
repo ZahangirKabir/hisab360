@@ -592,7 +592,7 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
 
   html body :is(#appContainer, #app, #bankApp) :is(input, select, textarea):not([type=checkbox], [type=radio], [type=range], [type=file], [type=hidden]),
   html body #loginSection .login-field > input {
-    background-color: rgba(255, 255, 255, .48) !important;
+    background-color: #fff !important;
     border-color: rgba(46, 46, 46, .19) !important;
   }
 
