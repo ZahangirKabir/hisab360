@@ -302,3 +302,13 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body #loginSection .login-brand-tagline span{color:#246e59;font-weight:600}
  @media(max-height:600px){html body #loginSection .login-brand-tagline{margin-bottom:18px!important;padding-bottom:11px!important}}
 }
+
+/* Clearer glass: translucent surface, fine highlights and visible backdrop. */
+@media screen{
+ html body.login-design-visible{background-image:radial-gradient(ellipse at 16% 23%,#b8e3d3 0,transparent 49%),radial-gradient(ellipse at 83% 69%,#c5daf2 0,transparent 48%),linear-gradient(135deg,#edf8f2,#eaf1fb)!important}
+ html body.login-design-visible #loginSection.login-box{background:linear-gradient(145deg,rgba(255,255,255,.36),rgba(255,255,255,.14))!important;border:1px solid rgba(255,255,255,.78)!important;backdrop-filter:blur(22px) saturate(135%);-webkit-backdrop-filter:blur(22px) saturate(135%);box-shadow:0 18px 55px rgba(40,80,81,.1),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(255,255,255,.24)!important}
+ html body #loginSection .login-field>input{background:rgba(255,255,255,.36)!important;border-color:rgba(86,133,119,.32)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)!important}
+ html body #loginSection .login-field>input:focus{background:rgba(255,255,255,.56)!important;border-color:#23856c!important;box-shadow:0 0 0 3px rgba(35,133,108,.12),inset 0 1px 0 rgba(255,255,255,.8)!important}
+ html body #loginSection .login-brand-tagline{color:#254e43!important}
+ @supports not (backdrop-filter:blur(1px)){html body.login-design-visible #loginSection.login-box{background:rgba(247,252,250,.9)!important}}
+}
