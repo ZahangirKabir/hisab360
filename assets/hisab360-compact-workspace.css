@@ -312,3 +312,45 @@ html body #app .ho-report-controls :is(input:not(.smart-period-source),select,bu
  html body #loginSection .login-brand-tagline{color:#254e43!important}
  @supports not (backdrop-filter:blur(1px)){html body.login-design-visible #loginSection.login-box{background:rgba(247,252,250,.9)!important}}
 }
+
+/* Shared glass surfaces across the portal, reports and finance workspace. */
+@media screen{
+ html{background:#eef6f4!important}
+ html body:not(.login-design-visible){background-color:#eef6f4!important;background-image:radial-gradient(ellipse at 0% 0%,#d4ece1 0,transparent 55%),radial-gradient(ellipse at 100% 90%,#dce8f7 0,transparent 55%),linear-gradient(135deg,#f4faf6,#edf3fa)!important;background-attachment:scroll!important}
+ html body :is(#appContainer,#adminView,#dsoView,#app,#bankApp,#content,#bankContent){background:transparent!important;background-image:none!important}
+ html body #appContainer>.portal-sticky-top,
+ html body #appContainer #adminFilterPanel:not(.is-collapsed),
+ html body #investmentPageHeading:not([hidden]),
+ html body #investmentPageHeading:has(.capital-header-period):not([hidden]){background:rgba(245,251,249,.94)!important;border-color:rgba(255,255,255,.9)!important;box-shadow:0 3px 12px rgba(32,72,64,.05)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(.card,.investment-form-card,.bank-form,.portal-user-management,.withdraw-reason-card,.report-detail-grid section),
+ html body :is(.modal-content,.device-admin-card,.edit-original-form){background:linear-gradient(140deg,rgba(255,255,255,.66),rgba(255,255,255,.32))!important;border-color:rgba(255,255,255,.92)!important;box-shadow:0 5px 18px rgba(30,75,62,.05),inset 0 1px 0 rgba(255,255,255,.9)!important}
+ html body :is(.modal-content,.device-admin-card){background:rgba(245,251,249,.95)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+1),
+ html body #app :is(.calculator-ma,.opening-level),
+ html body .edit-original-section:nth-of-type(odd){background:rgba(220,235,255,.5)!important;border-color:rgba(255,255,255,.9)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+2),
+ html body #app .calculator-cash{background:rgba(235,223,250,.46)!important;border-color:rgba(255,255,255,.9)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n+3),
+ html body #app :is(.calculator-bank,.closing-level),
+ html body #appContainer .section-received{background:rgba(215,241,226,.52)!important;border-color:rgba(255,255,255,.9)!important}
+ html body :is(#app,#bankApp) .finance-section:nth-of-type(4n),
+ html body #app .calculator-closing{background:rgba(255,235,207,.52)!important;border-color:rgba(255,255,255,.9)!important}
+ html body #appContainer .section-return{background:rgba(255,223,229,.48)!important}
+ html body :is(.investment-kpi,.petty-summary-card,.bank-net-card){background:rgba(236,249,241,.68)!important;border-color:rgba(255,255,255,.95)!important;box-shadow:inset 0 1px 0 #fff!important}
+ html body #appContainer .summary-cards>.card.green{background:rgba(220,244,226,.67)!important}
+ html body #appContainer .summary-cards>.card.red{background:rgba(255,231,232,.7)!important}
+ html body #appContainer .summary-cards>.card.diff{background:rgba(255,240,214,.72)!important}
+ html body #appContainer .summary-cards>.card.cyan{background:rgba(219,243,249,.7)!important}
+ html body #appContainer .summary-cards>.card.purple{background:rgba(235,225,252,.7)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,select,textarea):not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]){background-color:rgba(255,255,255,.65)!important;border-color:#b9d0c6!important;color:#243746!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,select,textarea):focus-visible{background-color:rgba(255,255,255,.9)!important;outline:2px solid #23856c!important;outline-offset:1px!important}
+ html body :is(#appContainer,#app,#bankApp) :is(input,textarea)[readonly]{background-color:rgba(229,241,235,.75)!important}
+ html body :is(#appContainer,#app,#bankApp) option{background:#fff;color:#243746}
+ html body :is(.table-container,.finance-native-table-scroll){background:rgba(255,255,255,.32)!important;border-color:#c8dcd3!important}
+ html body #appContainer tbody tr:nth-child(odd)>td,
+ html body :is(#app,#bankApp) tbody tr:nth-child(odd)>td{background-color:rgba(255,255,255,.76)}
+ html body #appContainer tbody tr:nth-child(even)>td,
+ html body :is(#app,#bankApp) tbody tr:nth-child(even)>td{background-color:rgba(241,248,245,.82)}
+ html body :is(#adminTabNav,#dsoTabNav,#moduleMenu){background:rgba(243,250,247,.88)!important;border-color:rgba(255,255,255,.9)!important}
+ html body :is(#app,#bankApp) .date-selection-section{background:rgba(255,255,255,.4)!important}
+}
