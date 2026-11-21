@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.21.2">
+<meta name="investment-release-version" content="2026.11.21.3">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -1457,7 +1457,7 @@ function showCapitalClosingDetails(record){const reportNodes=[...content.childre
  add('Closing Cash','Cash after Transfer',record.closing?.cashInHand);for(const bank of banks)add('Closing Bank',bank,record.closing?.banks?.[bank]);table.append(body);reportActions(detailPage,'Closing Cash & Transfer Details · '+record.date);const scroll=node('div');scroll.className='scroll';scroll.append(table);detailPage.append(scroll);content.append(detailPage);}
 function capitalReportClosingBalance(record){const closing=record?.closing||{};const cents=value=>Math.round((Number(value)||0)*100);return (cents(closing.maWallet)+cents(closing.cashInHand)+cents(closing.cashInOffice)+Object.values(closing.banks||{}).reduce((sum,value)=>sum+cents(value),0))/100;}
 function capitalReportTable(list,records){const table=node('table');table.className='capital-report-table';const thead=node('thead'),groups=node('tr');
- [['Date',1],['Opening Balance',6],['Closing Balance',6],['Details',1]].forEach(([label,count])=>{const th=node('th',label);th.colSpan=count;groups.append(th);});thead.append(groups);
+ [['Date',1],['Opening Balance',6],['Closing Balance',6],['',1]].forEach(([label,count])=>{const th=node('th',label);th.colSpan=count;groups.append(th);});thead.append(groups);
  const headers=node('tr');['Day / Date','MA Wallet','Cash','Bank','Commission Received','Received from Head Office','Total Opening','MA Wallet','Cash','Bank','Transfer to Head Office','Salary / Route / Petty Cash / Bank Charge','Total Closing','Details'].forEach(label=>headers.append(node('th',label)));thead.append(headers);table.append(thead);
  const totalRows=entries=>Array.isArray(entries)?entries.reduce((sum,x)=>sum+(Number(x.amount)||0),0):Number(entries?.amount)||0;
  const bankTotal=x=>Object.values(x?.banks||{}).reduce((sum,value)=>sum+(Number(value)||0),0);
