@@ -1,5 +1,5 @@
 <!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hisab360 · Investment</title>
-<meta name="investment-release-version" content="2026.11.21.1">
+<meta name="investment-release-version" content="2026.11.21.2">
 <style>
 :root{--teal:#00695c;--deep:#004d40;--light:#e0f2f1;--ink:#17342e;--muted:#58736b;--line:#d9e8e3;--canvas:#f4f7f6;--white:#fff;--focus:#00897b}
 *{box-sizing:border-box}
@@ -55,7 +55,7 @@ button.save:hover{background:var(--deep)}button:disabled{opacity:.55;cursor:wait
 #investMessage,#bankMessage{min-height:20px;font-weight:700;color:#b71c1c;margin:12px 0 0}
 .balance{display:block;font-weight:800;color:var(--deep);background:var(--light);border:1px solid #beddd5;padding:12px;border-radius:9px}
 .difference-total.balance-mismatch{border-color:#db8989;background:#fff2f2}.difference-total.balance-mismatch input{color:#a31515;font-weight:800}
-.report-difference{background:#ffe8e8;color:#a31515;font-weight:900}.capital-report-table th{white-space:nowrap}.capital-report-table td{white-space:nowrap}.capital-report-table td:last-child{white-space:normal;min-width:135px}
+.capital-report-table th{white-space:nowrap}.capital-report-table td{white-space:nowrap}.capital-report-table td:last-child{white-space:normal;min-width:135px}
 .capital-report-table{border:1px solid #d7e3e2;border-radius:10px;overflow:hidden;background:#fff}
 .capital-report-table th,.capital-report-table td{border-right:1px solid #edf1f0;font-variant-numeric:tabular-nums;padding:11px 13px}
 .capital-report-table thead tr:first-child th{position:static;background:#eaf1f0;color:#254c45;font-size:13px}
@@ -68,9 +68,8 @@ button.save:hover{background:var(--deep)}button:disabled{opacity:.55;cursor:wait
 .capital-report-table tbody td:nth-child(7),.capital-report-table tbody td:nth-child(13){font-weight:850;color:#075b50;background:#f0f7f4!important}
 .capital-report-table tbody td:nth-child(7){border-right:2px solid #a9cfc5}
 .capital-report-table tbody td:nth-child(13){border-right:2px solid #bdcbd0}
-.capital-report-table tbody td.report-difference{background:#ffeded!important;color:#aa2525!important;font-weight:900}
 .capital-report-table tbody td:first-child{position:sticky;left:0;z-index:2;font-weight:800;box-shadow:2px 0 6px rgba(26,61,52,.08)}
-.capital-report-table tbody td:nth-child(n+2):nth-child(-n+14){text-align:right}
+.capital-report-table tbody td:nth-child(n+2):nth-child(-n+13){text-align:right}
 .report-detail-button{border:1px solid #9bcbbb;background:#e9f7f1;color:var(--deep);border-radius:7px;padding:7px 10px;font-weight:800}.report-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.report-detail-grid section{padding:12px;border:1px solid var(--line);border-radius:9px;background:white}.report-detail-grid h4{margin:0 0 7px;color:var(--deep)}.report-detail-grid p{margin:4px 0}
 .scroll{overflow-x:auto}table{border-collapse:separate;border-spacing:0;width:100%;min-width:680px}th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #e1ece8;font-size:12px}th{background:#e8f5f1;color:var(--deep);font-weight:800;position:sticky;top:0}tbody tr:nth-child(even){background:#f9fcfb}tbody tr:hover{background:#eff8f5}
 /* Opening and Closing use separate visual cues throughout the form. */
@@ -189,7 +188,6 @@ form button.save{width:180px;min-height:40px!important;padding:9px 16px!importan
 .capital-report-table td:last-child{min-width:68px;width:68px;white-space:normal;text-align:center}
 .capital-report-table td:last-child button{display:inline-block;min-height:25px;min-width:0;width:auto;margin:2px;padding:4px 6px;font-size:10px;line-height:1.25;border-radius:5px;box-shadow:none}
 .capital-report-table tbody td:nth-child(7),.capital-report-table tbody td:nth-child(13){font-weight:700}
-.capital-report-table tbody td.report-difference{font-weight:700}
 @media(min-width:1400px){.scroll .capital-report-table{min-width:100%;}.capital-report-table th,.capital-report-table td{padding:7px 6px;font-size:11px}}
 @media(max-width:800px){.scroll .capital-report-table{min-width:930px}.capital-report-table th,.capital-report-table td{padding:5px 4px;font-size:10px}.capital-report-table thead tr:nth-child(2) th{font-size:9.5px}}
 @media print{.scroll .capital-report-table{min-width:0!important;width:100%!important}.capital-report-table th,.capital-report-table td{padding:5px 4px!important;font-size:9px!important}}
@@ -1459,15 +1457,14 @@ function showCapitalClosingDetails(record){const reportNodes=[...content.childre
  add('Closing Cash','Cash after Transfer',record.closing?.cashInHand);for(const bank of banks)add('Closing Bank',bank,record.closing?.banks?.[bank]);table.append(body);reportActions(detailPage,'Closing Cash & Transfer Details · '+record.date);const scroll=node('div');scroll.className='scroll';scroll.append(table);detailPage.append(scroll);content.append(detailPage);}
 function capitalReportClosingBalance(record){const closing=record?.closing||{};const cents=value=>Math.round((Number(value)||0)*100);return (cents(closing.maWallet)+cents(closing.cashInHand)+cents(closing.cashInOffice)+Object.values(closing.banks||{}).reduce((sum,value)=>sum+cents(value),0))/100;}
 function capitalReportTable(list,records){const table=node('table');table.className='capital-report-table';const thead=node('thead'),groups=node('tr');
- [['Date',1],['Opening Balance',6],['Closing Balance',6],['Difference',1],['Details',1]].forEach(([label,count])=>{const th=node('th',label);th.colSpan=count;groups.append(th);});thead.append(groups);
- const headers=node('tr');['Day / Date','MA Wallet','Cash','Bank','Commission Received','Received from Head Office','Total Opening','MA Wallet','Cash','Bank','Transfer to Head Office','Salary / Route / Petty Cash / Bank Charge','Total Closing','Difference','Details'].forEach(label=>headers.append(node('th',label)));thead.append(headers);table.append(thead);
+ [['Date',1],['Opening Balance',6],['Closing Balance',6],['Details',1]].forEach(([label,count])=>{const th=node('th',label);th.colSpan=count;groups.append(th);});thead.append(groups);
+ const headers=node('tr');['Day / Date','MA Wallet','Cash','Bank','Commission Received','Received from Head Office','Total Opening','MA Wallet','Cash','Bank','Transfer to Head Office','Salary / Route / Petty Cash / Bank Charge','Total Closing','Details'].forEach(label=>headers.append(node('th',label)));thead.append(headers);table.append(thead);
  const totalRows=entries=>Array.isArray(entries)?entries.reduce((sum,x)=>sum+(Number(x.amount)||0),0):Number(entries?.amount)||0;
  const bankTotal=x=>Object.values(x?.banks||{}).reduce((sum,value)=>sum+(Number(value)||0),0);
  const dateLabel=value=>{const raw=String(value||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw||'—';const [year,month,day]=raw.split('-').map(Number);const date=new Date(Date.UTC(year,month-1,day));if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return raw;return `${new Intl.DateTimeFormat('en-GB',{weekday:'short',timeZone:'UTC'}).format(date)} ${String(day).padStart(2,'0')}/${String(month).padStart(2,'0')}/${String(year).slice(-2)}`;};
  const body=node('tbody');records.forEach(x=>{const tr=node('tr'),opening=x.opening||{},closing=x.closing||{},openCash=(Number(opening.cashInHand)||0)+(Number(opening.cashInOffice)||0),closeCash=(Number(closing.cashInHand)||0)+(Number(closing.cashInOffice)||0),outflow=(Number(x.transfers?.salary)||0)+(Number(x.transfers?.routeConvence)||0)+(Number(x.transfers?.petty)||0)+Object.values(x.bankCharges||{}).reduce((n,v)=>n+(Number(v)||0),0);
- const difference=Math.round(((Number(x.openingTotal)||0)-capitalReportClosingBalance(x)-totalRows(x.headOfficeTransfer)-outflow)*100)/100;
- const values=[dateLabel(x.date),opening.maWallet,openCash,bankTotal(opening),totalRows(x.commission),totalRows(x.headOfficeReceive),x.openingTotal,closing.maWallet,closeCash,bankTotal(closing),totalRows(x.headOfficeTransfer),outflow,capitalReportClosingBalance(x),difference];
- values.forEach((value,index)=>{const td=node('td',index===0?value:`${money(value)}`);if(index===values.length-1&&difference!==0)td.classList.add('report-difference');tr.append(td);});const detailCell=node('td'),button=node('button','Details দেখুন');button.type='button';button.className='report-detail-button';button.onclick=()=>showCapitalClosingDetails(x);detailCell.append(button);const edit=node('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('investmentEntries',x);detailCell.append(edit);const exported=node('div');exported.className='export-transfer-details';const lines=capitalTransferLines(x);exported.textContent=(x.closing?.cashBeforeTransfer!==undefined?'Cash In Hand: '+money(x.closing.cashBeforeTransfer)+'\n':'')+(lines.length?lines.map(line=>line.label+(line.details?' · '+line.details:'')+': '+money(line.amount)).join('\n'):'No Cash Transfer')+'\nClosing Cash: '+money(x.closing?.cashInHand);detailCell.append(exported);tr.append(detailCell);body.append(tr);});table.append(body);list.append(table);}
+ const values=[dateLabel(x.date),opening.maWallet,openCash,bankTotal(opening),totalRows(x.commission),totalRows(x.headOfficeReceive),x.openingTotal,closing.maWallet,closeCash,bankTotal(closing),totalRows(x.headOfficeTransfer),outflow,capitalReportClosingBalance(x)];
+ values.forEach((value,index)=>{const td=node('td',index===0?value:`${money(value)}`);tr.append(td);});const detailCell=node('td'),button=node('button','Details দেখুন');button.type='button';button.className='report-detail-button';button.onclick=()=>showCapitalClosingDetails(x);detailCell.append(button);const edit=node('button','Edit');edit.type='button';edit.className='add-row';edit.onclick=()=>window.investmentEditReport('investmentEntries',x);detailCell.append(edit);const exported=node('div');exported.className='export-transfer-details';const lines=capitalTransferLines(x);exported.textContent=(x.closing?.cashBeforeTransfer!==undefined?'Cash In Hand: '+money(x.closing.cashBeforeTransfer)+'\n':'')+(lines.length?lines.map(line=>line.label+(line.details?' · '+line.details:'')+': '+money(line.amount)).join('\n'):'No Cash Transfer')+'\nClosing Cash: '+money(x.closing?.cashInHand);detailCell.append(exported);tr.append(detailCell);body.append(tr);});table.append(body);list.append(table);}
 function renderInvestmentOverview(list,month){
  const summary=document.getElementById('investSummary');if(summary)summary.hidden=true;
  if(!dataReady&&!preview){list.append(node('p',dataLoadError||'হিসাব লোড হচ্ছে…'));return;}
