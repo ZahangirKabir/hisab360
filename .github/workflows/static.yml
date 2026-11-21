@@ -44,6 +44,8 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    env:
+      PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -52,6 +54,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
+          name: ${{ env.PAGES_ARTIFACT_NAME }}
           # Upload entire repository
           path: '.'
       - name: Wait for Pages artifact registration
@@ -60,12 +63,15 @@ jobs:
           script: |
             for (let attempt = 0; attempt < 12; attempt++) {
               const result = await github.rest.actions.listWorkflowRunArtifacts({
-                owner: context.repo.owner, repo: context.repo.repo, run_id: context.runId
+                owner: context.repo.owner, repo: context.repo.repo, run_id: context.runId,
+                name: process.env.PAGES_ARTIFACT_NAME
               });
-              if (result.data.artifacts.some(item => item.name === 'github-pages')) return;
+              if (result.data.artifacts.some(item => item.name === process.env.PAGES_ARTIFACT_NAME && !item.expired)) return;
               await new Promise(resolve => setTimeout(resolve, 3000));
             }
             core.setFailed('Pages artifact has not registered yet; re-run deployment.');
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
