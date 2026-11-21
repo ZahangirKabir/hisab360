@@ -2022,7 +2022,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.21.61';
+    const APP_RELEASE_VERSION = '2026.11.21.62';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -7553,19 +7553,19 @@ html body #appContainer #adminFilterPanel #filterDsoCheckboxContainer .dso-dropd
 <style id="login-tagline-design">
 @media screen {
   html body #loginSection .login-brand-tagline {
-    --tagline-ink: #18594b;
     width: fit-content;
     box-sizing: border-box;
     margin: 0 auto 18px !important;
-    padding: 5px 13px !important;
-    border: 1px solid var(--tagline-ink) !important;
-    border-radius: 6px;
-    background: linear-gradient(160deg, #ffffffd9, #ffffff48);
-    box-shadow: inset 0 1px 0 #fff, 0 2px 6px #18594b17;
-    color: var(--tagline-ink) !important;
+    padding: 6px 18px !important;
+    border: 0 !important;
+    border-radius: 999px;
+    background: radial-gradient(ellipse at 27% 0%, #fff 0%, #ffffff00 62%),
+      linear-gradient(155deg, #ffffffb8, #f4f8f65c 62%, #ffffffb3);
+    box-shadow: inset 0 3px 6px #ffffffd9, inset 0 -3px 5px #45635821,
+      0 5px 11px #183b302e, 0 1px 3px #183b3017;
+    color: #20372f !important;
     font-weight: 650 !important;
     line-height: 1.6 !important;
-    text-shadow: 0 1px 0 #fff, 0 -1px 1px #18594b24;
   }
   html body #loginSection .login-brand-tagline span {
     color: inherit !important;
