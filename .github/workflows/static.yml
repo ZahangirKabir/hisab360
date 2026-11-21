@@ -37,41 +37,32 @@ jobs:
           node scripts/check-working-calculator.cjs
           node scripts/check-working-capital-consent.cjs
           node scripts/test-backup-scope.cjs
-  # Single deploy job since we're just deploying
-  deploy:
+  package:
     needs: validate
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{ steps.artifact.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Name the Pages artifact
+        id: artifact
+        run: echo "name=github-pages-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: '.'
+
+  deploy:
+    needs: package
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    env:
-      PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          name: ${{ env.PAGES_ARTIFACT_NAME }}
-          # Upload entire repository
-          path: '.'
-      - name: Wait for Pages artifact registration
-        uses: actions/github-script@v7
-        with:
-          script: |
-            for (let attempt = 0; attempt < 12; attempt++) {
-              const result = await github.rest.actions.listWorkflowRunArtifacts({
-                owner: context.repo.owner, repo: context.repo.repo, run_id: context.runId,
-                name: process.env.PAGES_ARTIFACT_NAME
-              });
-              if (result.data.artifacts.some(item => item.name === process.env.PAGES_ARTIFACT_NAME && !item.expired)) return;
-              await new Promise(resolve => setTimeout(resolve, 3000));
-            }
-            core.setFailed('Pages artifact has not registered yet; re-run deployment.');
+      - uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
         with:
-          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
+          artifact_name: ${{ needs.package.outputs.artifact_name }}
