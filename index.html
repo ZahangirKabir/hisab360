@@ -1837,7 +1837,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const app=await appTask,uid=app.auth().currentUser?.uid;
       if(!uid)throw Error('Device session পাওয়া যায়নি। আবার Login করুন।');
       const clock=syncSessionClock(app);clock.catch(()=>{});const access=await readDeviceApproval(app,uid);
-      return {app,approval:{uid,access}};
+      return {app,approval:{uid,access,clock}};
     }
     function showPendingDevice(){
       document.getElementById('pendingDeviceModal')?.remove();
@@ -1915,7 +1915,10 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const accountPermissionCheck=id==='admin'?null:readLoginREST(credentialApp,'accountSessions/'+credentialUid);
       accountPermissionCheck?.catch(()=>{});
       void portalLedger.enabled().catch(()=>{});
-      if(!sessionClock)await syncSessionClock(app);
+      if(!sessionClock){
+        const preparedClock=prepared.approval?.uid===uid?prepared.approval.clock:null;
+        await (preparedClock||syncSessionClock(app));
+      }
       await portalSessionCloseTask;
       const sessionExpiresAt=Math.floor(sessionServerNow()+23*3600000);
       await timedLoginStep(prepared.trace,'নিরাপদ সেশন',()=>writeLoginServer(credentialApp,'deviceSessions/'+uid,{active:true,credentialUid,expiresAt:sessionExpiresAt}));
@@ -2019,7 +2022,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.20.56';
+    const APP_RELEASE_VERSION = '2026.11.21.57';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
@@ -2574,8 +2577,22 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       salamTimer=setTimeout(()=>{if(toast.isConnected)toast.remove();},500);
     }
 
+    function measurePortalDuration(name,start){
+      if(typeof performance.measure==='function'){
+        performance.clearMeasures(name);
+        performance.measure(name,{start,end:performance.now()});
+      }
+    }
     function startLoginTiming(){
-      return {run:async(_label,work)=>work(),finish(){}};
+      const start=performance.now();
+      return {
+        async run(label,work){
+          const stepStart=performance.now();
+          try{return await work();}
+          finally{measurePortalDuration('Hisab360 login · '+label,stepStart);}
+        },
+        finish(){measurePortalDuration('Hisab360 login · total',start);}
+      };
     }
     function timedLoginStep(trace,label,work){return trace?trace.run(label,work):work();}
 
@@ -5318,12 +5335,12 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       realtimeListenerRefs.push({ref, handler});
     }
 
-    function scheduleDataUiUpdate() {
+    function scheduleDataUiUpdate(immediate=false) {
       if (currentUser === "admin" || isGroupAdmin(currentUser)) {
         const ids=[...new Set(Object.values(globalAllData||{}).map(r=>String(r?.userId||'')).filter(Boolean))].sort().join('|');
         const signature=String(currentUser)+'|'+ids;
         if(signature!==adminDsoOptionsSignature){populateDsoDropdown(globalAllData);populateAdminFilter();adminDsoOptionsSignature=signature;}
-        scheduleAdminRender();
+        scheduleAdminRender(immediate);
       } else {
         refreshSubmittedBankAmount();
         if(document.getElementById('dsoPageReport')?.style.display==='block')renderDsoHistory(globalAllData);
@@ -5415,7 +5432,12 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       const token=++masterAdminDataToken;masterAdminDataMode=mode;masterAdminDataLoading=true;globalAllData={};
       const state={token,scope,pages:[],listeners:[],cancelled:false,loading:false,hasMore:false,cursor:null,error:''};adminReportPages=state;
       const valid=()=>!state.cancelled&&token===masterAdminDataToken&&currentUser==='admin';
-      const emit=()=>{if(!valid())return;const incoming=Object.assign({},...state.pages.slice().reverse().map(x=>x||{}));pendingOptimisticDeletes.forEach(key=>delete incoming[key]);globalAllData=incoming;realtimeInitialDataReady=true;masterAdminDataLoading=false;scheduleDataUiUpdate();paintAdminReportPaging();};
+      const startedAt=performance.now();let firstPageShown=false;
+      const emit=()=>{if(!valid())return;const incoming=Object.assign({},...state.pages.slice().reverse().map(x=>x||{}));pendingOptimisticDeletes.forEach(key=>delete incoming[key]);globalAllData=incoming;realtimeInitialDataReady=true;masterAdminDataLoading=false;
+        const firstPageReady=!firstPageShown&&state.pages[0]!=null;
+        scheduleDataUiUpdate(firstPageReady);paintAdminReportPaging();
+        if(firstPageReady){firstPageShown=true;measurePortalDuration('Hisab360 report · first data processed',startedAt);}
+      };
       const cancel=()=>{state.cancelled=true;for(const [q,h]of state.listeners)q.off('value',h);state.listeners=[];state.pages=[];if(adminReportPages===state){adminReportPages=null;document.getElementById('adminReportPaging')?.remove();}};
       masterAdminRealtimeRef={scope,ref:{off:cancel},handler:null};
       state.addPage=cursor=>{if(!valid()||state.loading)return;state.loading=true;state.error='';state.retry=()=>state.addPage(cursor);paintAdminReportPaging();const index=state.pages.length;state.pages.push(null);let query=database.ref('collections').orderByChild('date');
