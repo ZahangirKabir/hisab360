@@ -1055,8 +1055,8 @@ html body #adminTabNav .main-menu-icon,html body #dsoTabNav .dso-menu-icon,html 
       <div id="adminPageSlipApproval" style="display:none;">
         <h3 style="color:#00695c;margin-bottom:12px">🧾 Bank Slip Approval</h3>
         <div class="report-filter slip-approval-filters" role="group" aria-label="Bank Slip filters">
-          <label class="slip-filter-field"><span class="slip-filter-label">Status</span><select id="slipApprovalStatus" onchange="renderSlipApprovalFilters()"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
-          <label class="slip-filter-field"><span class="slip-filter-label">Bank Name</span><select id="slipApprovalBank" onchange="renderBankSlipStatus('admin')"><option value="">All Bank</option></select></label>
+          <label class="slip-filter-field"><select id="slipApprovalStatus" aria-label="Status" onchange="renderSlipApprovalFilters()"><option value="">All Status</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></label>
+          <label class="slip-filter-field"><select id="slipApprovalBank" aria-label="Bank Name" onchange="renderBankSlipStatus('admin')"><option value="">All Bank</option></select></label>
         </div>
         <div class="table-container"><table id="adminSlipApprovalTable"><thead><tr><th>তারিখ</th><th>Upload Time</th><th>DSO</th><th>Bank Name / Account</th><th>Transaction ID</th><th>Amount</th><th>Status</th><th>কারণ</th><th>Bank Slip</th><th>Approval / Reject</th></tr></thead><tbody id="adminBankSlipStatusBody"></tbody></table></div>
         <div style="text-align:center;margin:12px"><button type="button" id="loadMoreBankSlipsBtn" class="btn-add" style="display:none" onclick="loadMoreBankSlips()">আরও Bank Slip দেখুন</button></div>
@@ -2022,7 +2022,7 @@ global.PortalLedger={create,sync,balance,same,snapshot};
       serverTimestamp: firebase.database.ServerValue.TIMESTAMP
     };
     // Increment on every index.html deployment. Open pages compare against this value.
-    const APP_RELEASE_VERSION = '2026.11.21.58';
+    const APP_RELEASE_VERSION = '2026.11.21.59';
     // Track Investment.html independently. Future Investment updates do not require changing index.html.
     let loadedInvestmentVersion = null;
     let firebaseReleaseMismatch = false, hostedReleaseMismatch = false, hostedReleaseCheckedAt = 0, releaseCheckPromise = null;
